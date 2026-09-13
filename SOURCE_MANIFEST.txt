@@ -19,6 +19,7 @@ Capability and telephony contracts
 - app/src/main/java/com/goreecloud/dialer/core/capability/CapabilityState.kt
 - app/src/main/java/com/goreecloud/dialer/telephony/TelephonyCapabilitySnapshot.kt
 - app/src/main/java/com/goreecloud/dialer/telephony/DialerRoleCapabilityResolver.kt
+- app/src/main/java/com/goreecloud/dialer/telephony/DefaultDialerAcceptance.kt
 - app/src/main/java/com/goreecloud/dialer/telephony/AndroidTelephonyCapabilityProbe.kt
 - app/src/main/java/com/goreecloud/dialer/telephony/DialRequest.kt
 - app/src/main/java/com/goreecloud/dialer/telephony/AndroidDialRequestReader.kt
@@ -32,6 +33,7 @@ Capability and telephony contracts
 Tests
 - app/src/test/java/com/goreecloud/dialer/telephony/TelephonyCapabilitySnapshotTest.kt
 - app/src/test/java/com/goreecloud/dialer/telephony/DialerRoleCapabilityResolverTest.kt
+- app/src/test/java/com/goreecloud/dialer/telephony/DefaultDialerAcceptanceTest.kt
 - app/src/test/java/com/goreecloud/dialer/telephony/DialRequestParserTest.kt
 - app/src/test/java/com/goreecloud/dialer/telephony/CallLifecycleStateMapperTest.kt
 - app/src/test/java/com/goreecloud/dialer/telephony/CallControlEngineTest.kt

@@ -13,6 +13,7 @@ class AndroidTelephonyCapabilityProbe(
         val packageManager = context.packageManager
         val hasTelephony = packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY)
         val roleManager = context.getSystemService(RoleManager::class.java)
+        val applicationAcceptance = DevelopmentDefaultDialerAcceptance.current
 
         val defaultDialerRole = DialerRoleCapabilityResolver.resolve(
             hasTelephony = hasTelephony,
@@ -20,8 +21,8 @@ class AndroidTelephonyCapabilityProbe(
             roleAvailable = roleManager?.isRoleAvailable(RoleManager.ROLE_DIALER) == true,
             roleHeld = roleManager?.isRoleHeld(RoleManager.ROLE_DIALER) == true,
             roleName = RoleManager.ROLE_DIALER,
-            applicationRequirementsAccepted = false,
-            requirementsReason = "Incoming and ongoing call UI acceptance is incomplete",
+            applicationRequirementsAccepted = applicationAcceptance.accepted,
+            requirementsReason = applicationAcceptance.unavailableReason(),
         )
 
         fun notImplemented(reason: String): CapabilityState =
@@ -31,8 +32,8 @@ class AndroidTelephonyCapabilityProbe(
             defaultDialerRole = defaultDialerRole,
             dialIntentHandling = CapabilityState.Available,
             outgoingCalls = notImplemented("ACTION_DIAL is handled; TelecomManager call placement is not implemented"),
-            incomingCalls = notImplemented("InCallService lifecycle exists; incoming-call UI is not implemented"),
-            inCallControls = notImplemented("InCallService lifecycle exists; call controls are not implemented"),
+            incomingCalls = notImplemented("InCallService lifecycle exists; production incoming-call presentation is not accepted"),
+            inCallControls = notImplemented("Development controls exist; production in-call UI acceptance is incomplete"),
             multiSimRouting = notImplemented("Subscription routing not implemented"),
             callScreening = notImplemented("Call screening service not implemented"),
             visualVoicemail = notImplemented("Voicemail adapter not implemented"),
