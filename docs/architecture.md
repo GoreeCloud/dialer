@@ -20,15 +20,17 @@ Every capability should distinguish unsupported, unavailable, permission/role re
 
 ## InCallService lifecycle boundary
 
-`GoreeCloudInCallService` is registered with `BIND_INCALL_SERVICE` and tracks call additions, removals, lifecycle transitions, whether another call can be added, narrow control capabilities, and content-minimized conference relationships. Live Android `Call` references remain process-local only while Telecom owns the call.
+`GoreeCloudInCallService` is registered with `BIND_INCALL_SERVICE` and tracks call additions, removals, lifecycle transitions, whether another call can be added, narrow control capabilities, content-minimized conference relationships, and whether Android has paused a post-dial sequence for user confirmation. Live Android `Call` references remain process-local only while Telecom owns the call.
 
-Public runtime snapshots project generated session IDs, lifecycle categories, aggregate state, narrow capability booleans, endpoint categories, and conference relationships expressed only as generated session IDs. They do not expose phone numbers, caller names, phone-account identifiers, endpoint device names, `Call.Details`, transcripts, audio, recordings or voicemail content.
+Public runtime snapshots project generated session IDs, lifecycle categories, aggregate state, narrow capability booleans, endpoint categories, conference relationships expressed only as generated session IDs, and minimized post-dial wait metadata. They do not expose phone numbers, caller names, phone-account identifiers, endpoint device names, `Call.Details`, post-dial sequence content, transcripts, audio, recordings or voicemail content.
 
 ## Essential call controls
 
 The call-control layer accepts an explicit process-local session ID and a user-driven action. A state- and capability-aware policy rejects actions that do not match the current lifecycle state or live Telecom capability before invoking Android Telecom. Source contracts cover answering an audio call, declining/end, hold/resume, and starting/stopping DTMF tones.
 
 Hold and Resume distinguish feature support from current availability. The UI can therefore explain that Hold is unsupported versus supported but temporarily unavailable. DTMF remains user-driven and uses bounded tone pulses in the Development surface.
+
+A non-throwing invocation of Answer, Decline, End, Hold, Resume, DTMF, or Mute is reported as **submitted**, not succeeded. Later Telecom callbacks/state are the authority for whether the requested state actually changed.
 
 ## Mute and audio routing
 
@@ -47,6 +49,14 @@ Conference authority is derived from Android Telecom evidence rather than from t
 - Stale or untracked target sessions fail closed.
 
 Conference controls remain Development boundaries until device/carrier validation and production in-call UI acceptance are complete.
+
+## Post-dial wait boundary
+
+Android may pause an outgoing post-dial sequence and require the in-call application to ask whether to continue. GoreeCloud tracks only that a wait is pending plus the number of remaining characters; the actual remaining sequence is not projected into the public runtime snapshot.
+
+The Development in-call surface presents explicit **Continue** and **Cancel** choices. Either choice is accepted only for a tracked connected/outgoing call with a currently pending wait, then forwarded through `Call.postDialContinue(...)`. A non-throwing invocation is reported as submitted. Disconnected/stale sessions and duplicate actions fail closed.
+
+This boundary is a conventional telephony requirement and does not enable Smart DTMF, Call Assistant, automatic phone-menu navigation, or secret entry.
 
 ## Phone-account and emergency boundary
 

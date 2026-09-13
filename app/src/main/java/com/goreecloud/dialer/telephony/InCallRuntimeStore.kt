@@ -13,9 +13,10 @@ import kotlinx.coroutines.flow.asStateFlow
  * The store retains Android Call objects only while Telecom owns the live call so explicit
  * controls can be executed. Public snapshots expose only generated session/route IDs, lifecycle
  * categories, aggregate state, endpoint categories, content-free audio-control state, narrow
- * control-capability booleans, and conference relationships expressed only as generated session
- * IDs. No number, caller name, account identifier, endpoint device name, Call.Details object,
- * transcript, recording, or audio is persisted or projected.
+ * control-capability booleans, conference relationships expressed only as generated session IDs,
+ * and minimized post-dial wait state. No number, caller name, account identifier, endpoint device
+ * name, Call.Details object, post-dial sequence content, transcript, recording, or audio is
+ * persisted or projected.
  */
 data class CallRuntimeSummary(
     val sessionId: Long,
@@ -30,6 +31,8 @@ data class CallRuntimeSummary(
     val conferenceableSessionIds: List<Long>,
     val parentSessionId: Long?,
     val childSessionIds: List<Long>,
+    val postDialWaitPending: Boolean,
+    val postDialRemainingCharacterCount: Int,
 )
 
 data class InCallRuntimeSnapshot(
@@ -53,6 +56,8 @@ object InCallRuntimeStore {
         var conferenceableCalls: List<Call>,
         var parent: Call?,
         var children: List<Call>,
+        var postDialWaitPending: Boolean,
+        var postDialRemainingCharacterCount: Int,
     )
 
     private val nextSessionId = AtomicLong(1)
@@ -82,6 +87,8 @@ object InCallRuntimeStore {
             conferenceableCalls = call.conferenceableCalls.toList(),
             parent = call.parent,
             children = call.children.toList(),
+            postDialWaitPending = false,
+            postDialRemainingCharacterCount = 0,
         )
         trackedByCall[call] = tracked
         trackedById[tracked.sessionId] = tracked
@@ -93,6 +100,10 @@ object InCallRuntimeStore {
     fun onCallStateChanged(call: Call, state: Int) {
         val tracked = trackedByCall[call] ?: return
         tracked.state = CallLifecycleStateMapper.fromAndroid(state)
+        if (tracked.state == CallLifecycleState.DISCONNECTED) {
+            tracked.postDialWaitPending = false
+            tracked.postDialRemainingCharacterCount = 0
+        }
         publish()
     }
 
@@ -121,6 +132,14 @@ object InCallRuntimeStore {
     fun onChildrenChanged(call: Call, children: List<Call>) {
         val tracked = trackedByCall[call] ?: return
         tracked.children = children.toList()
+        publish()
+    }
+
+    @Synchronized
+    fun onPostDialWait(call: Call, remainingPostDialSequence: String) {
+        val tracked = trackedByCall[call] ?: return
+        tracked.postDialWaitPending = true
+        tracked.postDialRemainingCharacterCount = remainingPostDialSequence.length.coerceAtLeast(0)
         publish()
     }
 
@@ -226,6 +245,38 @@ object InCallRuntimeStore {
     }
 
     @Synchronized
+    fun executePostDial(
+        sessionId: Long,
+        action: PostDialControlAction,
+    ): PostDialControlResult {
+        val tracked = trackedById[sessionId]
+            ?: return PostDialControlResult.Rejected("Call session is no longer active")
+
+        val decision = PostDialControlPolicy.decide(
+            PostDialControlFacts(
+                state = tracked.state,
+                waitPending = tracked.postDialWaitPending,
+            ),
+        )
+        if (decision is PostDialControlDecision.Rejected) {
+            return PostDialControlResult.Rejected(decision.reason)
+        }
+
+        return try {
+            tracked.call.postDialContinue(action == PostDialControlAction.Continue)
+            tracked.postDialWaitPending = false
+            tracked.postDialRemainingCharacterCount = 0
+            publish()
+            PostDialControlResult.Submitted
+        } catch (runtimeException: RuntimeException) {
+            PostDialControlResult.Failed(
+                "Android Telecom post-dial request failed: " +
+                    runtimeException::class.java.simpleName,
+            )
+        }
+    }
+
+    @Synchronized
     fun clear() {
         trackedByCall.clear()
         trackedById.clear()
@@ -258,6 +309,8 @@ object InCallRuntimeStore {
                 childSessionIds = tracked.children
                     .mapNotNull { trackedByCall[it]?.sessionId }
                     .distinct(),
+                postDialWaitPending = tracked.postDialWaitPending,
+                postDialRemainingCharacterCount = tracked.postDialRemainingCharacterCount,
             )
         }
         mutableSnapshots.value = InCallRuntimeSnapshot(

@@ -14,8 +14,8 @@ import java.util.concurrent.atomic.AtomicLong
 /**
  * Development InCallService lifecycle, presentation, and audio-control boundary.
  *
- * The service tracks only process-local call sessions and content-minimized lifecycle/audio/control
- * capability and conference state. Development incoming/ongoing presentation exists, but
+ * The service tracks only process-local call sessions and content-minimized lifecycle/audio/control,
+ * conference, and post-dial wait state. Development incoming/ongoing presentation exists, but
  * production UI replacement and ringtone ownership remain undeclared until end-to-end device
  * validation is complete.
  */
@@ -87,6 +87,10 @@ class GoreeCloudInCallService : InCallService() {
 
             override fun onChildrenChanged(call: Call, children: List<Call>) {
                 InCallRuntimeStore.onChildrenChanged(call, children)
+            }
+
+            override fun onPostDialWait(call: Call, remainingPostDialSequence: String) {
+                InCallRuntimeStore.onPostDialWait(call, remainingPostDialSequence)
             }
         }
 

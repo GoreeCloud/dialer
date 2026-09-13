@@ -18,6 +18,7 @@ Android application
 - app/src/main/java/com/goreecloud/dialer/ui/InCallPanel.kt
 - app/src/main/java/com/goreecloud/dialer/ui/DtmfKeypad.kt
 - app/src/main/java/com/goreecloud/dialer/ui/ConferenceControls.kt
+- app/src/main/java/com/goreecloud/dialer/ui/PostDialControls.kt
 
 Capability and telephony contracts
 - app/src/main/java/com/goreecloud/dialer/core/capability/CapabilityState.kt
@@ -34,6 +35,7 @@ Capability and telephony contracts
 - app/src/main/java/com/goreecloud/dialer/telephony/CallLifecycleState.kt
 - app/src/main/java/com/goreecloud/dialer/telephony/CallCapabilities.kt
 - app/src/main/java/com/goreecloud/dialer/telephony/ConferenceControl.kt
+- app/src/main/java/com/goreecloud/dialer/telephony/PostDialControl.kt
 - app/src/main/java/com/goreecloud/dialer/telephony/InCallRuntimeStore.kt
 - app/src/main/java/com/goreecloud/dialer/telephony/GoreeCloudInCallService.kt
 - app/src/main/java/com/goreecloud/dialer/telephony/CallControl.kt
@@ -62,6 +64,7 @@ Tests
 - app/src/test/java/com/goreecloud/dialer/telephony/CallAudioControlEngineTest.kt
 - app/src/test/java/com/goreecloud/dialer/telephony/CallEndpointRoutingRuntimeTest.kt
 - app/src/test/java/com/goreecloud/dialer/telephony/ConferenceControlPolicyTest.kt
+- app/src/test/java/com/goreecloud/dialer/telephony/PostDialControlPolicyTest.kt
 - app/src/test/java/com/goreecloud/dialer/telephony/IncomingCallPresentationPolicyTest.kt
 
 Product documentation

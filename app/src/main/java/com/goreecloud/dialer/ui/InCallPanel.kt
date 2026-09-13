@@ -237,6 +237,11 @@ private fun DevelopmentCallControls(
             )
         }
 
+        DevelopmentPostDialControls(
+            call = call,
+            onResult = onResult,
+        )
+
         DevelopmentConferenceControls(
             call = call,
             onResult = onResult,
