@@ -49,7 +49,7 @@ Capability and telephony contracts
 - app/src/main/java/com/goreecloud/dialer/telephony/IncomingCallActivity.kt
 - app/src/main/java/com/goreecloud/dialer/telephony/CallActionReceiver.kt
 
-Tests
+JVM tests
 - app/src/test/java/com/goreecloud/dialer/telephony/TelephonyCapabilitySnapshotTest.kt
 - app/src/test/java/com/goreecloud/dialer/telephony/DialerRoleCapabilityResolverTest.kt
 - app/src/test/java/com/goreecloud/dialer/telephony/DefaultDialerAcceptanceTest.kt
@@ -69,7 +69,10 @@ Tests
 - app/src/test/java/com/goreecloud/dialer/telephony/PostDialControlPolicyTest.kt
 - app/src/test/java/com/goreecloud/dialer/telephony/IncomingCallPresentationPolicyTest.kt
 
-Product documentation
+Instrumentation test source
+- app/src/androidTest/java/com/goreecloud/dialer/DialerApplicationSmokeTest.kt
+
+Product and engineering documentation
 - README.md
 - SPECIFICATIONS.md
 - FEATURES.md
@@ -78,5 +81,9 @@ Product documentation
 - docs/architecture.md
 - docs/privacy.md
 - docs/security.md
+- docs/platform-modernization.md
+- docs/ci-validation.md
+- docs/testing.md
+- docs/release-gates.md
 
-This manifest is a provenance inventory, not proof that planned telephony or intelligent calling capabilities are implemented or production-accepted.
+This manifest is a provenance inventory, not proof that planned telephony or intelligent calling capabilities are implemented or production-accepted. Instrumentation test source is compiled in CI; emulator or physical-device execution is not implied.

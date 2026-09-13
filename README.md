@@ -28,8 +28,11 @@ Carrier call placement is not accepted, conference operations are not production
 - compile SDK: 36
 - target SDK: 36
 - minimum SDK: 29
+- Android Gradle Plugin: 8.10.1
 - Java/Kotlin JVM target: 17
 - development version: `0.1.0-dev`
+
+A future move to compile SDK 37 / AGP 9.1+ is tracked as a separate platform migration because current stable AndroidX/Compose releases require that newer build baseline. The project intentionally retains its last verified SDK-36-compatible dependency set until that migration is accepted as a complete toolchain change.
 
 ## Current source foundation
 
@@ -68,13 +71,15 @@ Carrier call placement is not accepted, conference operations are not production
 - notification actions use an explicit non-exported receiver and process-local Telecom session IDs
 - `POST_NOTIFICATIONS` and full-screen-intent capability are checked at runtime; unavailable full-screen access degrades to notification presentation
 - ringtone ownership remains intentionally undeclared until a dedicated ringtone path is implemented and validated
-- Android CI uses Node-24-capable Action lines and branch-scoped concurrency so newer commits cancel superseded post-modernization runs
-- unit tests and Android CI cover unit tests plus debug assembly; device/carrier acceptance remains a separate requirement
+- Android CI uses Node-24-capable Action lines and branch-scoped concurrency so newer commits cancel superseded runs
+- CI currently validates JVM unit tests, Android lint, debug APK assembly, and instrumentation-test APK compilation
+- instrumentation test source includes a canonical-package smoke test; CI compilation does **not** imply emulator or physical-device execution
+- Android platform modernization, CI evidence boundaries, testing layers, and release gates are documented separately
 - architecture, privacy, security, specifications, roadmap, feature, and user-manual documentation
 
 ## Runtime truth rule
 
-A feature is never considered implemented merely because a UI surface, configuration switch, planned contract, issue, or mock exists. Runtime capability, platform/carrier support, permission/role state, privacy authorization, security acceptance, request submission, and verified operation result are separate facts.
+A feature is never considered implemented merely because a UI surface, configuration switch, planned contract, issue, mock, compiled test APK, or green build exists. Runtime capability, platform/carrier support, permission/role state, privacy authorization, security acceptance, request submission, verified operation result, device validation, and human release validation are separate facts.
 
 ## Documentation
 
@@ -85,6 +90,10 @@ A feature is never considered implemented merely because a UI surface, configura
 - [docs/architecture.md](docs/architecture.md)
 - [docs/privacy.md](docs/privacy.md)
 - [docs/security.md](docs/security.md)
+- [docs/platform-modernization.md](docs/platform-modernization.md)
+- [docs/ci-validation.md](docs/ci-validation.md)
+- [docs/testing.md](docs/testing.md)
+- [docs/release-gates.md](docs/release-gates.md)
 
 ## License
 
