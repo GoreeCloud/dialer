@@ -22,6 +22,8 @@ sealed interface CallControlResult {
 
 interface CallControlTarget {
     val state: CallLifecycleState
+    val holdCurrentlyAvailable: Boolean
+        get() = true
 
     fun answerAudio()
     fun decline()
@@ -33,8 +35,8 @@ interface CallControlTarget {
 }
 
 /**
- * State-aware execution boundary. It refuses controls that do not make sense for the
- * current call state rather than blindly invoking Android Telecom operations.
+ * State- and capability-aware execution boundary. It refuses controls that do not make sense for
+ * the current call state or that Android Telecom does not currently report as available.
  */
 class CallControlEngine(
     private val target: CallControlTarget,
@@ -75,11 +77,19 @@ class CallControlEngine(
         CallControlAction.End ->
             if (state in ENDABLE_STATES) null else "Call cannot be ended from $state"
 
-        CallControlAction.Hold ->
-            if (state == CallLifecycleState.ACTIVE) null else "Only an active call can be held"
+        CallControlAction.Hold -> when {
+            state != CallLifecycleState.ACTIVE -> "Only an active call can be held"
+            !target.holdCurrentlyAvailable ->
+                "Android Telecom does not currently allow this call to be held"
+            else -> null
+        }
 
-        CallControlAction.Resume ->
-            if (state == CallLifecycleState.HOLDING) null else "Only a held call can be resumed"
+        CallControlAction.Resume -> when {
+            state != CallLifecycleState.HOLDING -> "Only a held call can be resumed"
+            !target.holdCurrentlyAvailable ->
+                "Android Telecom does not currently allow this call to be resumed"
+            else -> null
+        }
 
         is CallControlAction.StartDtmf -> when {
             action.digit !in DTMF_DIGITS -> "Invalid DTMF digit"
