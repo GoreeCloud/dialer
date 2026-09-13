@@ -12,15 +12,17 @@ import kotlinx.coroutines.flow.asStateFlow
  *
  * The store retains Android Call objects only while Telecom owns the live call so explicit
  * controls can be executed. Public snapshots expose only generated session/route IDs, lifecycle
- * categories, aggregate state, endpoint categories, content-free audio-control state, narrow
- * control-capability booleans, conference relationships expressed only as generated session IDs,
- * and minimized post-dial wait state. No number, caller name, account identifier, endpoint device
- * name, Call.Details object, post-dial sequence content, transcript, recording, or audio is
- * persisted or projected.
+ * categories, generic direction/terminal-outcome evidence, aggregate state, endpoint categories,
+ * content-free audio-control state, narrow control-capability booleans, conference relationships
+ * expressed only as generated session IDs, and minimized post-dial wait state. No number, caller
+ * name, account identifier, endpoint device name, Call.Details object, provider-specific disconnect
+ * reason, post-dial sequence content, transcript, recording, or audio is persisted or projected.
  */
 data class CallRuntimeSummary(
     val sessionId: Long,
     val state: CallLifecycleState,
+    val direction: CallDirection,
+    val terminalOutcome: CallTerminalOutcome?,
     val holdSupported: Boolean,
     val holdCurrentlyAvailable: Boolean,
     val muteSupported: Boolean,
@@ -52,6 +54,8 @@ object InCallRuntimeStore {
         val sessionId: Long,
         val call: Call,
         var state: CallLifecycleState,
+        var direction: CallDirection,
+        var terminalOutcome: CallTerminalOutcome?,
         var capabilities: CallControlCapabilities,
         var conferenceableCalls: List<Call>,
         var parent: Call?,
@@ -79,11 +83,16 @@ object InCallRuntimeStore {
     @Synchronized
     fun onCallAdded(call: Call): Long {
         trackedByCall[call]?.let { return it.sessionId }
+        val state = CallLifecycleStateMapper.fromAndroid(call.state)
+        val details = call.details
+        val disposition = AndroidCallDisposition.from(details, state)
         val tracked = TrackedCall(
             sessionId = nextSessionId.getAndIncrement(),
             call = call,
-            state = CallLifecycleStateMapper.fromAndroid(call.state),
-            capabilities = AndroidCallControlCapabilities.from(call.details),
+            state = state,
+            direction = disposition.direction,
+            terminalOutcome = disposition.terminalOutcome,
+            capabilities = AndroidCallControlCapabilities.from(details),
             conferenceableCalls = call.conferenceableCalls.toList(),
             parent = call.parent,
             children = call.children.toList(),
@@ -100,6 +109,7 @@ object InCallRuntimeStore {
     fun onCallStateChanged(call: Call, state: Int) {
         val tracked = trackedByCall[call] ?: return
         tracked.state = CallLifecycleStateMapper.fromAndroid(state)
+        refreshDisposition(tracked, call.details)
         if (tracked.state == CallLifecycleState.DISCONNECTED) {
             tracked.postDialWaitPending = false
             tracked.postDialRemainingCharacterCount = 0
@@ -111,6 +121,7 @@ object InCallRuntimeStore {
     fun onCallDetailsChanged(call: Call, details: Call.Details) {
         val tracked = trackedByCall[call] ?: return
         tracked.capabilities = AndroidCallControlCapabilities.from(details)
+        refreshDisposition(tracked, details)
         publish()
     }
 
@@ -289,11 +300,24 @@ object InCallRuntimeStore {
         publish()
     }
 
+    private fun refreshDisposition(
+        tracked: TrackedCall,
+        details: Call.Details?,
+    ) {
+        val disposition = AndroidCallDisposition.from(details, tracked.state)
+        if (details != null || tracked.direction == CallDirection.UNKNOWN) {
+            tracked.direction = disposition.direction
+        }
+        tracked.terminalOutcome = disposition.terminalOutcome
+    }
+
     private fun publish() {
         val summaries = trackedById.values.map { tracked ->
             CallRuntimeSummary(
                 sessionId = tracked.sessionId,
                 state = tracked.state,
+                direction = tracked.direction,
+                terminalOutcome = tracked.terminalOutcome,
                 holdSupported = tracked.capabilities.holdSupported,
                 holdCurrentlyAvailable = tracked.capabilities.holdCurrentlyAvailable,
                 muteSupported = tracked.capabilities.muteSupported,

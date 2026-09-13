@@ -12,7 +12,7 @@ Authorization, platform capability, carrier capability, permission/role state, G
 
 Every capability should distinguish unsupported, unavailable, permission/role required, available, active, submitted, failed and succeeded states where those states are meaningful. User interfaces should surface why a capability is unavailable when that information helps the user act.
 
-`Call.Details` is treated as transient Telecom evidence, not durable application state. The public call snapshot projects only narrow booleans needed to explain controls. If call details are missing, capability-derived controls fail closed.
+`Call.Details` is treated as transient Telecom evidence, not durable application state. The public call snapshot projects only narrow booleans and generic classifications needed to explain runtime behavior. If call details are missing, capability-derived controls fail closed.
 
 ## ACTION_DIAL boundary
 
@@ -20,9 +20,17 @@ Every capability should distinguish unsupported, unavailable, permission/role re
 
 ## InCallService lifecycle boundary
 
-`GoreeCloudInCallService` is registered with `BIND_INCALL_SERVICE` and tracks call additions, removals, lifecycle transitions, whether another call can be added, narrow control capabilities, content-minimized conference relationships, and whether Android has paused a post-dial sequence for user confirmation. Live Android `Call` references remain process-local only while Telecom owns the call.
+`GoreeCloudInCallService` is registered with `BIND_INCALL_SERVICE` and tracks call additions, removals, lifecycle transitions, whether another call can be added, narrow control capabilities, generic call direction/terminal outcome, content-minimized conference relationships, and whether Android has paused a post-dial sequence for user confirmation. Live Android `Call` references remain process-local only while Telecom owns the call.
 
-Public runtime snapshots project generated session IDs, lifecycle categories, aggregate state, narrow capability booleans, endpoint categories, conference relationships expressed only as generated session IDs, and minimized post-dial wait metadata. They do not expose phone numbers, caller names, phone-account identifiers, endpoint device names, `Call.Details`, post-dial sequence content, transcripts, audio, recordings or voicemail content.
+Public runtime snapshots project generated session IDs, lifecycle categories, `INCOMING`/`OUTGOING`/`UNKNOWN` direction, generic terminal outcome after disconnect, aggregate state, narrow capability booleans, endpoint categories, conference relationships expressed only as generated session IDs, and minimized post-dial wait metadata. They do not expose phone numbers, caller names, phone-account identifiers, endpoint device names, `Call.Details`, provider-specific disconnect labels/descriptions/reason strings, post-dial sequence content, transcripts, audio, recordings or voicemail content.
+
+## Call direction and terminal outcome boundary
+
+Call direction is read from `Call.Details.getCallDirection()` and normalized to `INCOMING`, `OUTGOING`, or `UNKNOWN`. GoreeCloud does not infer direction from UI actions, phone numbers, or call-state shape.
+
+A terminal outcome exists only after the lifecycle reaches `DISCONNECTED`. GoreeCloud maps only Android Telecom's generic `DisconnectCause.code` into content-minimized categories such as `MISSED`, `REJECTED`, `BUSY`, `LOCAL`, `REMOTE`, `ERROR`, `CANCELED`, `RESTRICTED`, `ANSWERED_ELSEWHERE`, and `CALL_PULLED`. Missing or unrecognized evidence becomes `UNKNOWN`.
+
+The localized disconnect label/description and provider-specific reason string are intentionally not projected into the shared runtime snapshot. These transient classifications are not durable Recents/call-history records; persistence belongs to a later retention-authorized layer.
 
 ## Essential call controls
 

@@ -187,7 +187,13 @@ private fun DevelopmentCallControls(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text("Session ${call.sessionId}: ${call.state}")
+        Text("Session ${call.sessionId}: ${call.state} • ${call.direction}")
+        call.terminalOutcome?.let { outcome ->
+            Text(
+                "Terminal outcome: $outcome",
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
         if (actions.isEmpty()) {
             Text(
                 "No accepted control for this lifecycle state",

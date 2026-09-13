@@ -4,9 +4,9 @@ GoreeCloud Dialer is GoreeCloud's privacy-focused, intelligent Android calling a
 
 ## Status
 
-**Active Development / pre-Stable.** The repository contains a native Android foundation, `ACTION_DIAL` intake, a local keypad, default-dialer capability gating, a content-minimized `InCallService` lifecycle boundary, state- and capability-aware essential call controls, Development incoming/ongoing call presentation, a user-driven in-call DTMF keypad, live conference-capability/relationship tracking with guarded Development conference controls, a dormant policy-gated `TelecomManager.placeCall` boundary, a dormant default-dialer role-request preparer, Telecom-evidenced mute/unmute control, API 34+ `CallEndpoint` routing, and permission-aware call-capable phone-account discovery with anonymous explicit route selection. Emergency and indeterminate-emergency numbers always delegate phone-account routing back to Android Telecom.
+**Active Development / pre-Stable.** The repository contains a native Android foundation, `ACTION_DIAL` intake, a local keypad, default-dialer capability gating, a content-minimized `InCallService` lifecycle boundary, state- and capability-aware essential call controls, Development incoming/ongoing call presentation, a user-driven in-call DTMF keypad, live conference-capability/relationship tracking with guarded Development conference controls, generic Telecom call-direction/terminal-outcome evidence, a dormant policy-gated `TelecomManager.placeCall` boundary, a dormant default-dialer role-request preparer, Telecom-evidenced mute/unmute control, API 34+ `CallEndpoint` routing, and permission-aware call-capable phone-account discovery with anonymous explicit route selection. Emergency and indeterminate-emergency numbers always delegate phone-account routing back to Android Telecom.
 
-Carrier call placement is not accepted, conference operations are not production-accepted, caller identity, endpoint device names, phone-account labels, phone numbers, carrier names, SIM identifiers, and subscription identifiers are not projected into these Development surfaces, ringtone ownership is not claimed, production incoming/ongoing UI acceptance is incomplete, and no code currently launches the role-consent request. Legacy pre-Android-14 speaker/Bluetooth routing is intentionally unavailable rather than relying on deprecated APIs. Screening, voicemail, recording, transcription, translation, AI assistance, Privacy Shield acceptance, Wardveil acceptance, Everkeep backup, and cross-device calling are also **not** claimed as implemented until their runtime paths are built and verified.
+Carrier call placement is not accepted, conference operations are not production-accepted, call direction/outcome evidence is transient rather than durable call history, caller identity, endpoint device names, phone-account labels, phone numbers, carrier names, SIM identifiers, subscription identifiers, and provider-specific disconnect reason strings are not projected into these Development surfaces, ringtone ownership is not claimed, production incoming/ongoing UI acceptance is incomplete, and no code currently launches the role-consent request. Legacy pre-Android-14 speaker/Bluetooth routing is intentionally unavailable rather than relying on deprecated APIs. Screening, voicemail, recording, transcription, translation, AI assistance, Privacy Shield acceptance, Wardveil acceptance, Everkeep backup, and cross-device calling are also **not** claimed as implemented until their runtime paths are built and verified.
 
 ## Canonical repository
 
@@ -48,6 +48,9 @@ Carrier call placement is not accepted, conference operations are not production
 - explicit phone-account selection is added to `TelecomManager.placeCall` only for numbers Android classifies as non-emergency
 - `InCallService` lifecycle boundary with process-local call sessions
 - observable content-minimized call snapshots exposed as a `StateFlow`
+- Android Telecom direction evidence mapped only to `INCOMING`, `OUTGOING`, or `UNKNOWN`
+- generic terminal outcomes derived only after `DISCONNECTED` from `DisconnectCause.code`, including missed, rejected, busy, local, remote, error, canceled, restricted, answered-elsewhere, and pulled-call categories
+- provider-specific disconnect labels/descriptions/reason strings remain outside public runtime state, and terminal outcomes are transient rather than durable Recents history
 - state-aware answer, decline/end, hold/resume, and DTMF execution contracts
 - live `Call.Details` capability evidence for hold, mute, and conference management/merge/swap/separate; missing details fail closed
 - user-driven in-call DTMF keypad with bounded tone pulses, overlap prevention, and guaranteed stop attempts from coroutine cleanup
@@ -59,7 +62,7 @@ Carrier call placement is not accepted, conference operations are not production
 - endpoint UI exposes only generated route IDs/categories; Telecom endpoint names and device identities are not projected
 - endpoint requests distinguish submitted, succeeded, and failed evidence
 - pre-API-34 endpoint switching remains explicitly unavailable instead of using deprecated `setAudioRoute`
-- Development ongoing-call UI exposing session IDs, lifecycle state, accepted controls, capability explanations, DTMF, conference controls, mute state, endpoint categories, and explicit operation results
+- Development ongoing-call UI exposing session IDs, lifecycle state, generic direction/terminal outcome, accepted controls, capability explanations, DTMF, conference controls, mute state, endpoint categories, and explicit operation results
 - Development incoming-call `CallStyle` notification/full-screen UI with Answer and Decline actions
 - incoming notifications transition to ongoing `CallStyle` notifications with an explicit End action and route back to the in-call UI
 - notification actions use an explicit non-exported receiver and process-local Telecom session IDs
