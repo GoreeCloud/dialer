@@ -1,5 +1,8 @@
 package com.goreecloud.dialer.ui
 
+import android.Manifest
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,6 +11,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -40,6 +45,8 @@ import com.goreecloud.dialer.telephony.InCallAudioControlRuntime
 import com.goreecloud.dialer.telephony.InCallEndpointRoutingRuntime
 import com.goreecloud.dialer.telephony.InCallRuntimeSnapshot
 import com.goreecloud.dialer.telephony.InCallRuntimeStore
+import com.goreecloud.dialer.telephony.PhoneAccountDiscoveryState
+import com.goreecloud.dialer.telephony.PhoneAccountRoutingRuntime
 import com.goreecloud.dialer.telephony.TelephonyCapabilitySnapshot
 import com.goreecloud.dialer.telephony.presentationLabel
 
@@ -50,12 +57,28 @@ fun DialerApp(initialDialRequest: DialRequest? = null) {
         AndroidTelephonyCapabilityProbe(applicationContext).snapshot()
     }
     val inCallRuntime by InCallRuntimeStore.snapshots.collectAsState()
+    var phoneAccountRefresh by remember { mutableStateOf(0) }
+    var selectedPhoneAccountRouteId by rememberSaveable { mutableStateOf<Long?>(null) }
+    val phoneAccountDiscovery = remember(applicationContext, phoneAccountRefresh) {
+        PhoneAccountRoutingRuntime.discover(applicationContext)
+    }
+    val phoneStatePermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+    ) {
+        phoneAccountRefresh += 1
+    }
 
     MaterialTheme {
         Scaffold { innerPadding ->
             DevelopmentHome(
                 capabilitySnapshot = capabilitySnapshot,
                 inCallRuntime = inCallRuntime,
+                phoneAccountDiscovery = phoneAccountDiscovery,
+                selectedPhoneAccountRouteId = selectedPhoneAccountRouteId,
+                onPhoneAccountSelected = { selectedPhoneAccountRouteId = it },
+                onRequestPhoneStatePermission = {
+                    phoneStatePermissionLauncher.launch(Manifest.permission.READ_PHONE_STATE)
+                },
                 initialNumber = initialDialRequest?.number.orEmpty(),
                 modifier = Modifier.padding(innerPadding),
             )
@@ -67,14 +90,21 @@ fun DialerApp(initialDialRequest: DialRequest? = null) {
 private fun DevelopmentHome(
     capabilitySnapshot: TelephonyCapabilitySnapshot,
     inCallRuntime: InCallRuntimeSnapshot,
+    phoneAccountDiscovery: PhoneAccountDiscoveryState,
+    selectedPhoneAccountRouteId: Long?,
+    onPhoneAccountSelected: (Long?) -> Unit,
+    onRequestPhoneStatePermission: () -> Unit,
     initialNumber: String,
     modifier: Modifier = Modifier,
 ) {
     var number by rememberSaveable(initialNumber) { mutableStateOf(initialNumber) }
 
     Column(
-        modifier = modifier.fillMaxSize().padding(24.dp),
-        verticalArrangement = Arrangement.Center,
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(24.dp),
+        verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text("GoreeCloud Dialer", style = MaterialTheme.typography.headlineMedium)
@@ -119,6 +149,14 @@ private fun DevelopmentHome(
             Text("Delete")
         }
 
+        DevelopmentPhoneAccountRouting(
+            discovery = phoneAccountDiscovery,
+            selectedRouteId = selectedPhoneAccountRouteId,
+            onSelected = onPhoneAccountSelected,
+            onRequestPermission = onRequestPhoneStatePermission,
+        )
+        Spacer(Modifier.height(12.dp))
+
         Button(onClick = {}, enabled = false) {
             Text("Call")
         }
@@ -135,6 +173,102 @@ private fun DevelopmentHome(
         Text(
             "Default dialer role: ${capabilitySnapshot.defaultDialerRole.describe()}",
             style = MaterialTheme.typography.bodyMedium,
+        )
+    }
+}
+
+@Composable
+private fun DevelopmentPhoneAccountRouting(
+    discovery: PhoneAccountDiscoveryState,
+    selectedRouteId: Long?,
+    onSelected: (Long?) -> Unit,
+    onRequestPermission: () -> Unit,
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text("Calling account", style = MaterialTheme.typography.titleSmall)
+        Text(
+            "Phone numbers, carrier labels, SIM identifiers, and account names are not projected.",
+            style = MaterialTheme.typography.bodySmall,
+        )
+        Spacer(Modifier.height(8.dp))
+
+        when (discovery) {
+            PhoneAccountDiscoveryState.Unsupported -> Text(
+                "Telephony account routing is unsupported on this device.",
+                style = MaterialTheme.typography.bodySmall,
+            )
+
+            PhoneAccountDiscoveryState.TelecomUnavailable -> Text(
+                "Android Telecom is unavailable.",
+                style = MaterialTheme.typography.bodySmall,
+            )
+
+            is PhoneAccountDiscoveryState.PermissionRequired -> {
+                Text(
+                    "READ_PHONE_STATE is required to enumerate call-capable phone accounts.",
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                Button(onClick = onRequestPermission) {
+                    Text("Allow phone account discovery")
+                }
+            }
+
+            is PhoneAccountDiscoveryState.Failed -> Text(
+                "Phone account discovery failed — ${discovery.reason}",
+                style = MaterialTheme.typography.bodySmall,
+            )
+
+            is PhoneAccountDiscoveryState.Available -> {
+                Button(
+                    onClick = { onSelected(null) },
+                    enabled = selectedRouteId != null,
+                ) {
+                    Text(if (selectedRouteId == null) "System default ✓" else "System default")
+                }
+
+                if (discovery.routes.isEmpty()) {
+                    Text(
+                        "No enabled call-capable phone accounts were reported by Android Telecom.",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                } else {
+                    discovery.routes.forEachIndexed { index, route ->
+                        val selected = route.routeId == selectedRouteId
+                        val defaultSuffix = if (route.isSystemDefault) " · Android default" else ""
+                        Button(
+                            onClick = { onSelected(route.routeId) },
+                            enabled = !selected,
+                        ) {
+                            Text(
+                                if (selected) {
+                                    "Phone account ${index + 1}$defaultSuffix ✓"
+                                } else {
+                                    "Phone account ${index + 1}$defaultSuffix"
+                                },
+                            )
+                        }
+                    }
+                }
+
+                if (
+                    selectedRouteId != null &&
+                    discovery.routes.none { it.routeId == selectedRouteId }
+                ) {
+                    Text(
+                        "The selected phone account is no longer available; placement would fail closed.",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+            }
+        }
+
+        Spacer(Modifier.height(4.dp))
+        Text(
+            "Emergency or indeterminate-emergency calls always delegate phone-account routing to Android Telecom.",
+            style = MaterialTheme.typography.bodySmall,
         )
     }
 }
