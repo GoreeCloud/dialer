@@ -19,6 +19,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -30,6 +31,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.goreecloud.dialer.core.capability.CapabilityState
 import com.goreecloud.dialer.telephony.AndroidTelephonyCapabilityProbe
 import com.goreecloud.dialer.telephony.DialRequest
@@ -41,19 +45,33 @@ import com.goreecloud.dialer.telephony.TelephonyCapabilitySnapshot
 @Composable
 fun DialerApp(initialDialRequest: DialRequest? = null) {
     val applicationContext = LocalContext.current.applicationContext
-    val capabilitySnapshot = remember(applicationContext) {
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var runtimeRefresh by remember { mutableIntStateOf(0) }
+    val capabilitySnapshot = remember(applicationContext, runtimeRefresh) {
         AndroidTelephonyCapabilityProbe(applicationContext).snapshot()
     }
     val inCallRuntime by InCallRuntimeStore.snapshots.collectAsState()
-    var phoneAccountRefresh by remember { mutableIntStateOf(0) }
     var selectedPhoneAccountRouteId by rememberSaveable { mutableStateOf<Long?>(null) }
-    val phoneAccountDiscovery = remember(applicationContext, phoneAccountRefresh) {
+    val phoneAccountDiscovery = remember(applicationContext, runtimeRefresh) {
         PhoneAccountRoutingRuntime.discover(applicationContext)
     }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                runtimeRefresh += 1
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
     val phoneStatePermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
     ) {
-        phoneAccountRefresh += 1
+        runtimeRefresh += 1
     }
 
     MaterialTheme {
