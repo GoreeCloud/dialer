@@ -4,7 +4,7 @@ GoreeCloud Dialer is GoreeCloud's privacy-focused, intelligent Android calling a
 
 ## Status
 
-**Active Development / pre-Stable.** The repository contains a validated native Android foundation, `ACTION_DIAL` intake, a local keypad, default-dialer capability gating, a content-minimized `InCallService` lifecycle boundary, state-aware essential call-control contracts, Development incoming/ongoing call presentation, a dormant policy-gated `TelecomManager.placeCall` boundary, a dormant default-dialer role-request preparer, Telecom-evidenced mute/unmute control, and API 34+ `CallEndpoint` routing using only endpoints supplied by Telecom. Carrier call placement is not accepted, caller identity and endpoint device names are not projected into the call surfaces, ringtone ownership is not claimed, production incoming/ongoing UI acceptance is incomplete, and no code currently launches the role-consent request. Legacy pre-Android-14 speaker/Bluetooth routing is intentionally unavailable rather than relying on deprecated APIs. Screening, voicemail, recording, transcription, translation, AI assistance, Privacy Shield acceptance, Wardveil acceptance, Everkeep backup, and cross-device calling are also **not** claimed as implemented until their runtime paths are built and verified.
+**Active Development / pre-Stable.** The repository contains a validated native Android foundation, `ACTION_DIAL` intake, a local keypad, default-dialer capability gating, a content-minimized `InCallService` lifecycle boundary, state-aware essential call-control contracts, Development incoming/ongoing call presentation, a dormant policy-gated `TelecomManager.placeCall` boundary, a dormant default-dialer role-request preparer, Telecom-evidenced mute/unmute control, API 34+ `CallEndpoint` routing, and permission-aware call-capable phone-account discovery with anonymous explicit route selection. Emergency and indeterminate-emergency numbers always delegate phone-account routing back to Android Telecom. Carrier call placement is not accepted, caller identity, endpoint device names, phone-account labels, phone numbers, carrier names, SIM identifiers, and subscription identifiers are not projected into these Development surfaces, ringtone ownership is not claimed, production incoming/ongoing UI acceptance is incomplete, and no code currently launches the role-consent request. Legacy pre-Android-14 speaker/Bluetooth routing is intentionally unavailable rather than relying on deprecated APIs. Screening, voicemail, recording, transcription, translation, AI assistance, Privacy Shield acceptance, Wardveil acceptance, Everkeep backup, and cross-device calling are also **not** claimed as implemented until their runtime paths are built and verified.
 
 ## Canonical repository
 
@@ -37,6 +37,12 @@ GoreeCloud Dialer is GoreeCloud's privacy-focused, intelligent Android calling a
 - explicit default-dialer acceptance model for dial intent, service, placement, incoming UI, and ongoing UI
 - role-request preparation policy that cannot produce Android's consent intent until all GoreeCloud application requirements are accepted
 - dormant outgoing-call placement adapter requiring telephony, Telecom, GoreeCloud acceptance, active default-dialer role, and `CALL_PHONE`
+- `READ_PHONE_STATE`-guarded discovery of Android call-capable phone accounts
+- process-local opaque phone-account route IDs; account handles, labels, phone numbers, carrier names, SIM identifiers, and subscription identifiers are not projected
+- Development calling-account surface with explicit `System default` or anonymous `Phone account N` selection
+- stale explicit phone-account selections fail closed rather than silently falling back to another account
+- emergency-number classification uses Android telephony evidence; emergency and unknown classification force Android-managed phone-account routing
+- explicit phone-account selection is added to `TelecomManager.placeCall` only for numbers Android classifies as non-emergency
 - `InCallService` lifecycle boundary with process-local call sessions
 - observable content-minimized call snapshots exposed as a `StateFlow`
 - state-aware answer, decline/end, hold/resume, and DTMF execution contracts
