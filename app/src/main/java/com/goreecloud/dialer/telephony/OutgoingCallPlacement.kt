@@ -45,12 +45,15 @@ sealed interface OutgoingCallPlacementResult {
  *
  * The current Development acceptance gate intentionally keeps this path rejected. The adapter
  * exists so call placement can be validated without introducing ACTION_CALL fallbacks or silently
- * bypassing Android's default-dialer, permission, or GoreeCloud acceptance boundaries.
+ * bypassing Android's default-dialer, permission, phone-account, or emergency-routing boundaries.
  */
 class AndroidOutgoingCallPlacer(
     private val context: Context,
 ) {
-    fun place(number: String): OutgoingCallPlacementResult {
+    fun place(
+        number: String,
+        requestedPhoneAccountRouteId: Long? = null,
+    ): OutgoingCallPlacementResult {
         val sanitizedNumber = number.trim()
         if (sanitizedNumber.isEmpty()) {
             return OutgoingCallPlacementResult.Rejected("Phone number is empty")
@@ -75,16 +78,50 @@ class AndroidOutgoingCallPlacer(
             is OutgoingCallPlacementDecision.Rejected ->
                 OutgoingCallPlacementResult.Rejected(decision.reason)
 
-            OutgoingCallPlacementDecision.Allowed -> try {
-                telecomManager!!.placeCall(Uri.fromParts("tel", sanitizedNumber, null), Bundle.EMPTY)
-                OutgoingCallPlacementResult.Submitted
-            } catch (securityException: SecurityException) {
-                OutgoingCallPlacementResult.Failed("Android rejected call placement authorization")
-            } catch (runtimeException: RuntimeException) {
-                OutgoingCallPlacementResult.Failed(
-                    runtimeException.message?.takeIf { it.isNotBlank() }
-                        ?: runtimeException::class.java.simpleName,
+            OutgoingCallPlacementDecision.Allowed -> {
+                val emergencyClassification = AndroidEmergencyNumberClassifier(context)
+                    .classify(sanitizedNumber)
+                val phoneAccountDecision = OutgoingPhoneAccountRoutingPolicy.decide(
+                    emergencyClassification = emergencyClassification,
+                    availableRouteIds = PhoneAccountRoutingRuntime.availableRouteIds(),
+                    requestedRouteId = requestedPhoneAccountRouteId,
                 )
+
+                val extras = when (phoneAccountDecision) {
+                    PhoneAccountSelectionDecision.SystemDefault -> Bundle.EMPTY
+                    is PhoneAccountSelectionDecision.Rejected ->
+                        return OutgoingCallPlacementResult.Rejected(phoneAccountDecision.reason)
+                    is PhoneAccountSelectionDecision.Explicit -> {
+                        val phoneAccountHandle = PhoneAccountRoutingRuntime.resolve(
+                            phoneAccountDecision.routeId,
+                        ) ?: return OutgoingCallPlacementResult.Rejected(
+                            "Selected phone account is no longer available",
+                        )
+                        Bundle().apply {
+                            putParcelable(
+                                TelecomManager.EXTRA_PHONE_ACCOUNT_HANDLE,
+                                phoneAccountHandle,
+                            )
+                        }
+                    }
+                }
+
+                try {
+                    telecomManager!!.placeCall(
+                        Uri.fromParts("tel", sanitizedNumber, null),
+                        extras,
+                    )
+                    OutgoingCallPlacementResult.Submitted
+                } catch (securityException: SecurityException) {
+                    OutgoingCallPlacementResult.Failed(
+                        "Android rejected call placement authorization",
+                    )
+                } catch (runtimeException: RuntimeException) {
+                    OutgoingCallPlacementResult.Failed(
+                        runtimeException.message?.takeIf { it.isNotBlank() }
+                            ?: runtimeException::class.java.simpleName,
+                    )
+                }
             }
         }
     }
