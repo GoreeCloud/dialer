@@ -101,7 +101,7 @@ class GoreeCloudInCallService : InCallService() {
         sessionIds[call] = sessionId
         incomingCallPresenter.sync(
             sessionId = sessionId,
-            state = CallLifecycleStateMapper.fromAndroid(call.state),
+            state = AndroidCallStateReader.lifecycle(call),
         )
     }
 
