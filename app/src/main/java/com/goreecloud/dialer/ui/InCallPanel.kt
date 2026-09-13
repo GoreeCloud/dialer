@@ -166,7 +166,10 @@ private fun DevelopmentCallControls(
     call: CallRuntimeSummary,
     onResult: (String) -> Unit,
 ) {
-    val actions = CallControlPresentationPolicy.actionsFor(call.state)
+    val actions = CallControlPresentationPolicy.actionsFor(
+        state = call.state,
+        holdCurrentlyAvailable = call.holdCurrentlyAvailable,
+    )
 
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -205,6 +208,21 @@ private fun DevelopmentCallControls(
                     }
                 }
             }
+        }
+
+        if (
+            (call.state == CallLifecycleState.ACTIVE ||
+                call.state == CallLifecycleState.HOLDING) &&
+            !call.holdCurrentlyAvailable
+        ) {
+            Text(
+                if (call.holdSupported) {
+                    "Hold is supported but temporarily unavailable for this call."
+                } else {
+                    "Hold is not supported for this call."
+                },
+                style = MaterialTheme.typography.bodySmall,
+            )
         }
 
         if (
