@@ -198,7 +198,6 @@ class AndroidIncomingCallPresenter(
         }
 
     private fun ensureChannel(notificationManager: NotificationManager) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         val channel = NotificationChannel(
             CHANNEL_ID,
             "Calls",
