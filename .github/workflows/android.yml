@@ -40,5 +40,7 @@ jobs:
           fi
       - name: Assemble debug
         run: gradle :app:assembleDebug --stacktrace
+      - name: Assemble release
+        run: gradle :app:assembleRelease --stacktrace
       - name: Compile instrumentation tests
         run: gradle :app:assembleDebugAndroidTest --stacktrace
