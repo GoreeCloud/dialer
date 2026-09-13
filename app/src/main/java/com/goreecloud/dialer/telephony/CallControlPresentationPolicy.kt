@@ -28,12 +28,7 @@ object CallControlPresentationPolicy {
         )
 
         CallLifecycleState.NEW,
-        CallLifecycleState.SELECT_PHONE_ACCOUNT,
         CallLifecycleState.DISCONNECTED,
-        CallLifecycleState.DISCONNECTING,
-        CallLifecycleState.PULLING,
-        CallLifecycleState.AUDIO_PROCESSING,
-        CallLifecycleState.SIMULATED_RINGING,
         CallLifecycleState.UNKNOWN,
         -> emptyList()
     }
