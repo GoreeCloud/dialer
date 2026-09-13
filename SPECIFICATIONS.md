@@ -29,6 +29,10 @@ The current source contains:
 - A capability-state contract that keeps support, availability, permissions/roles, activation, request submission, failure and success separate.
 - Android telephony and `ROLE_DIALER` detection without automatically requesting the role.
 - `ACTION_DIAL`/`tel:` intake and a local keypad without automatic carrier-call placement.
+- A truthful outgoing-call capability state that acknowledges the existing `TelecomManager.placeCall` boundary while keeping carrier-call runtime acceptance incomplete.
+- `READ_PHONE_STATE`-guarded call-capable phone-account discovery and anonymous explicit routing with production multi-SIM acceptance still incomplete.
+- Explicit Wi-Fi Calling/IMS and supplementary-service capability states that remain unavailable rather than being inferred from connectivity, carrier branding, or other heuristics.
+- No `READ_PRECISE_PHONE_STATE` request in the current manifest; precise IMS state must not be claimed without an authorized Android signal and an accepted observer.
 - An `InCallService` lifecycle boundary with generated process-local call session IDs.
 - Explicit mapping for current Android call lifecycle states rather than collapsing valid special states into `UNKNOWN`.
 - API-aware lifecycle-state reads using `Call.Details.state` on API 31+ with the deprecated `Call.state` path isolated to the API 29-30 compatibility range.
@@ -39,7 +43,6 @@ The current source contains:
 - User-driven Development DTMF presentation with bounded pulses and explicit cleanup.
 - Development incoming/ongoing `CallStyle` presentation and explicit operation-result messaging.
 - Telecom mute-state tracking and API 34+ `CallEndpoint` discovery/routing.
-- `READ_PHONE_STATE`-guarded call-capable phone-account discovery using opaque process-local route IDs.
 - Explicit system-default or anonymous phone-account route selection, with stale selections rejected rather than silently changed.
 - Emergency classification and routing policy that delegates emergency or indeterminate-emergency phone-account choice to Android Telecom.
 - Content-minimized conference parent/child/conferenceable-call relationships represented only by generated session IDs.
@@ -64,6 +67,8 @@ The source above must not be interpreted as proof that GoreeCloud Dialer is read
 - ringtone ownership
 - durable Recents/call-history persistence and retention
 - production multi-SIM routing acceptance
+- precise Wi-Fi Calling/IMS state observation
+- supplementary-service integration beyond legitimately authorized Android platform signals
 - production conference operation validation across supported devices/carriers
 - pre-Android-14 audio-route switching
 - Contacts and Favorites integration
