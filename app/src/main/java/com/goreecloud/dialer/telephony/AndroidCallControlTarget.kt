@@ -3,12 +3,15 @@ package com.goreecloud.dialer.telephony
 import android.telecom.Call
 import android.telecom.VideoProfile
 
-/** Thin Android Telecom adapter used only after the state-aware policy accepts an action. */
+/** Thin Android Telecom adapter used only after the state/capability-aware policy accepts an action. */
 class AndroidCallControlTarget(
     private val call: Call,
 ) : CallControlTarget {
     override val state: CallLifecycleState
         get() = CallLifecycleStateMapper.fromAndroid(call.state)
+
+    override val holdCurrentlyAvailable: Boolean
+        get() = call.details.can(Call.Details.CAPABILITY_HOLD)
 
     override fun answerAudio() {
         @Suppress("DEPRECATION")
