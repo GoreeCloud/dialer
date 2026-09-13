@@ -4,7 +4,7 @@ GoreeCloud Dialer is GoreeCloud's privacy-focused, intelligent Android calling a
 
 ## Status
 
-**Active Development / pre-Stable.** The repository contains a validated native Android foundation, `ACTION_DIAL` intake, a local keypad, default-dialer capability gating, a content-minimized `InCallService` lifecycle boundary, state-aware essential call-control contracts, a Development ongoing-call control surface, a dormant policy-gated `TelecomManager.placeCall` boundary, and Development incoming/ongoing `CallStyle` notification continuity. Carrier call placement is not accepted, caller identity is not projected into the call surfaces, ringtone ownership is not claimed, production incoming/ongoing UI acceptance is incomplete, and default-role requests remain disabled. Screening, voicemail, recording, transcription, translation, AI assistance, Privacy Shield acceptance, Wardveil acceptance, Everkeep backup, and cross-device calling are also **not** claimed as implemented until their runtime paths are built and verified.
+**Active Development / pre-Stable.** The repository contains a validated native Android foundation, `ACTION_DIAL` intake, a local keypad, default-dialer capability gating, a content-minimized `InCallService` lifecycle boundary, state-aware essential call-control contracts, a Development ongoing-call control surface, a dormant policy-gated `TelecomManager.placeCall` boundary, Development incoming/ongoing `CallStyle` notification continuity, and a dormant default-dialer role-request preparer. Carrier call placement is not accepted, caller identity is not projected into the call surfaces, ringtone ownership is not claimed, production incoming/ongoing UI acceptance is incomplete, and no code currently launches the role-consent request. Screening, voicemail, recording, transcription, translation, AI assistance, Privacy Shield acceptance, Wardveil acceptance, Everkeep backup, and cross-device calling are also **not** claimed as implemented until their runtime paths are built and verified.
 
 ## Canonical repository
 
@@ -35,6 +35,7 @@ GoreeCloud Dialer is GoreeCloud's privacy-focused, intelligent Android calling a
 - `ACTION_DIAL` and `tel:` intent intake without call placement side effects
 - Android telephony and `ROLE_DIALER` capability probe with the role-request gate still closed
 - explicit default-dialer acceptance model for dial intent, service, placement, incoming UI, and ongoing UI
+- role-request preparation policy that cannot produce Android's consent intent until all GoreeCloud application requirements are accepted
 - dormant outgoing-call placement adapter requiring telephony, Telecom, GoreeCloud acceptance, active default-dialer role, and `CALL_PHONE`
 - `InCallService` lifecycle boundary with process-local call sessions
 - observable content-minimized call snapshots exposed as a `StateFlow`
