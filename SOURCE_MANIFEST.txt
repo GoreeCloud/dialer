@@ -17,6 +17,7 @@ Android application
 - app/src/main/java/com/goreecloud/dialer/ui/DialerApp.kt
 - app/src/main/java/com/goreecloud/dialer/ui/InCallPanel.kt
 - app/src/main/java/com/goreecloud/dialer/ui/DtmfKeypad.kt
+- app/src/main/java/com/goreecloud/dialer/ui/ConferenceControls.kt
 
 Capability and telephony contracts
 - app/src/main/java/com/goreecloud/dialer/core/capability/CapabilityState.kt
@@ -31,6 +32,8 @@ Capability and telephony contracts
 - app/src/main/java/com/goreecloud/dialer/telephony/EmergencyCallRouting.kt
 - app/src/main/java/com/goreecloud/dialer/telephony/OutgoingCallPlacement.kt
 - app/src/main/java/com/goreecloud/dialer/telephony/CallLifecycleState.kt
+- app/src/main/java/com/goreecloud/dialer/telephony/CallCapabilities.kt
+- app/src/main/java/com/goreecloud/dialer/telephony/ConferenceControl.kt
 - app/src/main/java/com/goreecloud/dialer/telephony/InCallRuntimeStore.kt
 - app/src/main/java/com/goreecloud/dialer/telephony/GoreeCloudInCallService.kt
 - app/src/main/java/com/goreecloud/dialer/telephony/CallControl.kt
@@ -53,10 +56,12 @@ Tests
 - app/src/test/java/com/goreecloud/dialer/telephony/EmergencyCallRoutingPolicyTest.kt
 - app/src/test/java/com/goreecloud/dialer/telephony/OutgoingCallPlacementPolicyTest.kt
 - app/src/test/java/com/goreecloud/dialer/telephony/CallLifecycleStateMapperTest.kt
+- app/src/test/java/com/goreecloud/dialer/telephony/CallCapabilitiesTest.kt
 - app/src/test/java/com/goreecloud/dialer/telephony/CallControlEngineTest.kt
 - app/src/test/java/com/goreecloud/dialer/telephony/CallControlPresentationPolicyTest.kt
 - app/src/test/java/com/goreecloud/dialer/telephony/CallAudioControlEngineTest.kt
 - app/src/test/java/com/goreecloud/dialer/telephony/CallEndpointRoutingRuntimeTest.kt
+- app/src/test/java/com/goreecloud/dialer/telephony/ConferenceControlPolicyTest.kt
 - app/src/test/java/com/goreecloud/dialer/telephony/IncomingCallPresentationPolicyTest.kt
 
 Product documentation
@@ -69,4 +74,4 @@ Product documentation
 - docs/privacy.md
 - docs/security.md
 
-This manifest is a provenance inventory, not proof that planned telephony or intelligent calling capabilities are implemented.
+This manifest is a provenance inventory, not proof that planned telephony or intelligent calling capabilities are implemented or production-accepted.

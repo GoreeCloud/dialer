@@ -42,7 +42,7 @@ internal fun DevelopmentInCallPanel(snapshot: InCallRuntimeSnapshot) {
     ) {
         Text("Live Telecom sessions", style = MaterialTheme.typography.titleMedium)
         Text(
-            "Development control surface — no caller identity, endpoint device name, or call content is projected.",
+            "Development control surface — no caller identity, endpoint device name, phone-account identity, or call content is projected.",
             style = MaterialTheme.typography.bodySmall,
         )
         Spacer(Modifier.height(8.dp))
@@ -77,23 +77,35 @@ private fun DevelopmentAudioControls(
     snapshot: InCallRuntimeSnapshot,
     onResult: (String) -> Unit,
 ) {
-    when (val muted = snapshot.isMuted) {
-        null -> Text(
-            "Mute state is awaiting Telecom evidence",
+    val muteSupported = snapshot.calls.any {
+        (it.state == CallLifecycleState.ACTIVE || it.state == CallLifecycleState.HOLDING) &&
+            it.muteSupported
+    }
+
+    if (!muteSupported) {
+        Text(
+            "Android Telecom does not currently report mute support for the active call set.",
             style = MaterialTheme.typography.bodySmall,
         )
+    } else {
+        when (val muted = snapshot.isMuted) {
+            null -> Text(
+                "Mute state is awaiting Telecom evidence",
+                style = MaterialTheme.typography.bodySmall,
+            )
 
-        else -> Button(
-            onClick = {
-                val action = if (muted) {
-                    CallAudioControlAction.Unmute
-                } else {
-                    CallAudioControlAction.Mute
-                }
-                onResult(InCallAudioControlRuntime.execute(action).message(action))
-            },
-        ) {
-            Text(if (muted) "Unmute" else "Mute")
+            else -> Button(
+                onClick = {
+                    val action = if (muted) {
+                        CallAudioControlAction.Unmute
+                    } else {
+                        CallAudioControlAction.Mute
+                    }
+                    onResult(InCallAudioControlRuntime.execute(action).message(action))
+                },
+            ) {
+                Text(if (muted) "Unmute" else "Mute")
+            }
         }
     }
 
@@ -224,6 +236,11 @@ private fun DevelopmentCallControls(
                 style = MaterialTheme.typography.bodySmall,
             )
         }
+
+        DevelopmentConferenceControls(
+            call = call,
+            onResult = onResult,
+        )
 
         if (
             call.state == CallLifecycleState.ACTIVE ||

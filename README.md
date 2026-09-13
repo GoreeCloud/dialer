@@ -4,7 +4,9 @@ GoreeCloud Dialer is GoreeCloud's privacy-focused, intelligent Android calling a
 
 ## Status
 
-**Active Development / pre-Stable.** The repository contains a validated native Android foundation, `ACTION_DIAL` intake, a local keypad, default-dialer capability gating, a content-minimized `InCallService` lifecycle boundary, state-aware essential call-control contracts, Development incoming/ongoing call presentation, a user-driven in-call DTMF keypad, a dormant policy-gated `TelecomManager.placeCall` boundary, a dormant default-dialer role-request preparer, Telecom-evidenced mute/unmute control, API 34+ `CallEndpoint` routing, and permission-aware call-capable phone-account discovery with anonymous explicit route selection. Emergency and indeterminate-emergency numbers always delegate phone-account routing back to Android Telecom. Carrier call placement is not accepted, caller identity, endpoint device names, phone-account labels, phone numbers, carrier names, SIM identifiers, and subscription identifiers are not projected into these Development surfaces, ringtone ownership is not claimed, production incoming/ongoing UI acceptance is incomplete, and no code currently launches the role-consent request. Legacy pre-Android-14 speaker/Bluetooth routing is intentionally unavailable rather than relying on deprecated APIs. Screening, voicemail, recording, transcription, translation, AI assistance, Privacy Shield acceptance, Wardveil acceptance, Everkeep backup, and cross-device calling are also **not** claimed as implemented until their runtime paths are built and verified.
+**Active Development / pre-Stable.** The repository contains a native Android foundation, `ACTION_DIAL` intake, a local keypad, default-dialer capability gating, a content-minimized `InCallService` lifecycle boundary, state- and capability-aware essential call controls, Development incoming/ongoing call presentation, a user-driven in-call DTMF keypad, live conference-capability/relationship tracking with guarded Development conference controls, a dormant policy-gated `TelecomManager.placeCall` boundary, a dormant default-dialer role-request preparer, Telecom-evidenced mute/unmute control, API 34+ `CallEndpoint` routing, and permission-aware call-capable phone-account discovery with anonymous explicit route selection. Emergency and indeterminate-emergency numbers always delegate phone-account routing back to Android Telecom.
+
+Carrier call placement is not accepted, conference operations are not production-accepted, caller identity, endpoint device names, phone-account labels, phone numbers, carrier names, SIM identifiers, and subscription identifiers are not projected into these Development surfaces, ringtone ownership is not claimed, production incoming/ongoing UI acceptance is incomplete, and no code currently launches the role-consent request. Legacy pre-Android-14 speaker/Bluetooth routing is intentionally unavailable rather than relying on deprecated APIs. Screening, voicemail, recording, transcription, translation, AI assistance, Privacy Shield acceptance, Wardveil acceptance, Everkeep backup, and cross-device calling are also **not** claimed as implemented until their runtime paths are built and verified.
 
 ## Canonical repository
 
@@ -47,26 +49,29 @@ GoreeCloud Dialer is GoreeCloud's privacy-focused, intelligent Android calling a
 - `InCallService` lifecycle boundary with process-local call sessions
 - observable content-minimized call snapshots exposed as a `StateFlow`
 - state-aware answer, decline/end, hold/resume, and DTMF execution contracts
+- live `Call.Details` capability evidence for hold, mute, and conference management/merge/swap/separate; missing details fail closed
 - user-driven in-call DTMF keypad with bounded tone pulses, overlap prevention, and guaranteed stop attempts from coroutine cleanup
-- in-call Development presentation separated from dial-entry/account-selection presentation to keep UI responsibilities modular
-- process-local mute-state evidence from Telecom and a service-owned mute/unmute command boundary
+- conference relationships projected only as generated session IDs: parent, children, and Telecom-reported conferenceable sessions
+- pairwise conference requests allowed only when `Call.getConferenceableCalls()` identifies the target; merge/swap/separate requests require their live Telecom capability bits
+- conference operations report request submission rather than claiming network completion
+- process-local mute-state evidence from Telecom; mute UI is exposed only when an active/held call reports mute support
 - API 34+ call endpoint discovery through `onAvailableCallEndpointsChanged` and routing through `requestCallEndpointChange`
 - endpoint UI exposes only generated route IDs/categories; Telecom endpoint names and device identities are not projected
 - endpoint requests distinguish submitted, succeeded, and failed evidence
 - pre-API-34 endpoint switching remains explicitly unavailable instead of using deprecated `setAudioRoute`
-- Development ongoing-call UI exposing session IDs, lifecycle state, accepted controls, mute state, endpoint categories, and explicit operation results
+- Development ongoing-call UI exposing session IDs, lifecycle state, accepted controls, capability explanations, DTMF, conference controls, mute state, endpoint categories, and explicit operation results
 - Development incoming-call `CallStyle` notification/full-screen UI with Answer and Decline actions
 - incoming notifications transition to ongoing `CallStyle` notifications with an explicit End action and route back to the in-call UI
 - notification actions use an explicit non-exported receiver and process-local Telecom session IDs
 - `POST_NOTIFICATIONS` and full-screen-intent capability are checked at runtime; unavailable full-screen access degrades to notification presentation
 - ringtone ownership remains intentionally undeclared until a dedicated ringtone path is implemented and validated
-- Android CI uses current Node-24-capable Action lines and branch-scoped concurrency so newer commits cancel superseded post-modernization runs
-- unit tests and Android CI covering unit tests plus debug assembly
+- Android CI uses Node-24-capable Action lines and branch-scoped concurrency so newer commits cancel superseded post-modernization runs
+- unit tests and Android CI cover unit tests plus debug assembly; device/carrier acceptance remains a separate requirement
 - architecture, privacy, security, specifications, roadmap, feature, and user-manual documentation
 
 ## Runtime truth rule
 
-A feature is never considered implemented merely because a UI surface, configuration switch, planned contract, issue, or mock exists. Runtime capability, platform/carrier support, permission/role state, privacy authorization, security acceptance, and operation result are separate facts.
+A feature is never considered implemented merely because a UI surface, configuration switch, planned contract, issue, or mock exists. Runtime capability, platform/carrier support, permission/role state, privacy authorization, security acceptance, request submission, and verified operation result are separate facts.
 
 ## Documentation
 

@@ -12,15 +12,24 @@ import kotlinx.coroutines.flow.asStateFlow
  *
  * The store retains Android Call objects only while Telecom owns the live call so explicit
  * controls can be executed. Public snapshots expose only generated session/route IDs, lifecycle
- * categories, aggregate state, endpoint categories, content-free audio-control state, and narrow
- * control-capability booleans. No number, caller name, account identifier, endpoint device name,
- * Call.Details object, transcript, recording, or audio is persisted or projected.
+ * categories, aggregate state, endpoint categories, content-free audio-control state, narrow
+ * control-capability booleans, and conference relationships expressed only as generated session
+ * IDs. No number, caller name, account identifier, endpoint device name, Call.Details object,
+ * transcript, recording, or audio is persisted or projected.
  */
 data class CallRuntimeSummary(
     val sessionId: Long,
     val state: CallLifecycleState,
     val holdSupported: Boolean,
     val holdCurrentlyAvailable: Boolean,
+    val muteSupported: Boolean,
+    val manageConferenceSupported: Boolean,
+    val mergeConferenceAvailable: Boolean,
+    val swapConferenceAvailable: Boolean,
+    val separateFromConferenceAvailable: Boolean,
+    val conferenceableSessionIds: List<Long>,
+    val parentSessionId: Long?,
+    val childSessionIds: List<Long>,
 )
 
 data class InCallRuntimeSnapshot(
@@ -41,6 +50,9 @@ object InCallRuntimeStore {
         val call: Call,
         var state: CallLifecycleState,
         var capabilities: CallControlCapabilities,
+        var conferenceableCalls: List<Call>,
+        var parent: Call?,
+        var children: List<Call>,
     )
 
     private val nextSessionId = AtomicLong(1)
@@ -67,6 +79,9 @@ object InCallRuntimeStore {
             call = call,
             state = CallLifecycleStateMapper.fromAndroid(call.state),
             capabilities = AndroidCallControlCapabilities.from(call.details),
+            conferenceableCalls = call.conferenceableCalls.toList(),
+            parent = call.parent,
+            children = call.children.toList(),
         )
         trackedByCall[call] = tracked
         trackedById[tracked.sessionId] = tracked
@@ -85,6 +100,27 @@ object InCallRuntimeStore {
     fun onCallDetailsChanged(call: Call, details: Call.Details) {
         val tracked = trackedByCall[call] ?: return
         tracked.capabilities = AndroidCallControlCapabilities.from(details)
+        publish()
+    }
+
+    @Synchronized
+    fun onConferenceableCallsChanged(call: Call, conferenceableCalls: List<Call>) {
+        val tracked = trackedByCall[call] ?: return
+        tracked.conferenceableCalls = conferenceableCalls.toList()
+        publish()
+    }
+
+    @Synchronized
+    fun onParentChanged(call: Call, parent: Call?) {
+        val tracked = trackedByCall[call] ?: return
+        tracked.parent = parent
+        publish()
+    }
+
+    @Synchronized
+    fun onChildrenChanged(call: Call, children: List<Call>) {
+        val tracked = trackedByCall[call] ?: return
+        tracked.children = children.toList()
         publish()
     }
 
@@ -140,6 +176,56 @@ object InCallRuntimeStore {
     }
 
     @Synchronized
+    fun executeConference(
+        sessionId: Long,
+        action: ConferenceControlAction,
+    ): ConferenceControlResult {
+        val tracked = trackedById[sessionId]
+            ?: return ConferenceControlResult.Rejected("Call session is no longer active")
+
+        val conferenceableSessionIds = tracked.conferenceableCalls
+            .mapNotNull { trackedByCall[it]?.sessionId }
+            .toSet()
+        val hasTrackedParent = tracked.parent?.let { trackedByCall.containsKey(it) } == true
+        val facts = ConferenceControlFacts(
+            sourceSessionId = tracked.sessionId,
+            state = tracked.state,
+            conferenceableSessionIds = conferenceableSessionIds,
+            hasParent = hasTrackedParent,
+            mergeConferenceAvailable = tracked.capabilities.mergeConferenceAvailable,
+            swapConferenceAvailable = tracked.capabilities.swapConferenceAvailable,
+            separateFromConferenceAvailable = tracked.capabilities.separateFromConferenceAvailable,
+        )
+
+        return when (val decision = ConferenceControlPolicy.decide(action, facts)) {
+            is ConferenceControlDecision.Rejected ->
+                ConferenceControlResult.Rejected(decision.reason)
+
+            ConferenceControlDecision.Allowed -> try {
+                when (action) {
+                    is ConferenceControlAction.ConferenceWith -> {
+                        val other = trackedById[action.otherSessionId]
+                            ?: return ConferenceControlResult.Rejected(
+                                "Conference target session is no longer active",
+                            )
+                        tracked.call.conference(other.call)
+                    }
+
+                    ConferenceControlAction.MergeConference -> tracked.call.mergeConference()
+                    ConferenceControlAction.SwapConference -> tracked.call.swapConference()
+                    ConferenceControlAction.SeparateFromConference -> tracked.call.splitFromConference()
+                }
+                ConferenceControlResult.Submitted
+            } catch (runtimeException: RuntimeException) {
+                ConferenceControlResult.Failed(
+                    "Android Telecom conference operation failed: " +
+                        runtimeException::class.java.simpleName,
+                )
+            }
+        }
+    }
+
+    @Synchronized
     fun clear() {
         trackedByCall.clear()
         trackedById.clear()
@@ -153,12 +239,25 @@ object InCallRuntimeStore {
     }
 
     private fun publish() {
-        val summaries = trackedById.values.map {
+        val summaries = trackedById.values.map { tracked ->
             CallRuntimeSummary(
-                sessionId = it.sessionId,
-                state = it.state,
-                holdSupported = it.capabilities.holdSupported,
-                holdCurrentlyAvailable = it.capabilities.holdCurrentlyAvailable,
+                sessionId = tracked.sessionId,
+                state = tracked.state,
+                holdSupported = tracked.capabilities.holdSupported,
+                holdCurrentlyAvailable = tracked.capabilities.holdCurrentlyAvailable,
+                muteSupported = tracked.capabilities.muteSupported,
+                manageConferenceSupported = tracked.capabilities.manageConferenceSupported,
+                mergeConferenceAvailable = tracked.capabilities.mergeConferenceAvailable,
+                swapConferenceAvailable = tracked.capabilities.swapConferenceAvailable,
+                separateFromConferenceAvailable =
+                    tracked.capabilities.separateFromConferenceAvailable,
+                conferenceableSessionIds = tracked.conferenceableCalls
+                    .mapNotNull { trackedByCall[it]?.sessionId }
+                    .distinct(),
+                parentSessionId = tracked.parent?.let { trackedByCall[it]?.sessionId },
+                childSessionIds = tracked.children
+                    .mapNotNull { trackedByCall[it]?.sessionId }
+                    .distinct(),
             )
         }
         mutableSnapshots.value = InCallRuntimeSnapshot(

@@ -2,15 +2,17 @@
 
 ## Status
 
-Development architecture for `GoreeCloud/goreecloud-dialer`. Planned modules are not runtime claims.
+Development architecture for `GoreeCloud/goreecloud-dialer`. Planned modules and source-present Development boundaries are not production runtime claims.
 
 ## Primary rule
 
-Authorization, capability, activation, and operation success are separate facts. No global state may imply that all Dialer protections or telecom features are accepted.
+Authorization, platform capability, carrier capability, permission/role state, GoreeCloud acceptance, request submission and verified operation success are separate facts. No global state may imply that all Dialer protections or telecom features are accepted.
 
 ## Runtime state
 
-Every capability should distinguish unsupported, unavailable, permission/role required, available, active, failed, and succeeded states. User interfaces should surface why a capability is unavailable when that information helps the user act.
+Every capability should distinguish unsupported, unavailable, permission/role required, available, active, submitted, failed and succeeded states where those states are meaningful. User interfaces should surface why a capability is unavailable when that information helps the user act.
+
+`Call.Details` is treated as transient Telecom evidence, not durable application state. The public call snapshot projects only narrow booleans needed to explain controls. If call details are missing, capability-derived controls fail closed.
 
 ## ACTION_DIAL boundary
 
@@ -18,21 +20,45 @@ Every capability should distinguish unsupported, unavailable, permission/role re
 
 ## InCallService lifecycle boundary
 
-`GoreeCloudInCallService` is registered with `BIND_INCALL_SERVICE` and tracks call additions, removals, state transitions, and whether another call can be added. Live Android `Call` references remain process-local only while Telecom owns the call. Public runtime snapshots project only generated session IDs, lifecycle categories, and aggregate state. They do not expose phone numbers, caller names, account identifiers, `Call.Details`, transcripts, audio, or recordings.
+`GoreeCloudInCallService` is registered with `BIND_INCALL_SERVICE` and tracks call additions, removals, lifecycle transitions, whether another call can be added, narrow control capabilities, and content-minimized conference relationships. Live Android `Call` references remain process-local only while Telecom owns the call.
+
+Public runtime snapshots project generated session IDs, lifecycle categories, aggregate state, narrow capability booleans, endpoint categories, and conference relationships expressed only as generated session IDs. They do not expose phone numbers, caller names, phone-account identifiers, endpoint device names, `Call.Details`, transcripts, audio, recordings or voicemail content.
 
 ## Essential call controls
 
-The call-control layer accepts an explicit process-local session ID and a user-driven action. A state-aware policy rejects actions that do not match the current lifecycle state before invoking Android Telecom. Implemented source contracts cover answering an audio call, declining/end, hold/resume, and starting/stopping DTMF tones. Platform exceptions are returned as failed operation results rather than being reported as success.
+The call-control layer accepts an explicit process-local session ID and a user-driven action. A state- and capability-aware policy rejects actions that do not match the current lifecycle state or live Telecom capability before invoking Android Telecom. Source contracts cover answering an audio call, declining/end, hold/resume, and starting/stopping DTMF tones.
 
-These contracts are not yet connected to accepted incoming/ongoing call UI and therefore are not claimed as user-facing call-control acceptance.
+Hold and Resume distinguish feature support from current availability. The UI can therefore explain that Hold is unsupported versus supported but temporarily unavailable. DTMF remains user-driven and uses bounded tone pulses in the Development surface.
+
+## Mute and audio routing
+
+Mute state comes from `InCallService` Telecom callbacks. The Development mute control is shown only while an active/held call reports mute capability. Android 14+ endpoint discovery uses `CallEndpoint` callbacks and `requestCallEndpointChange`; endpoint display names/device identities are not projected. Pre-Android-14 route switching remains unavailable rather than falling back to deprecated route-control APIs.
+
+## Conference boundary
+
+Conference authority is derived from Android Telecom evidence rather than from the number of simultaneous calls.
+
+- `Call.getConferenceableCalls()` determines which tracked generated session IDs may be offered for pairwise conferencing.
+- `CAPABILITY_MANAGE_CONFERENCE` is retained as explanatory support evidence.
+- `CAPABILITY_MERGE_CONFERENCE`, `CAPABILITY_SWAP_CONFERENCE`, and `CAPABILITY_SEPARATE_FROM_CONFERENCE` independently gate their corresponding controls.
+- Parent and child relationships are projected only as generated session IDs.
+- Pairwise conference, merge, swap and separate requests are state-gated to active/held sessions.
+- A request that reaches Android Telecom is reported as **submitted**, not as completed. Later runtime evidence is required before GoreeCloud may claim completion.
+- Stale or untracked target sessions fail closed.
+
+Conference controls remain Development boundaries until device/carrier validation and production in-call UI acceptance are complete.
+
+## Phone-account and emergency boundary
+
+Call-capable `PhoneAccountHandle` values are retained only process-locally behind `READ_PHONE_STATE`. Public state uses anonymous generated route IDs and whether Android reports a system-default route; account labels, numbers, carriers, SIM identifiers and subscription identifiers are not projected.
+
+Loss of telephony, Telecom availability, or `READ_PHONE_STATE` revokes cached phone-account authority. For outgoing placement, a stale explicit selection is rejected rather than silently replaced.
+
+Emergency-number classification is a higher-priority routing boundary. Emergency and indeterminate-emergency numbers ignore GoreeCloud's experimental account selection and delegate phone-account routing to Android Telecom.
 
 ## Default-dialer eligibility gate
 
-GoreeCloud Dialer handles `Intent.ACTION_DIAL` and now contains an `InCallService` lifecycle/control foundation, but incoming and ongoing call UI acceptance is incomplete. The application keeps role-request eligibility closed until those requirements are implemented and validated together. Detecting or even holding `ROLE_DIALER` remains a separate platform fact from GoreeCloud acceptance.
-
-## Emergency boundary
-
-Emergency calling is outside experimental automation. Screening, AI, routing suggestions, recording defaults, and Call Assistant must never interfere with emergency call initiation or platform emergency behavior. Future outgoing-call integration must use the Android Telecom call path and preserve the platform's emergency behavior.
+GoreeCloud Dialer handles `Intent.ACTION_DIAL` and contains an `InCallService` lifecycle/control foundation, Development incoming/ongoing presentation, and a dormant outgoing-call adapter. Production incoming/ongoing UI acceptance, outgoing-call acceptance and device validation remain incomplete. The application keeps role-request eligibility closed until those requirements are implemented and validated together. Detecting or even holding `ROLE_DIALER` remains a separate platform fact from GoreeCloud acceptance.
 
 ## Local-first boundary
 
