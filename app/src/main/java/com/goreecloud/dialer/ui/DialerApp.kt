@@ -14,6 +14,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -25,8 +26,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.goreecloud.dialer.core.capability.CapabilityState
 import com.goreecloud.dialer.telephony.AndroidTelephonyCapabilityProbe
+import com.goreecloud.dialer.telephony.CallControlPresentationPolicy
+import com.goreecloud.dialer.telephony.CallControlResult
+import com.goreecloud.dialer.telephony.CallRuntimeSummary
 import com.goreecloud.dialer.telephony.DialRequest
+import com.goreecloud.dialer.telephony.InCallRuntimeSnapshot
+import com.goreecloud.dialer.telephony.InCallRuntimeStore
 import com.goreecloud.dialer.telephony.TelephonyCapabilitySnapshot
+import com.goreecloud.dialer.telephony.presentationLabel
 
 @Composable
 fun DialerApp(initialDialRequest: DialRequest? = null) {
@@ -34,11 +41,13 @@ fun DialerApp(initialDialRequest: DialRequest? = null) {
     val capabilitySnapshot = remember(applicationContext) {
         AndroidTelephonyCapabilityProbe(applicationContext).snapshot()
     }
+    val inCallRuntime by InCallRuntimeStore.snapshots.collectAsState()
 
     MaterialTheme {
         Scaffold { innerPadding ->
             DevelopmentHome(
                 capabilitySnapshot = capabilitySnapshot,
+                inCallRuntime = inCallRuntime,
                 initialNumber = initialDialRequest?.number.orEmpty(),
                 modifier = Modifier.padding(innerPadding),
             )
@@ -49,6 +58,7 @@ fun DialerApp(initialDialRequest: DialRequest? = null) {
 @Composable
 private fun DevelopmentHome(
     capabilitySnapshot: TelephonyCapabilitySnapshot,
+    inCallRuntime: InCallRuntimeSnapshot,
     initialNumber: String,
     modifier: Modifier = Modifier,
 ) {
@@ -63,6 +73,11 @@ private fun DevelopmentHome(
         Spacer(Modifier.height(4.dp))
         Text("Active Development / pre-Stable", style = MaterialTheme.typography.titleMedium)
         Spacer(Modifier.height(20.dp))
+
+        if (inCallRuntime.trackedCallCount > 0) {
+            DevelopmentInCallPanel(inCallRuntime)
+            Spacer(Modifier.height(20.dp))
+        }
 
         Text(
             text = number.ifEmpty { "Enter a number" },
@@ -113,6 +128,75 @@ private fun DevelopmentHome(
             "Default dialer role: ${capabilitySnapshot.defaultDialerRole.describe()}",
             style = MaterialTheme.typography.bodyMedium,
         )
+    }
+}
+
+@Composable
+private fun DevelopmentInCallPanel(snapshot: InCallRuntimeSnapshot) {
+    var operationStatus by remember { mutableStateOf<String?>(null) }
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text("Live Telecom sessions", style = MaterialTheme.typography.titleMedium)
+        Text(
+            "Development control surface — no caller identity or call content is projected.",
+            style = MaterialTheme.typography.bodySmall,
+        )
+        Spacer(Modifier.height(8.dp))
+
+        snapshot.calls.forEach { call ->
+            DevelopmentCallControls(
+                call = call,
+                onResult = { operationStatus = it },
+            )
+            Spacer(Modifier.height(8.dp))
+        }
+
+        operationStatus?.let {
+            Text(it, style = MaterialTheme.typography.bodySmall)
+        }
+    }
+}
+
+@Composable
+private fun DevelopmentCallControls(
+    call: CallRuntimeSummary,
+    onResult: (String) -> Unit,
+) {
+    val actions = CallControlPresentationPolicy.actionsFor(call.state)
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text("Session ${call.sessionId}: ${call.state}")
+        if (actions.isEmpty()) {
+            Text("No accepted control for this lifecycle state", style = MaterialTheme.typography.bodySmall)
+        } else {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+            ) {
+                actions.forEach { action ->
+                    Button(
+                        onClick = {
+                            val result = InCallRuntimeStore.execute(call.sessionId, action)
+                            onResult(
+                                when (result) {
+                                    CallControlResult.Succeeded -> "${action.presentationLabel()}: succeeded"
+                                    is CallControlResult.Rejected -> "${action.presentationLabel()}: rejected — ${result.reason}"
+                                    is CallControlResult.Failed -> "${action.presentationLabel()}: failed — ${result.reason}"
+                                },
+                            )
+                        },
+                    ) {
+                        Text(action.presentationLabel())
+                    }
+                }
+            }
+        }
     }
 }
 

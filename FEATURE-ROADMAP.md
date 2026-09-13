@@ -10,7 +10,7 @@ Native Android source tree, build configuration, CI, source documentation, tests
 
 Default-dialer role, outgoing/incoming calls, call controls, DTMF, Recents, contacts, Favorites, SIM routing and emergency-safe boundaries.
 
-**Current state:** runtime telephony/`ROLE_DIALER` detection, `ACTION_DIAL` intake, a local keypad, a content-minimized `InCallService` lifecycle boundary, and state-aware essential call-control contracts are implemented. Carrier call placement, incoming/ongoing call UI, user-facing controls, SIM/audio routing, and role requests remain unavailable. The role-request gate stays closed until Android's default-phone requirements are implemented and validated together.
+**Current state:** runtime telephony/`ROLE_DIALER` detection, `ACTION_DIAL` intake, a local keypad, a content-minimized `InCallService` lifecycle boundary, state-aware essential call-control contracts, observable process-local call snapshots, and a Development ongoing-call control surface are implemented. Carrier call placement, production incoming-call presentation/ringing, full in-call UI acceptance, SIM/audio routing, and role requests remain unavailable. The role-request gate stays closed until Android's default-phone requirements are implemented and validated together.
 
 ## Phase 2 — Privacy, Security and Persistence
 
@@ -34,4 +34,4 @@ Trusted-device calling/handoff, multiple phone identities, advanced conferencing
 
 ## Phase 7 — Release Candidate
 
-Verified builds/tests, telecom validation, Privacy Shield/Wardveil acceptance, accessibility validation, deletion/retention verification, offline-core validation, carrier limitation documentation and no known critical/high release blockers.
+All implemented capabilities require test coverage, accessibility verification, explicit platform/carrier support handling, truthful status evidence, privacy/security acceptance, migration/backup validation where applicable, and human release validation.

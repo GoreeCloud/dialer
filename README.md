@@ -4,7 +4,7 @@ GoreeCloud Dialer is GoreeCloud's privacy-focused, intelligent Android calling a
 
 ## Status
 
-**Active Development / pre-Stable.** The repository contains a validated native Android foundation, `ACTION_DIAL` intake, a local keypad, default-dialer capability gating, a content-minimized `InCallService` lifecycle boundary, and state-aware essential call-control contracts. Carrier call placement, incoming/ongoing call UI, user-facing in-call controls, default-role requests, screening, voicemail, recording, transcription, translation, AI assistance, Privacy Shield acceptance, Wardveil acceptance, Everkeep backup, and cross-device calling are **not** claimed as implemented until their runtime paths are built and verified.
+**Active Development / pre-Stable.** The repository contains a validated native Android foundation, `ACTION_DIAL` intake, a local keypad, default-dialer capability gating, a content-minimized `InCallService` lifecycle boundary, state-aware essential call-control contracts, and a Development ongoing-call control surface driven by live process-local Telecom state. Carrier call placement, production incoming-call presentation/ringing, complete ongoing-call UI acceptance, default-role requests, screening, voicemail, recording, transcription, translation, AI assistance, Privacy Shield acceptance, Wardveil acceptance, Everkeep backup, and cross-device calling are **not** claimed as implemented until their runtime paths are built and verified.
 
 ## Canonical repository
 
@@ -35,8 +35,9 @@ GoreeCloud Dialer is GoreeCloud's privacy-focused, intelligent Android calling a
 - `ACTION_DIAL` and `tel:` intent intake without call placement side effects
 - Android telephony and `ROLE_DIALER` capability probe with the role-request gate still closed
 - `InCallService` lifecycle boundary with process-local call sessions
+- observable content-minimized call snapshots exposed as a `StateFlow`
 - state-aware answer, decline/end, hold/resume, and DTMF execution contracts
-- content-minimized public call snapshots containing only generated session IDs and lifecycle state
+- Development ongoing-call UI exposing only session IDs, lifecycle state, accepted controls, and explicit operation results
 - unit tests and Android CI covering unit tests plus debug assembly
 - architecture, privacy, security, specifications, roadmap, feature, and user-manual documentation
 

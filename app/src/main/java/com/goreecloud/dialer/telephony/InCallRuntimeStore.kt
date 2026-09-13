@@ -3,6 +3,9 @@ package com.goreecloud.dialer.telephony
 import android.telecom.Call
 import java.util.IdentityHashMap
 import java.util.concurrent.atomic.AtomicLong
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * Process-local call runtime authority.
@@ -36,9 +39,11 @@ object InCallRuntimeStore {
     private val trackedById = linkedMapOf<Long, TrackedCall>()
     private var canAddCall: Boolean? = null
 
-    @Volatile
-    var snapshot: InCallRuntimeSnapshot = InCallRuntimeSnapshot()
-        private set
+    private val mutableSnapshots = MutableStateFlow(InCallRuntimeSnapshot())
+    val snapshots: StateFlow<InCallRuntimeSnapshot> = mutableSnapshots.asStateFlow()
+
+    val snapshot: InCallRuntimeSnapshot
+        get() = mutableSnapshots.value
 
     @Synchronized
     fun onCallAdded(call: Call): Long {
@@ -93,7 +98,7 @@ object InCallRuntimeStore {
         val summaries = trackedById.values.map {
             CallRuntimeSummary(sessionId = it.sessionId, state = it.state)
         }
-        snapshot = InCallRuntimeSnapshot(
+        mutableSnapshots.value = InCallRuntimeSnapshot(
             trackedCallCount = summaries.size,
             calls = summaries,
             stateCounts = summaries.groupingBy { it.state }.eachCount(),
