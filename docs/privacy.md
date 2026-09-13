@@ -29,6 +29,12 @@ Recording, Transcribing, Translating, AI Assistant Active and Cloud Processing A
 
 Private Call suppresses optional intelligence workflows without terminating the underlying carrier call. Incognito Dialing may minimize local history but must explain that carriers and external telecommunications providers can retain records outside GoreeCloud's control.
 
+## Platform backup boundary
+
+Android-managed automatic backup is fail-closed for GoreeCloud Dialer by default. The application disables platform backup and explicitly excludes app-managed root, file, database, shared-preference, and external domains from both cloud backup and device-to-device transfer rules. The legacy Android 11-and-lower full-backup rules exclude the same domains.
+
+These exclusions are a platform configuration boundary, not evidence that Everkeep backup or recovery is implemented. A future user-controlled GoreeCloud backup/recovery path must define its own Privacy Shield authorization, Wardveil protection, retention, restore verification, and explicit acceptance before any sensitive call data becomes eligible for backup.
+
 ## Retention
 
 Call history, recordings, transcripts, voicemail, summaries and notes have independent retention controls. A deletion preference is not proof of deletion; storage completion must be verified before success is shown.
