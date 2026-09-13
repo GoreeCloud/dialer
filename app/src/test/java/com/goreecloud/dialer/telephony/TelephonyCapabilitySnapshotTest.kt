@@ -9,6 +9,7 @@ class TelephonyCapabilitySnapshotTest {
     fun developmentPlaceholderDoesNotClaimTelephonyAvailability() {
         val snapshot = TelephonyCapabilitySnapshot.developmentPlaceholder()
         assertTrue(snapshot.defaultDialerRole is CapabilityState.Unavailable)
+        assertTrue(snapshot.dialIntentHandling is CapabilityState.Unavailable)
         assertTrue(snapshot.outgoingCalls is CapabilityState.Unavailable)
         assertTrue(snapshot.incomingCalls is CapabilityState.Unavailable)
         assertTrue(snapshot.callScreening is CapabilityState.Unavailable)

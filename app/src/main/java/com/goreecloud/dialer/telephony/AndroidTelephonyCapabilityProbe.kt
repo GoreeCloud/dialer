@@ -5,13 +5,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import com.goreecloud.dialer.core.capability.CapabilityState
 
-/**
- * Reads platform facts without requesting roles or permissions.
- *
- * GoreeCloud Dialer intentionally does not expose a ROLE_DIALER request yet:
- * Android requires an ACTION_DIAL activity plus a complete InCallService with
- * incoming and ongoing call UI before the app should ask to become default.
- */
+/** Reads platform facts without requesting roles or permissions. */
 class AndroidTelephonyCapabilityProbe(
     private val context: Context,
 ) {
@@ -26,6 +20,8 @@ class AndroidTelephonyCapabilityProbe(
             roleAvailable = roleManager?.isRoleAvailable(RoleManager.ROLE_DIALER) == true,
             roleHeld = roleManager?.isRoleHeld(RoleManager.ROLE_DIALER) == true,
             roleName = RoleManager.ROLE_DIALER,
+            applicationRequirementsAccepted = false,
+            requirementsReason = "Incoming and ongoing call UI acceptance is incomplete",
         )
 
         fun notImplemented(reason: String): CapabilityState =
@@ -33,9 +29,10 @@ class AndroidTelephonyCapabilityProbe(
 
         return TelephonyCapabilitySnapshot(
             defaultDialerRole = defaultDialerRole,
-            outgoingCalls = notImplemented("Carrier call integration not implemented"),
-            incomingCalls = notImplemented("InCallService integration not implemented"),
-            inCallControls = notImplemented("In-call controls not implemented"),
+            dialIntentHandling = CapabilityState.Available,
+            outgoingCalls = notImplemented("ACTION_DIAL is handled; TelecomManager call placement is not implemented"),
+            incomingCalls = notImplemented("InCallService lifecycle exists; incoming-call UI is not implemented"),
+            inCallControls = notImplemented("InCallService lifecycle exists; call controls are not implemented"),
             multiSimRouting = notImplemented("Subscription routing not implemented"),
             callScreening = notImplemented("Call screening service not implemented"),
             visualVoicemail = notImplemented("Voicemail adapter not implemented"),

@@ -7,58 +7,59 @@ import org.junit.Test
 
 class DialerRoleCapabilityResolverTest {
     private val roleName = "android.app.role.DIALER"
+    private val incompleteReason = "Incoming and ongoing call UI acceptance is incomplete"
 
     @Test
     fun noTelephonyIsUnsupported() {
         assertEquals(
             CapabilityState.Unsupported,
-            DialerRoleCapabilityResolver.resolve(
-                hasTelephony = false,
-                roleManagerAvailable = true,
-                roleAvailable = true,
-                roleHeld = false,
-                roleName = roleName,
-            ),
+            resolve(hasTelephony = false),
         )
     }
 
     @Test
     fun missingRoleManagerIsUnavailable() {
-        val state = DialerRoleCapabilityResolver.resolve(
-            hasTelephony = true,
-            roleManagerAvailable = false,
-            roleAvailable = false,
-            roleHeld = false,
-            roleName = roleName,
-        )
+        val state = resolve(roleManagerAvailable = false, roleAvailable = false)
         assertTrue(state is CapabilityState.Unavailable)
     }
 
     @Test
-    fun availableRoleNotHeldRequiresRole() {
+    fun incompleteApplicationDoesNotExposeRoleRequest() {
         assertEquals(
-            CapabilityState.RoleRequired(roleName),
-            DialerRoleCapabilityResolver.resolve(
-                hasTelephony = true,
-                roleManagerAvailable = true,
-                roleAvailable = true,
-                roleHeld = false,
-                roleName = roleName,
-            ),
+            CapabilityState.Unavailable(incompleteReason),
+            resolve(applicationRequirementsAccepted = false),
         )
     }
 
     @Test
-    fun heldRoleIsActive() {
+    fun acceptedRequirementsAndUnheldRoleRequiresRole() {
         assertEquals(
-            CapabilityState.Active,
-            DialerRoleCapabilityResolver.resolve(
-                hasTelephony = true,
-                roleManagerAvailable = true,
-                roleAvailable = true,
-                roleHeld = true,
-                roleName = roleName,
-            ),
+            CapabilityState.RoleRequired(roleName),
+            resolve(applicationRequirementsAccepted = true),
         )
     }
+
+    @Test
+    fun heldRoleReportsPlatformFactEvenWhenAcceptanceIsIncomplete() {
+        assertEquals(
+            CapabilityState.Active,
+            resolve(roleHeld = true, applicationRequirementsAccepted = false),
+        )
+    }
+
+    private fun resolve(
+        hasTelephony: Boolean = true,
+        roleManagerAvailable: Boolean = true,
+        roleAvailable: Boolean = true,
+        roleHeld: Boolean = false,
+        applicationRequirementsAccepted: Boolean = false,
+    ): CapabilityState = DialerRoleCapabilityResolver.resolve(
+        hasTelephony = hasTelephony,
+        roleManagerAvailable = roleManagerAvailable,
+        roleAvailable = roleAvailable,
+        roleHeld = roleHeld,
+        roleName = roleName,
+        applicationRequirementsAccepted = applicationRequirementsAccepted,
+        requirementsReason = incompleteReason,
+    )
 }

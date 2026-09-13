@@ -2,12 +2,10 @@ package com.goreecloud.dialer.telephony
 
 import com.goreecloud.dialer.core.capability.CapabilityState
 
-/**
- * A point-in-time view of independently accepted telephony capabilities.
- * No aggregate "ready" flag is provided by design.
- */
+/** A point-in-time view of independently accepted telephony capabilities. */
 data class TelephonyCapabilitySnapshot(
     val defaultDialerRole: CapabilityState,
+    val dialIntentHandling: CapabilityState,
     val outgoingCalls: CapabilityState,
     val incomingCalls: CapabilityState,
     val inCallControls: CapabilityState,
@@ -19,6 +17,7 @@ data class TelephonyCapabilitySnapshot(
     companion object {
         fun developmentPlaceholder() = TelephonyCapabilitySnapshot(
             defaultDialerRole = CapabilityState.Unavailable("Telecom role integration not implemented"),
+            dialIntentHandling = CapabilityState.Unavailable("ACTION_DIAL handling not implemented"),
             outgoingCalls = CapabilityState.Unavailable("Carrier call integration not implemented"),
             incomingCalls = CapabilityState.Unavailable("Carrier call integration not implemented"),
             inCallControls = CapabilityState.Unavailable("In-call service not implemented"),

@@ -4,7 +4,7 @@ GoreeCloud Dialer is GoreeCloud's privacy-focused, intelligent Android calling a
 
 ## Status
 
-**Active Development / pre-Stable.** The repository now contains the native Android foundation and capability-state contracts. Carrier calling, default-dialer role integration, call screening, voicemail, recording, transcription, translation, AI assistance, Privacy Shield acceptance, Wardveil acceptance, Everkeep backup, and cross-device calling are **not** claimed as implemented until their runtime paths are built and verified.
+**Active Development / pre-Stable.** The repository contains a validated native Android foundation, `ACTION_DIAL` intake, a local keypad surface, default-dialer capability gating, and a content-free `InCallService` lifecycle boundary. Carrier call placement, incoming/ongoing call UI, call controls, default-role requests, screening, voicemail, recording, transcription, translation, AI assistance, Privacy Shield acceptance, Wardveil acceptance, Everkeep backup, and cross-device calling are **not** claimed as implemented until their runtime paths are built and verified.
 
 ## Canonical repository
 
@@ -29,33 +29,20 @@ GoreeCloud Dialer is GoreeCloud's privacy-focused, intelligent Android calling a
 - Java/Kotlin JVM target: 17
 - development version: `0.1.0-dev`
 
-This baseline follows current GoreeCloud Android conventions and is not itself a claim of feature completeness.
-
 ## Current source foundation
 
-- Compose application shell
-- explicit Development status UI
+- Compose application shell and local keypad
+- `ACTION_DIAL` and `tel:` intent intake without call placement side effects
 - reusable capability-state model separating unsupported, unavailable, permission/role-required, available, active, failed, and successful states
-- initial telephony capability snapshot contract
+- Android telephony and `ROLE_DIALER` capability probe
+- role-request eligibility gate that stays closed until incoming/ongoing call UI is accepted
+- `InCallService` lifecycle boundary that tracks only content-free call state in process memory
+- unit tests and Android CI covering unit tests plus debug assembly
 - architecture, privacy, security, specifications, roadmap, feature, and user-manual documentation
-- Android CI workflow
 
 ## Architecture direction
 
-Capability domains are intentionally independent:
-
-- `telephony` — Android Telecom role/state, calls, SIM routing, DTMF, audio routes, emergency-safe boundaries
-- `contacts` — T9 search, favorites, contact preferences
-- `history` — Recents, unified timeline, notes, search, retention
-- `screening` — Call Screen prompts, transcripts, and rules
-- `safety` — spam/scam signals, block/allow policy, explanations
-- `voicemail` — visual/direct voicemail capability adapters
-- `assistant` — Text Call, transcription, translation, Hold Assistant, menu navigation, summaries
-- `intelligence` — local models and explicitly authorized remote processors
-- `privacy` — Privacy Shield authorization, purpose, locality, retention, revocation
-- `security` — Wardveil storage/trust/integrity evidence
-- `continuity` — Everkeep backup/restore boundaries
-- `ui` — Glaze UI calling, safety, privacy, voicemail, assistant, and accessibility surfaces
+Capability domains are intentionally independent: telephony, contacts, history, screening, safety, voicemail, assistant, intelligence, privacy, security, continuity, and UI.
 
 ## Runtime truth rule
 
@@ -73,4 +60,4 @@ A feature is never considered implemented merely because a UI surface, configura
 
 ## License
 
-License file will be added as part of repository bootstrap completion; until then, do not infer licensing terms from other GoreeCloud repositories.
+No repository license has been established yet. Do not infer licensing terms from other GoreeCloud repositories.

@@ -27,11 +27,21 @@ Authorization, capability, activation, and operation success are separate facts.
 
 Every capability should distinguish unsupported, unavailable, permission/role required, available, active, failed, and succeeded states. User interfaces should surface why a capability is unavailable when that information helps the user act.
 
-The current Android probe reads whether the device advertises telephony, whether the Android dialer role exists, and whether GoreeCloud Dialer already holds that role. It does not request the role.
+The Android probe reads whether the device advertises telephony, whether the Android dialer role exists, and whether GoreeCloud Dialer already holds that role. It does not request the role.
+
+## ACTION_DIAL boundary
+
+`MainActivity` now handles Android `ACTION_DIAL` with and without a `tel:` URI. The address is transferred to a local keypad without automatically placing a carrier call, normalizing the number, persisting it, or sending it to GoreeCloud services. Unsupported URI schemes are ignored.
+
+## InCallService lifecycle boundary
+
+`GoreeCloudInCallService` is registered with `BIND_INCALL_SERVICE` and tracks call additions, removals, state transitions, and whether another call can be added. The process-local runtime store contains only call counts and lifecycle-state categories. It does not retain phone numbers, caller names, account identifiers, transcripts, audio, or `Call.Details`.
+
+The service intentionally does not advertise in-call UI or ringing ownership metadata yet. Incoming-call UI, ongoing-call UI, ringtone responsibility, call controls, and durable history remain incomplete.
 
 ## Default-dialer eligibility gate
 
-Android requires a default-phone candidate to handle `Intent.ACTION_DIAL` and fully implement `InCallService`, including incoming and ongoing call UI. GoreeCloud Dialer therefore must not expose a role-request action until those requirements are implemented and validated together. Detecting that `ROLE_DIALER` exists is not proof that this Development build is eligible to acquire it.
+Android requires a default-phone candidate to handle `Intent.ACTION_DIAL` and fully implement `InCallService`, including incoming and ongoing call UI. GoreeCloud Dialer now satisfies only the intent-handling and service-lifecycle portions. The application therefore keeps role-request eligibility closed until incoming and ongoing UI plus essential controls are implemented and validated together. Detecting or even holding `ROLE_DIALER` remains a separate platform fact from GoreeCloud acceptance.
 
 ## Emergency boundary
 

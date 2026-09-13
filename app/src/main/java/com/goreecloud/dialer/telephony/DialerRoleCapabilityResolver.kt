@@ -2,12 +2,7 @@ package com.goreecloud.dialer.telephony
 
 import com.goreecloud.dialer.core.capability.CapabilityState
 
-/**
- * Pure mapping from Android platform facts to the Dialer capability model.
- *
- * Keeping this mapping Android-free makes role-state behavior deterministic in
- * unit tests and prevents the UI from inventing a broader "ready" state.
- */
+/** Pure mapping from Android/platform facts to the Dialer capability model. */
 object DialerRoleCapabilityResolver {
     fun resolve(
         hasTelephony: Boolean,
@@ -15,6 +10,8 @@ object DialerRoleCapabilityResolver {
         roleAvailable: Boolean,
         roleHeld: Boolean,
         roleName: String,
+        applicationRequirementsAccepted: Boolean,
+        requirementsReason: String,
     ): CapabilityState {
         if (!hasTelephony) return CapabilityState.Unsupported
         if (!roleManagerAvailable) {
@@ -23,10 +20,10 @@ object DialerRoleCapabilityResolver {
         if (!roleAvailable) {
             return CapabilityState.Unavailable("Android dialer role is unavailable")
         }
-        return if (roleHeld) {
-            CapabilityState.Active
-        } else {
-            CapabilityState.RoleRequired(roleName)
+        if (roleHeld) return CapabilityState.Active
+        if (!applicationRequirementsAccepted) {
+            return CapabilityState.Unavailable(requirementsReason)
         }
+        return CapabilityState.RoleRequired(roleName)
     }
 }
