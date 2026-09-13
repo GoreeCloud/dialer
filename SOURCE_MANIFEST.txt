@@ -33,6 +33,7 @@ Capability and telephony contracts
 - app/src/main/java/com/goreecloud/dialer/telephony/EmergencyCallRouting.kt
 - app/src/main/java/com/goreecloud/dialer/telephony/OutgoingCallPlacement.kt
 - app/src/main/java/com/goreecloud/dialer/telephony/CallLifecycleState.kt
+- app/src/main/java/com/goreecloud/dialer/telephony/AndroidCallStateReader.kt
 - app/src/main/java/com/goreecloud/dialer/telephony/CallDisposition.kt
 - app/src/main/java/com/goreecloud/dialer/telephony/CallCapabilities.kt
 - app/src/main/java/com/goreecloud/dialer/telephony/ConferenceControl.kt
@@ -59,6 +60,7 @@ JVM tests
 - app/src/test/java/com/goreecloud/dialer/telephony/EmergencyCallRoutingPolicyTest.kt
 - app/src/test/java/com/goreecloud/dialer/telephony/OutgoingCallPlacementPolicyTest.kt
 - app/src/test/java/com/goreecloud/dialer/telephony/CallLifecycleStateMapperTest.kt
+- app/src/test/java/com/goreecloud/dialer/telephony/CallStateReadPolicyTest.kt
 - app/src/test/java/com/goreecloud/dialer/telephony/CallDispositionPolicyTest.kt
 - app/src/test/java/com/goreecloud/dialer/telephony/CallCapabilitiesTest.kt
 - app/src/test/java/com/goreecloud/dialer/telephony/CallControlEngineTest.kt
