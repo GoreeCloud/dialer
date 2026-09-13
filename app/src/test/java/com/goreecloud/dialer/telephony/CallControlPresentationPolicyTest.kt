@@ -14,18 +14,46 @@ class CallControlPresentationPolicyTest {
     }
 
     @Test
-    fun activeCallShowsHoldAndEnd() {
+    fun activeCallShowsHoldAndEndWhenHoldIsCurrentlyAvailable() {
         assertEquals(
             listOf(CallControlAction.Hold, CallControlAction.End),
-            CallControlPresentationPolicy.actionsFor(CallLifecycleState.ACTIVE),
+            CallControlPresentationPolicy.actionsFor(
+                state = CallLifecycleState.ACTIVE,
+                holdCurrentlyAvailable = true,
+            ),
         )
     }
 
     @Test
-    fun heldCallShowsResumeAndEnd() {
+    fun activeCallHidesHoldWhenTelecomDoesNotCurrentlyAllowIt() {
+        assertEquals(
+            listOf(CallControlAction.End),
+            CallControlPresentationPolicy.actionsFor(
+                state = CallLifecycleState.ACTIVE,
+                holdCurrentlyAvailable = false,
+            ),
+        )
+    }
+
+    @Test
+    fun heldCallShowsResumeAndEndWhenUnholdIsCurrentlyAvailable() {
         assertEquals(
             listOf(CallControlAction.Resume, CallControlAction.End),
-            CallControlPresentationPolicy.actionsFor(CallLifecycleState.HOLDING),
+            CallControlPresentationPolicy.actionsFor(
+                state = CallLifecycleState.HOLDING,
+                holdCurrentlyAvailable = true,
+            ),
+        )
+    }
+
+    @Test
+    fun heldCallHidesResumeWhenTelecomDoesNotCurrentlyAllowIt() {
+        assertEquals(
+            listOf(CallControlAction.End),
+            CallControlPresentationPolicy.actionsFor(
+                state = CallLifecycleState.HOLDING,
+                holdCurrentlyAvailable = false,
+            ),
         )
     }
 
