@@ -31,24 +31,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.goreecloud.dialer.core.capability.CapabilityState
 import com.goreecloud.dialer.telephony.AndroidTelephonyCapabilityProbe
-import com.goreecloud.dialer.telephony.CallAudioControlAction
-import com.goreecloud.dialer.telephony.CallAudioControlResult
-import com.goreecloud.dialer.telephony.CallControlPresentationPolicy
-import com.goreecloud.dialer.telephony.CallControlResult
-import com.goreecloud.dialer.telephony.CallEndpointRequestState
-import com.goreecloud.dialer.telephony.CallEndpointRoutingResult
-import com.goreecloud.dialer.telephony.CallEndpointRuntimeSummary
-import com.goreecloud.dialer.telephony.CallLifecycleState
-import com.goreecloud.dialer.telephony.CallRuntimeSummary
 import com.goreecloud.dialer.telephony.DialRequest
-import com.goreecloud.dialer.telephony.InCallAudioControlRuntime
-import com.goreecloud.dialer.telephony.InCallEndpointRoutingRuntime
-import com.goreecloud.dialer.telephony.InCallRuntimeSnapshot
 import com.goreecloud.dialer.telephony.InCallRuntimeStore
 import com.goreecloud.dialer.telephony.PhoneAccountDiscoveryState
 import com.goreecloud.dialer.telephony.PhoneAccountRoutingRuntime
 import com.goreecloud.dialer.telephony.TelephonyCapabilitySnapshot
-import com.goreecloud.dialer.telephony.presentationLabel
 
 @Composable
 fun DialerApp(initialDialRequest: DialRequest? = null) {
@@ -89,7 +76,7 @@ fun DialerApp(initialDialRequest: DialRequest? = null) {
 @Composable
 private fun DevelopmentHome(
     capabilitySnapshot: TelephonyCapabilitySnapshot,
-    inCallRuntime: InCallRuntimeSnapshot,
+    inCallRuntime: com.goreecloud.dialer.telephony.InCallRuntimeSnapshot,
     phoneAccountDiscovery: PhoneAccountDiscoveryState,
     selectedPhoneAccountRouteId: Long?,
     onPhoneAccountSelected: (Long?) -> Unit,
@@ -270,180 +257,6 @@ private fun DevelopmentPhoneAccountRouting(
             "Emergency or indeterminate-emergency calls always delegate phone-account routing to Android Telecom.",
             style = MaterialTheme.typography.bodySmall,
         )
-    }
-}
-
-@Composable
-private fun DevelopmentInCallPanel(snapshot: InCallRuntimeSnapshot) {
-    var operationStatus by remember { mutableStateOf<String?>(null) }
-
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text("Live Telecom sessions", style = MaterialTheme.typography.titleMedium)
-        Text(
-            "Development control surface — no caller identity, endpoint device name, or call content is projected.",
-            style = MaterialTheme.typography.bodySmall,
-        )
-        Spacer(Modifier.height(8.dp))
-
-        snapshot.calls.forEach { call ->
-            DevelopmentCallControls(
-                call = call,
-                onResult = { operationStatus = it },
-            )
-            Spacer(Modifier.height(8.dp))
-        }
-
-        val audioEligible = snapshot.calls.any {
-            it.state == CallLifecycleState.ACTIVE || it.state == CallLifecycleState.HOLDING
-        }
-        if (audioEligible) {
-            DevelopmentAudioControls(
-                snapshot = snapshot,
-                onResult = { operationStatus = it },
-            )
-        }
-
-        operationStatus?.let {
-            Spacer(Modifier.height(8.dp))
-            Text(it, style = MaterialTheme.typography.bodySmall)
-        }
-    }
-}
-
-@Composable
-private fun DevelopmentAudioControls(
-    snapshot: InCallRuntimeSnapshot,
-    onResult: (String) -> Unit,
-) {
-    when (val muted = snapshot.isMuted) {
-        null -> Text(
-            "Mute state is awaiting Telecom evidence",
-            style = MaterialTheme.typography.bodySmall,
-        )
-        else -> Button(
-            onClick = {
-                val action = if (muted) {
-                    CallAudioControlAction.Unmute
-                } else {
-                    CallAudioControlAction.Mute
-                }
-                onResult(InCallAudioControlRuntime.execute(action).message(action))
-            },
-        ) {
-            Text(if (muted) "Unmute" else "Mute")
-        }
-    }
-
-    Spacer(Modifier.height(8.dp))
-    if (!snapshot.endpointRoutingSupported) {
-        Text(
-            "Endpoint routing requires Android 14+ CallEndpoint support",
-            style = MaterialTheme.typography.bodySmall,
-        )
-    } else if (snapshot.availableEndpoints.isEmpty()) {
-        Text(
-            "Waiting for Telecom endpoint evidence",
-            style = MaterialTheme.typography.bodySmall,
-        )
-    } else {
-        Text("Audio endpoint", style = MaterialTheme.typography.titleSmall)
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-        ) {
-            snapshot.availableEndpoints.forEach { endpoint ->
-                EndpointButton(
-                    endpoint = endpoint,
-                    selected = endpoint.routeId == snapshot.currentEndpointId,
-                    onResult = onResult,
-                )
-            }
-        }
-        snapshot.lastEndpointRequest?.let { request ->
-            val text = when (request.state) {
-                CallEndpointRequestState.SUBMITTED -> "Endpoint request submitted"
-                CallEndpointRequestState.SUCCEEDED -> "Endpoint request succeeded"
-                CallEndpointRequestState.FAILED ->
-                    "Endpoint request failed — ${request.reason ?: "unknown reason"}"
-            }
-            Text(text, style = MaterialTheme.typography.bodySmall)
-        }
-    }
-}
-
-@Composable
-private fun EndpointButton(
-    endpoint: CallEndpointRuntimeSummary,
-    selected: Boolean,
-    onResult: (String) -> Unit,
-) {
-    Button(
-        enabled = !selected,
-        onClick = {
-            onResult(
-                when (val result = InCallEndpointRoutingRuntime.request(endpoint.routeId)) {
-                    CallEndpointRoutingResult.Submitted -> "${endpoint.kind}: route request submitted"
-                    is CallEndpointRoutingResult.Rejected ->
-                        "${endpoint.kind}: rejected — ${result.reason}"
-                    is CallEndpointRoutingResult.Failed ->
-                        "${endpoint.kind}: failed — ${result.reason}"
-                },
-            )
-        },
-    ) {
-        Text(if (selected) "${endpoint.kind} ✓" else endpoint.kind.toString())
-    }
-}
-
-@Composable
-private fun DevelopmentCallControls(
-    call: CallRuntimeSummary,
-    onResult: (String) -> Unit,
-) {
-    val actions = CallControlPresentationPolicy.actionsFor(call.state)
-
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text("Session ${call.sessionId}: ${call.state}")
-        if (actions.isEmpty()) {
-            Text("No accepted control for this lifecycle state", style = MaterialTheme.typography.bodySmall)
-        } else {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-            ) {
-                actions.forEach { action ->
-                    Button(
-                        onClick = {
-                            val result = InCallRuntimeStore.execute(call.sessionId, action)
-                            onResult(
-                                when (result) {
-                                    CallControlResult.Succeeded -> "${action.presentationLabel()}: succeeded"
-                                    is CallControlResult.Rejected -> "${action.presentationLabel()}: rejected — ${result.reason}"
-                                    is CallControlResult.Failed -> "${action.presentationLabel()}: failed — ${result.reason}"
-                                },
-                            )
-                        },
-                    ) {
-                        Text(action.presentationLabel())
-                    }
-                }
-            }
-        }
-    }
-}
-
-private fun CallAudioControlResult.message(action: CallAudioControlAction): String {
-    val label = if (action == CallAudioControlAction.Mute) "Mute" else "Unmute"
-    return when (this) {
-        CallAudioControlResult.Succeeded -> "$label: succeeded"
-        is CallAudioControlResult.Rejected -> "$label: rejected — $reason"
-        is CallAudioControlResult.Failed -> "$label: failed — $reason"
     }
 }
 
