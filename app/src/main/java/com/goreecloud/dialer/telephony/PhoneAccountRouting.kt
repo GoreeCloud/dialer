@@ -51,6 +51,10 @@ object PhoneAccountSelectionPolicy {
  * Public state intentionally exposes only generated route IDs and whether Android reports a route
  * as the current default. PhoneAccountHandle ids, component names, labels, phone numbers, ICCIDs,
  * carrier names, and subscription identifiers are not projected by this boundary.
+ *
+ * Permission/platform loss revokes the process-local handle authority immediately. UI may retain
+ * an opaque saved route ID, but that ID can no longer resolve to a carrier account until discovery
+ * is authorized again and Android reports the account as call-capable.
  */
 object PhoneAccountRoutingRuntime {
     private val nextRouteId = AtomicLong(1)
@@ -60,17 +64,22 @@ object PhoneAccountRoutingRuntime {
     @Synchronized
     fun discover(context: Context): PhoneAccountDiscoveryState {
         if (!context.packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY)) {
+            clearAuthority()
             return PhoneAccountDiscoveryState.Unsupported
         }
         if (
             ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) !=
             PackageManager.PERMISSION_GRANTED
         ) {
+            clearAuthority()
             return PhoneAccountDiscoveryState.PermissionRequired(Manifest.permission.READ_PHONE_STATE)
         }
 
         val telecomManager = context.getSystemService(TelecomManager::class.java)
-            ?: return PhoneAccountDiscoveryState.TelecomUnavailable
+        if (telecomManager == null) {
+            clearAuthority()
+            return PhoneAccountDiscoveryState.TelecomUnavailable
+        }
 
         return try {
             val handles = telecomManager.callCapablePhoneAccounts
@@ -96,8 +105,10 @@ object PhoneAccountRoutingRuntime {
                 systemDefaultRouteId = routes.firstOrNull { it.isSystemDefault }?.routeId,
             )
         } catch (securityException: SecurityException) {
+            clearAuthority()
             PhoneAccountDiscoveryState.PermissionRequired(Manifest.permission.READ_PHONE_STATE)
         } catch (runtimeException: RuntimeException) {
+            clearAuthority()
             PhoneAccountDiscoveryState.Failed(
                 runtimeException.message?.takeIf { it.isNotBlank() }
                     ?: runtimeException::class.java.simpleName,
@@ -113,6 +124,10 @@ object PhoneAccountRoutingRuntime {
 
     @Synchronized
     fun clear() {
+        clearAuthority()
+    }
+
+    private fun clearAuthority() {
         routeIdsByHandle.clear()
         handlesByRouteId.clear()
     }
