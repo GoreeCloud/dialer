@@ -117,7 +117,7 @@ class GoreeCloudInCallService : InCallService() {
         InCallRuntimeStore.onCanAddCallChanged(canAddCall)
     }
 
-    @Suppress("DEPRECATION")
+    @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
     override fun onCallAudioStateChanged(audioState: CallAudioState) {
         super.onCallAudioStateChanged(audioState)
         InCallRuntimeStore.onMuteStateChanged(audioState.isMuted)
