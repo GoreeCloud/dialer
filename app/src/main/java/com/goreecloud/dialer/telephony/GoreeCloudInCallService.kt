@@ -14,9 +14,10 @@ import java.util.concurrent.atomic.AtomicLong
 /**
  * Development InCallService lifecycle, presentation, and audio-control boundary.
  *
- * The service tracks only process-local call sessions and content-minimized lifecycle/audio state.
- * Development incoming/ongoing presentation exists, but production UI replacement and ringtone
- * ownership remain undeclared until end-to-end device validation is complete.
+ * The service tracks only process-local call sessions and content-minimized lifecycle/audio/control
+ * capability state. Development incoming/ongoing presentation exists, but production UI
+ * replacement and ringtone ownership remain undeclared until end-to-end device validation is
+ * complete.
  */
 class GoreeCloudInCallService : InCallService() {
     private val callbacks = IdentityHashMap<Call, Call.Callback>()
@@ -67,6 +68,10 @@ class GoreeCloudInCallService : InCallService() {
                         state = CallLifecycleStateMapper.fromAndroid(state),
                     )
                 }
+            }
+
+            override fun onDetailsChanged(call: Call, details: Call.Details) {
+                InCallRuntimeStore.onCallDetailsChanged(call, details)
             }
         }
 
