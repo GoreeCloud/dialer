@@ -165,6 +165,15 @@ class AndroidIncomingCallPresenter(
     }
 
     private fun post(sessionId: Long, notification: Notification) {
+        if (
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(
+                applicationContext,
+                Manifest.permission.POST_NOTIFICATIONS,
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            throw SecurityException("POST_NOTIFICATIONS is not granted")
+        }
         NotificationManagerCompat.from(applicationContext).notify(
             notificationId(sessionId),
             notification,

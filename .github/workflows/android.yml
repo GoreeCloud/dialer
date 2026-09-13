@@ -27,6 +27,16 @@ jobs:
       - name: Unit tests
         run: gradle :app:testDebugUnitTest --stacktrace
       - name: Android lint
-        run: gradle :app:lintDebug --stacktrace
+        shell: bash
+        run: |
+          if ! gradle :app:lintDebug --stacktrace; then
+            report="app/build/intermediates/lint_intermediate_text_report/debug/lintReportDebug/lint-results-debug.txt"
+            if [ -f "$report" ]; then
+              echo "::group::Android lint report"
+              cat "$report"
+              echo "::endgroup::"
+            fi
+            exit 1
+          fi
       - name: Assemble debug
         run: gradle :app:assembleDebug --stacktrace
