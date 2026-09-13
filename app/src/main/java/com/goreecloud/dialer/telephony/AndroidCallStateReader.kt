@@ -28,7 +28,9 @@ internal object CallStateReadPolicy {
  */
 object AndroidCallStateReader {
     fun lifecycle(call: Call): CallLifecycleState {
-        if (CallStateReadPolicy.sourceForSdk(Build.VERSION.SDK_INT) == CallStateReadSource.DETAILS) {
+        // Keep the SDK check visible at the NewApi call site so Android lint can prove this path
+        // cannot execute on the supported API 29-30 legacy range.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val details = call.details
             if (details != null) {
                 return lifecycleFromDetailsApi31(details)
