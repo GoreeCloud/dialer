@@ -28,6 +28,8 @@ The current source contains:
 - Android project/build shell and Compose Development surfaces.
 - A capability-state contract that keeps support, availability, permissions/roles, activation, request submission, failure and success separate.
 - Android telephony and `ROLE_DIALER` detection without automatically requesting the role.
+- A Development default-dialer role-consent surface that is enabled only when the capability model reaches `RoleRequired`; the independent preparer re-checks GoreeCloud acceptance before Android's user-consent intent can be launched.
+- Runtime telephony capability and phone-account evidence re-probed when the Activity resumes and after phone-state permission results.
 - `ACTION_DIAL`/`tel:` intake and a local keypad without automatic carrier-call placement.
 - A truthful outgoing-call capability state that acknowledges the existing `TelecomManager.placeCall` boundary while keeping carrier-call runtime acceptance incomplete.
 - `READ_PHONE_STATE`-guarded call-capable phone-account discovery and anonymous explicit routing with production multi-SIM acceptance still incomplete.
@@ -47,7 +49,7 @@ The current source contains:
 - Emergency classification and routing policy that delegates emergency or indeterminate-emergency phone-account choice to Android Telecom.
 - Content-minimized conference parent/child/conferenceable-call relationships represented only by generated session IDs.
 - Guarded pairwise conference, merge, swap and separate Development requests derived from Telecom's live relationship/capability evidence.
-- Dormant `TelecomManager.placeCall` and default-dialer role-request boundaries that stay rejected until GoreeCloud acceptance gates pass.
+- Dormant `TelecomManager.placeCall` boundary that stays rejected until GoreeCloud acceptance gates pass.
 - Android-managed automatic backup disabled plus explicit cloud-backup, device-transfer, and legacy full-backup exclusions for app-managed storage; this is not Everkeep implementation or recovery acceptance.
 - JVM unit-test source plus Android instrumentation-test source.
 - CI validation for JVM unit tests, Android lint, debug APK assembly, minified release-variant assembly, and instrumentation-test APK compilation.
@@ -62,7 +64,7 @@ Release-variant assembly is build evidence only. It validates release resources,
 The source above must not be interpreted as proof that GoreeCloud Dialer is ready to replace the system phone application. The following remain incomplete or unverified for production acceptance:
 
 - carrier call placement and device/carrier validation
-- default-dialer role-request enablement and end-to-end role acceptance
+- end-to-end default-dialer role acceptance; the role-consent surface remains blocked by current GoreeCloud acceptance state
 - production incoming and ongoing call UI acceptance
 - ringtone ownership
 - durable Recents/call-history persistence and retention

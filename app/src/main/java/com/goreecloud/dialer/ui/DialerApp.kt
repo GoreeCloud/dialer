@@ -35,7 +35,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.goreecloud.dialer.core.capability.CapabilityState
+import com.goreecloud.dialer.telephony.AndroidDefaultDialerRoleRequestPreparer
 import com.goreecloud.dialer.telephony.AndroidTelephonyCapabilityProbe
+import com.goreecloud.dialer.telephony.DefaultDialerRoleRequestPreparation
 import com.goreecloud.dialer.telephony.DialRequest
 import com.goreecloud.dialer.telephony.InCallRuntimeStore
 import com.goreecloud.dialer.telephony.PhoneAccountDiscoveryState
@@ -47,6 +49,7 @@ fun DialerApp(initialDialRequest: DialRequest? = null) {
     val applicationContext = LocalContext.current.applicationContext
     val lifecycleOwner = LocalLifecycleOwner.current
     var runtimeRefresh by remember { mutableIntStateOf(0) }
+    var roleRequestMessage by remember { mutableStateOf<String?>(null) }
     val capabilitySnapshot = remember(applicationContext, runtimeRefresh) {
         AndroidTelephonyCapabilityProbe(applicationContext).snapshot()
     }
@@ -73,6 +76,12 @@ fun DialerApp(initialDialRequest: DialRequest? = null) {
     ) {
         runtimeRefresh += 1
     }
+    val defaultDialerRoleLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult(),
+    ) {
+        runtimeRefresh += 1
+        roleRequestMessage = "Android role request returned; capability evidence refreshed."
+    }
 
     MaterialTheme {
         Scaffold { innerPadding ->
@@ -81,9 +90,31 @@ fun DialerApp(initialDialRequest: DialRequest? = null) {
                 inCallRuntime = inCallRuntime,
                 phoneAccountDiscovery = phoneAccountDiscovery,
                 selectedPhoneAccountRouteId = selectedPhoneAccountRouteId,
+                roleRequestMessage = roleRequestMessage,
                 onPhoneAccountSelected = { selectedPhoneAccountRouteId = it },
                 onRequestPhoneStatePermission = {
                     phoneStatePermissionLauncher.launch(Manifest.permission.READ_PHONE_STATE)
+                },
+                onRequestDefaultDialerRole = {
+                    when (
+                        val preparation = AndroidDefaultDialerRoleRequestPreparer(
+                            applicationContext,
+                        ).prepare()
+                    ) {
+                        DefaultDialerRoleRequestPreparation.AlreadyHeld -> {
+                            roleRequestMessage = "Default dialer role is already active."
+                            runtimeRefresh += 1
+                        }
+
+                        is DefaultDialerRoleRequestPreparation.Prepared -> {
+                            roleRequestMessage = "Opening Android's explicit role-consent prompt."
+                            defaultDialerRoleLauncher.launch(preparation.intent)
+                        }
+
+                        is DefaultDialerRoleRequestPreparation.Rejected -> {
+                            roleRequestMessage = "Role request blocked — ${preparation.reason}"
+                        }
+                    }
                 },
                 initialNumber = initialDialRequest?.number.orEmpty(),
                 modifier = Modifier.padding(innerPadding),
@@ -98,8 +129,10 @@ private fun DevelopmentHome(
     inCallRuntime: com.goreecloud.dialer.telephony.InCallRuntimeSnapshot,
     phoneAccountDiscovery: PhoneAccountDiscoveryState,
     selectedPhoneAccountRouteId: Long?,
+    roleRequestMessage: String?,
     onPhoneAccountSelected: (Long?) -> Unit,
     onRequestPhoneStatePermission: () -> Unit,
+    onRequestDefaultDialerRole: () -> Unit,
     initialNumber: String,
     modifier: Modifier = Modifier,
 ) {
@@ -172,6 +205,13 @@ private fun DevelopmentHome(
         )
 
         Spacer(Modifier.height(20.dp))
+        DevelopmentDefaultDialerRoleRequest(
+            state = capabilitySnapshot.defaultDialerRole,
+            message = roleRequestMessage,
+            onRequest = onRequestDefaultDialerRole,
+        )
+
+        Spacer(Modifier.height(20.dp))
         Text("Telephony capability evidence", style = MaterialTheme.typography.titleSmall)
         CapabilityEvidenceRow("ACTION_DIAL", capabilitySnapshot.dialIntentHandling)
         CapabilityEvidenceRow("Default dialer role", capabilitySnapshot.defaultDialerRole)
@@ -179,6 +219,51 @@ private fun DevelopmentHome(
         CapabilityEvidenceRow("Multi-SIM routing", capabilitySnapshot.multiSimRouting)
         CapabilityEvidenceRow("Wi-Fi Calling state", capabilitySnapshot.wifiCallingState)
         CapabilityEvidenceRow("Supplementary services", capabilitySnapshot.supplementaryServices)
+    }
+}
+
+@Composable
+private fun DevelopmentDefaultDialerRoleRequest(
+    state: CapabilityState,
+    message: String?,
+    onRequest: () -> Unit,
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text("Default phone role", style = MaterialTheme.typography.titleSmall)
+        when (state) {
+            CapabilityState.Active -> Text(
+                "Android reports GoreeCloud Dialer as the active default dialer.",
+                style = MaterialTheme.typography.bodySmall,
+            )
+
+            is CapabilityState.RoleRequired -> {
+                Button(onClick = onRequest) {
+                    Text("Request default dialer role")
+                }
+                Text(
+                    "Android will display its explicit user-consent prompt before the role can change.",
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+
+            else -> {
+                Button(onClick = {}, enabled = false) {
+                    Text("Default dialer request blocked")
+                }
+                Text(
+                    state.describe(),
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+        }
+
+        message?.let {
+            Spacer(Modifier.height(4.dp))
+            Text(it, style = MaterialTheme.typography.bodySmall)
+        }
     }
 }
 
