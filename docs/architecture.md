@@ -8,44 +8,31 @@ Development architecture for `GoreeCloud/goreecloud-dialer`. Planned modules are
 
 Authorization, capability, activation, and operation success are separate facts. No global state may imply that all Dialer protections or telecom features are accepted.
 
-## Capability domains
-
-1. **Telephony** — Android Telecom role and call integration, SIM routing, DTMF, audio routes, emergency-safe boundaries.
-2. **Contacts** — local contact lookup, T9, favorites, contact-specific call policy.
-3. **History** — Recents, unified timeline, notes, retention and search metadata.
-4. **Screening** — Call Screen prompts, live response transcription, screening rules.
-5. **Safety** — caller identity provenance, spam/scam signals, block/allow decisions and evidence.
-6. **Voicemail** — visual/direct voicemail adapters and content references.
-7. **Call Assistant** — Text Call, transcription, translation, Hold Assistant, menu navigation, summaries.
-8. **Intelligence** — local model/runtime adapters and explicitly approved remote processors.
-9. **Privacy** — Privacy Shield authorization and purpose/locality/retention/revocation state.
-10. **Security** — Wardveil trust, storage and integrity evidence.
-11. **Continuity** — Everkeep backup/restore authority.
-12. **UI** — Glaze UI presentation and accessibility acceptance.
-
 ## Runtime state
 
 Every capability should distinguish unsupported, unavailable, permission/role required, available, active, failed, and succeeded states. User interfaces should surface why a capability is unavailable when that information helps the user act.
 
-The Android probe reads whether the device advertises telephony, whether the Android dialer role exists, and whether GoreeCloud Dialer already holds that role. It does not request the role.
-
 ## ACTION_DIAL boundary
 
-`MainActivity` now handles Android `ACTION_DIAL` with and without a `tel:` URI. The address is transferred to a local keypad without automatically placing a carrier call, normalizing the number, persisting it, or sending it to GoreeCloud services. Unsupported URI schemes are ignored.
+`MainActivity` handles Android `ACTION_DIAL` with and without a `tel:` URI. The address is transferred to a local keypad without automatically placing a carrier call, normalizing the number, persisting it, or sending it to GoreeCloud services. Unsupported URI schemes are ignored.
 
 ## InCallService lifecycle boundary
 
-`GoreeCloudInCallService` is registered with `BIND_INCALL_SERVICE` and tracks call additions, removals, state transitions, and whether another call can be added. The process-local runtime store contains only call counts and lifecycle-state categories. It does not retain phone numbers, caller names, account identifiers, transcripts, audio, or `Call.Details`.
+`GoreeCloudInCallService` is registered with `BIND_INCALL_SERVICE` and tracks call additions, removals, state transitions, and whether another call can be added. Live Android `Call` references remain process-local only while Telecom owns the call. Public runtime snapshots project only generated session IDs, lifecycle categories, and aggregate state. They do not expose phone numbers, caller names, account identifiers, `Call.Details`, transcripts, audio, or recordings.
 
-The service intentionally does not advertise in-call UI or ringing ownership metadata yet. Incoming-call UI, ongoing-call UI, ringtone responsibility, call controls, and durable history remain incomplete.
+## Essential call controls
+
+The call-control layer accepts an explicit process-local session ID and a user-driven action. A state-aware policy rejects actions that do not match the current lifecycle state before invoking Android Telecom. Implemented source contracts cover answering an audio call, declining/end, hold/resume, and starting/stopping DTMF tones. Platform exceptions are returned as failed operation results rather than being reported as success.
+
+These contracts are not yet connected to accepted incoming/ongoing call UI and therefore are not claimed as user-facing call-control acceptance.
 
 ## Default-dialer eligibility gate
 
-Android requires a default-phone candidate to handle `Intent.ACTION_DIAL` and fully implement `InCallService`, including incoming and ongoing call UI. GoreeCloud Dialer now satisfies only the intent-handling and service-lifecycle portions. The application therefore keeps role-request eligibility closed until incoming and ongoing UI plus essential controls are implemented and validated together. Detecting or even holding `ROLE_DIALER` remains a separate platform fact from GoreeCloud acceptance.
+GoreeCloud Dialer handles `Intent.ACTION_DIAL` and now contains an `InCallService` lifecycle/control foundation, but incoming and ongoing call UI acceptance is incomplete. The application keeps role-request eligibility closed until those requirements are implemented and validated together. Detecting or even holding `ROLE_DIALER` remains a separate platform fact from GoreeCloud acceptance.
 
 ## Emergency boundary
 
-Emergency calling is outside experimental automation. Screening, AI, routing suggestions, recording defaults, and Call Assistant must never interfere with emergency call initiation or platform emergency behavior. Android's preloaded dialer remains the emergency-call UI authority even when another application holds the dialer role; future outgoing-call integration must use the platform Telecom call path rather than attempting to bypass it.
+Emergency calling is outside experimental automation. Screening, AI, routing suggestions, recording defaults, and Call Assistant must never interfere with emergency call initiation or platform emergency behavior. Future outgoing-call integration must use the Android Telecom call path and preserve the platform's emergency behavior.
 
 ## Local-first boundary
 

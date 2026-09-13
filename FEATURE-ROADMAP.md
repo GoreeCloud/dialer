@@ -10,7 +10,7 @@ Native Android source tree, build configuration, CI, source documentation, tests
 
 Default-dialer role, outgoing/incoming calls, call controls, DTMF, Recents, contacts, Favorites, SIM routing and emergency-safe boundaries.
 
-**Current state:** runtime telephony/`ROLE_DIALER` detection, `ACTION_DIAL` intent intake, a local keypad surface, and a content-free `InCallService` lifecycle boundary are implemented. Carrier call placement, incoming/ongoing call UI, controls, and role requests remain unavailable. The role-request gate stays closed until Android's default-phone requirements are implemented and validated together.
+**Current state:** runtime telephony/`ROLE_DIALER` detection, `ACTION_DIAL` intake, a local keypad, a content-minimized `InCallService` lifecycle boundary, and state-aware essential call-control contracts are implemented. Carrier call placement, incoming/ongoing call UI, user-facing controls, SIM/audio routing, and role requests remain unavailable. The role-request gate stays closed until Android's default-phone requirements are implemented and validated together.
 
 ## Phase 2 — Privacy, Security and Persistence
 

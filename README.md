@@ -4,7 +4,7 @@ GoreeCloud Dialer is GoreeCloud's privacy-focused, intelligent Android calling a
 
 ## Status
 
-**Active Development / pre-Stable.** The repository contains a validated native Android foundation, `ACTION_DIAL` intake, a local keypad surface, default-dialer capability gating, and a content-free `InCallService` lifecycle boundary. Carrier call placement, incoming/ongoing call UI, call controls, default-role requests, screening, voicemail, recording, transcription, translation, AI assistance, Privacy Shield acceptance, Wardveil acceptance, Everkeep backup, and cross-device calling are **not** claimed as implemented until their runtime paths are built and verified.
+**Active Development / pre-Stable.** The repository contains a validated native Android foundation, `ACTION_DIAL` intake, a local keypad, default-dialer capability gating, a content-minimized `InCallService` lifecycle boundary, and state-aware essential call-control contracts. Carrier call placement, incoming/ongoing call UI, user-facing in-call controls, default-role requests, screening, voicemail, recording, transcription, translation, AI assistance, Privacy Shield acceptance, Wardveil acceptance, Everkeep backup, and cross-device calling are **not** claimed as implemented until their runtime paths are built and verified.
 
 ## Canonical repository
 
@@ -33,16 +33,12 @@ GoreeCloud Dialer is GoreeCloud's privacy-focused, intelligent Android calling a
 
 - Compose application shell and local keypad
 - `ACTION_DIAL` and `tel:` intent intake without call placement side effects
-- reusable capability-state model separating unsupported, unavailable, permission/role-required, available, active, failed, and successful states
-- Android telephony and `ROLE_DIALER` capability probe
-- role-request eligibility gate that stays closed until incoming/ongoing call UI is accepted
-- `InCallService` lifecycle boundary that tracks only content-free call state in process memory
+- Android telephony and `ROLE_DIALER` capability probe with the role-request gate still closed
+- `InCallService` lifecycle boundary with process-local call sessions
+- state-aware answer, decline/end, hold/resume, and DTMF execution contracts
+- content-minimized public call snapshots containing only generated session IDs and lifecycle state
 - unit tests and Android CI covering unit tests plus debug assembly
 - architecture, privacy, security, specifications, roadmap, feature, and user-manual documentation
-
-## Architecture direction
-
-Capability domains are intentionally independent: telephony, contacts, history, screening, safety, voicemail, assistant, intelligence, privacy, security, continuity, and UI.
 
 ## Runtime truth rule
 
