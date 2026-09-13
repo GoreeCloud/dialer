@@ -25,6 +25,8 @@ Capability and telephony contracts
 - app/src/main/java/com/goreecloud/dialer/telephony/AndroidTelephonyCapabilityProbe.kt
 - app/src/main/java/com/goreecloud/dialer/telephony/DialRequest.kt
 - app/src/main/java/com/goreecloud/dialer/telephony/AndroidDialRequestReader.kt
+- app/src/main/java/com/goreecloud/dialer/telephony/PhoneAccountRouting.kt
+- app/src/main/java/com/goreecloud/dialer/telephony/EmergencyCallRouting.kt
 - app/src/main/java/com/goreecloud/dialer/telephony/OutgoingCallPlacement.kt
 - app/src/main/java/com/goreecloud/dialer/telephony/CallLifecycleState.kt
 - app/src/main/java/com/goreecloud/dialer/telephony/InCallRuntimeStore.kt
@@ -45,6 +47,8 @@ Tests
 - app/src/test/java/com/goreecloud/dialer/telephony/DefaultDialerAcceptanceTest.kt
 - app/src/test/java/com/goreecloud/dialer/telephony/DefaultDialerRoleRequestPolicyTest.kt
 - app/src/test/java/com/goreecloud/dialer/telephony/DialRequestParserTest.kt
+- app/src/test/java/com/goreecloud/dialer/telephony/PhoneAccountSelectionPolicyTest.kt
+- app/src/test/java/com/goreecloud/dialer/telephony/EmergencyCallRoutingPolicyTest.kt
 - app/src/test/java/com/goreecloud/dialer/telephony/OutgoingCallPlacementPolicyTest.kt
 - app/src/test/java/com/goreecloud/dialer/telephony/CallLifecycleStateMapperTest.kt
 - app/src/test/java/com/goreecloud/dialer/telephony/CallControlEngineTest.kt
