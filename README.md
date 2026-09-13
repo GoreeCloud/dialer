@@ -1,2 +1,3 @@
-# goreecloud-dialer
-GoreeCloud's official, feature-rich dialer app with privacy features, local AI support, and nore
+# GoreeCloud Dialer
+
+Active Development / pre-Stable. Canonical source repository for GoreeCloud Dialer.
