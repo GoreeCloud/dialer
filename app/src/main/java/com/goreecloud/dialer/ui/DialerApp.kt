@@ -1,5 +1,8 @@
 package com.goreecloud.dialer.ui
 
+import android.Manifest
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -26,6 +29,11 @@ import androidx.compose.ui.unit.dp
 import com.goreecloud.dialer.core.capability.CapabilityState
 import com.goreecloud.dialer.telephony.AndroidTelephonyCapabilityProbe
 import com.goreecloud.dialer.telephony.DialRequest
+import com.goreecloud.dialer.telephony.SubscriptionInventoryGateway
+import com.goreecloud.dialer.telephony.SubscriptionInventoryResult
+import com.goreecloud.dialer.telephony.SubscriptionRouteCoordinator
+import com.goreecloud.dialer.telephony.SubscriptionRouteDecision
+import com.goreecloud.dialer.telephony.SubscriptionRouteReadiness
 import com.goreecloud.dialer.telephony.TelephonyCapabilitySnapshot
 
 @Composable
@@ -34,12 +42,38 @@ fun DialerApp(initialDialRequest: DialRequest? = null) {
     val capabilitySnapshot = remember(applicationContext) {
         AndroidTelephonyCapabilityProbe(applicationContext).snapshot()
     }
+    val subscriptionGateway = remember(applicationContext) {
+        SubscriptionInventoryGateway(applicationContext)
+    }
+    var subscriptionInventory by remember(subscriptionGateway) {
+        mutableStateOf(subscriptionGateway.read())
+    }
+    var selectedSubscriptionId by rememberSaveable { mutableStateOf<Int?>(null) }
+    val requestPhoneStatePermission = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { granted ->
+        subscriptionInventory = if (granted) {
+            subscriptionGateway.read()
+        } else {
+            SubscriptionInventoryResult.PermissionRequired
+        }
+    }
 
     MaterialTheme {
         Scaffold { innerPadding ->
             DevelopmentHome(
                 capabilitySnapshot = capabilitySnapshot,
                 initialNumber = initialDialRequest?.number.orEmpty(),
+                subscriptionInventory = subscriptionInventory,
+                selectedSubscriptionId = selectedSubscriptionId,
+                onRequestSubscriptionPermission = {
+                    requestPhoneStatePermission.launch(Manifest.permission.READ_PHONE_STATE)
+                },
+                onRefreshSubscriptionInventory = {
+                    subscriptionInventory = subscriptionGateway.read()
+                },
+                onSelectSubscription = { selectedSubscriptionId = it },
+                onClearSubscriptionSelection = { selectedSubscriptionId = null },
                 modifier = Modifier.padding(innerPadding),
             )
         }
@@ -50,9 +84,20 @@ fun DialerApp(initialDialRequest: DialRequest? = null) {
 private fun DevelopmentHome(
     capabilitySnapshot: TelephonyCapabilitySnapshot,
     initialNumber: String,
+    subscriptionInventory: SubscriptionInventoryResult,
+    selectedSubscriptionId: Int?,
+    onRequestSubscriptionPermission: () -> Unit,
+    onRefreshSubscriptionInventory: () -> Unit,
+    onSelectSubscription: (Int) -> Unit,
+    onClearSubscriptionSelection: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var number by rememberSaveable(initialNumber) { mutableStateOf(initialNumber) }
+    val nonEmergencyReadiness = SubscriptionRouteCoordinator.evaluate(
+        inventory = subscriptionInventory,
+        explicitlySelectedSubscriptionId = selectedSubscriptionId,
+        isEmergencyCall = false,
+    )
 
     Column(
         modifier = modifier.fillMaxSize().padding(24.dp),
@@ -105,6 +150,17 @@ private fun DevelopmentHome(
         )
 
         Spacer(Modifier.height(20.dp))
+        SubscriptionReadinessPanel(
+            inventory = subscriptionInventory,
+            selectedSubscriptionId = selectedSubscriptionId,
+            readiness = nonEmergencyReadiness,
+            onRequestPermission = onRequestSubscriptionPermission,
+            onRefresh = onRefreshSubscriptionInventory,
+            onSelectSubscription = onSelectSubscription,
+            onClearSelection = onClearSubscriptionSelection,
+        )
+
+        Spacer(Modifier.height(20.dp))
         Text(
             "ACTION_DIAL: ${capabilitySnapshot.dialIntentHandling.describe()}",
             style = MaterialTheme.typography.bodyMedium,
@@ -113,6 +169,78 @@ private fun DevelopmentHome(
             "Default dialer role: ${capabilitySnapshot.defaultDialerRole.describe()}",
             style = MaterialTheme.typography.bodyMedium,
         )
+    }
+}
+
+@Composable
+private fun SubscriptionReadinessPanel(
+    inventory: SubscriptionInventoryResult,
+    selectedSubscriptionId: Int?,
+    readiness: SubscriptionRouteReadiness,
+    onRequestPermission: () -> Unit,
+    onRefresh: () -> Unit,
+    onSelectSubscription: (Int) -> Unit,
+    onClearSelection: () -> Unit,
+) {
+    Text("Carrier route readiness", style = MaterialTheme.typography.titleMedium)
+    Text(
+        "SIM access is requested only after explicit user action. This is a non-emergency route preview; it cannot place calls.",
+        style = MaterialTheme.typography.bodySmall,
+    )
+
+    when (inventory) {
+        SubscriptionInventoryResult.PermissionRequired -> {
+            Button(onClick = onRequestPermission) { Text("Allow SIM access") }
+        }
+        SubscriptionInventoryResult.Unsupported -> {
+            Text("Active subscription inventory is unsupported on this device/runtime.")
+            TextButton(onClick = onRefresh) { Text("Refresh SIM state") }
+        }
+        is SubscriptionInventoryResult.Unavailable -> {
+            Text("Subscription inventory unavailable — ${inventory.reason}")
+            TextButton(onClick = onRefresh) { Text("Refresh SIM state") }
+        }
+        is SubscriptionInventoryResult.Available -> {
+            val ids = inventory.subscriptions.map { it.subscriptionId }
+            Text(
+                if (ids.isEmpty()) "No active carrier subscriptions reported."
+                else "Active subscription IDs: ${ids.joinToString()}",
+            )
+            if (ids.isNotEmpty()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                ) {
+                    ids.forEach { id ->
+                        TextButton(onClick = { onSelectSubscription(id) }) {
+                            Text(if (selectedSubscriptionId == id) "SIM $id selected" else "Select SIM $id")
+                        }
+                    }
+                }
+                if (selectedSubscriptionId != null) {
+                    TextButton(onClick = onClearSelection) { Text("Clear SIM selection") }
+                }
+            }
+            TextButton(onClick = onRefresh) { Text("Refresh SIM state") }
+        }
+    }
+
+    Text(
+        "Non-emergency route preview: ${readiness.describe()}",
+        style = MaterialTheme.typography.bodyMedium,
+    )
+}
+
+private fun SubscriptionRouteReadiness.describe(): String = when (this) {
+    SubscriptionRouteReadiness.PermissionRequired -> "permission required"
+    SubscriptionRouteReadiness.Unsupported -> "unsupported"
+    is SubscriptionRouteReadiness.Unavailable -> "unavailable — $reason"
+    is SubscriptionRouteReadiness.Decision -> when (val route = decision) {
+        SubscriptionRouteDecision.DeferEmergencyToPlatform -> "Android Telecom must route emergency calls"
+        is SubscriptionRouteDecision.UseSubscription -> "subscription ${route.subscriptionId} is eligible"
+        is SubscriptionRouteDecision.RequiresUserSelection ->
+            "explicit SIM selection required from ${route.subscriptionIds.joinToString()}"
+        is SubscriptionRouteDecision.Unavailable -> "unavailable — ${route.reason}"
     }
 }
 
