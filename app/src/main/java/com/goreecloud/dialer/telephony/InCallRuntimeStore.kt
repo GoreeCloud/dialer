@@ -83,7 +83,7 @@ object InCallRuntimeStore {
     @Synchronized
     fun onCallAdded(call: Call): Long {
         trackedByCall[call]?.let { return it.sessionId }
-        val state = CallLifecycleStateMapper.fromAndroid(call.state)
+        val state = AndroidCallStateReader.lifecycle(call)
         val details = call.details
         val disposition = AndroidCallDisposition.from(details, state)
         val tracked = TrackedCall(
