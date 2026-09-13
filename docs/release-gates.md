@@ -11,7 +11,10 @@ The build gate requires the current `main` revision to pass:
 - JVM unit tests
 - Android lint
 - debug APK assembly
+- release-variant assembly with R8/minification enabled
 - instrumentation-test APK compilation
+
+Release-variant assembly is build-integrity evidence only. It exercises release resources, minification, R8 and release packaging configuration, but does not prove signing, distribution readiness, device behavior, production acceptance, or Stable status.
 
 ## Platform gate
 
@@ -31,4 +34,4 @@ Stable release acceptance also requires the current mandated Glaze UI version pl
 
 ## Evidence rule
 
-Every release claim must state the strongest evidence actually obtained. Planned, source-present, compiled, linted, unit-tested, instrumented-test-compiled, emulator-tested, device-tested, carrier-validated, human-validated, and Stable are separate evidence levels.
+Every release claim must state the strongest evidence actually obtained. Planned, source-present, compiled, linted, unit-tested, debug-assembled, release-variant-assembled, instrumentation-test-compiled, emulator-tested, device-tested, carrier-validated, human-validated, signed/distribution-ready, and Stable are separate evidence levels.

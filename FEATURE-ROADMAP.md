@@ -4,13 +4,13 @@
 
 Native Android source tree, build configuration, CI, source documentation, tests and truthful Development status.
 
-**Current state:** Android unit tests and debug assembly have validated prior source checkpoints in CI. The source manifest/provenance inventory exists and CI now uses branch-scoped concurrency; remaining repository-governance items, including a canonical license decision, still need completion before Phase 0 is closed.
+**Current state:** CI validates JVM unit tests, Android lint, debug APK assembly, release-variant assembly with R8/minification, and instrumentation-test APK compilation. These are build-level evidence only; emulator, physical-device, carrier, signing/distribution, human validation, and Stable acceptance remain separate. The source manifest/provenance inventory exists and CI uses branch-scoped concurrency. Remaining repository-governance items, including a canonical license decision, still need completion before Phase 0 is closed.
 
 ## Phase 1 — Core Telephony
 
 Default-dialer role, outgoing/incoming calls, call controls, DTMF, Recents, contacts, Favorites, SIM routing, conferencing and emergency-safe boundaries.
 
-**Current state:** runtime telephony/`ROLE_DIALER` detection, `ACTION_DIAL` intake, a local keypad, a content-minimized `InCallService` lifecycle boundary, explicit extended Android lifecycle mapping, transient `INCOMING`/`OUTGOING`/`UNKNOWN` direction evidence, generic disconnected-call terminal outcomes, state-aware answer/decline/end/hold/resume/DTMF contracts, a user-driven in-call DTMF keypad, live hold/mute/conference capability evidence, content-minimized conference parent/child/conferenceable-session state, guarded pairwise conference/merge/swap/separate Development controls, observable process-local call snapshots, Development incoming-to-ongoing `CallStyle` presentation, a dormant policy-gated `TelecomManager.placeCall` boundary, a fail-closed role-request preparation policy, Telecom-evidenced mute/unmute control, API 34+ endpoint discovery/routing, `READ_PHONE_STATE`-guarded call-capable phone-account discovery, anonymous explicit phone-account selection, permission-lifetime revocation of cached account handles, and emergency-safe account-routing policy are implemented in source.
+**Current state:** runtime telephony/`ROLE_DIALER` detection, `ACTION_DIAL` intake, a local keypad, a content-minimized `InCallService` lifecycle boundary, explicit extended Android lifecycle mapping, API-aware call-state reads with `Call.Details.state` on API 31+ and an isolated API 29-30 fallback, transient `INCOMING`/`OUTGOING`/`UNKNOWN` direction evidence, generic disconnected-call terminal outcomes, state-aware answer/decline/end/hold/resume/DTMF contracts, a user-driven in-call DTMF keypad, live hold/mute/conference capability evidence, content-minimized conference parent/child/conferenceable-session state, guarded pairwise conference/merge/swap/separate Development controls, observable process-local call snapshots, Development incoming-to-ongoing `CallStyle` presentation, a dormant policy-gated `TelecomManager.placeCall` boundary, a fail-closed role-request preparation policy, Telecom-evidenced mute/unmute control, API 34+ endpoint discovery/routing, `READ_PHONE_STATE`-guarded call-capable phone-account discovery, anonymous explicit phone-account selection, permission-lifetime revocation of cached account handles, and emergency-safe account-routing policy are implemented in source.
 
 Generic call outcomes are derived only from Telecom disconnect codes once a call is disconnected; GoreeCloud does not infer missed/rejected/remote/local outcomes from UI actions. Provider-specific disconnect reasons are not projected, and this transient classification is not yet a durable Recents/history implementation.
 
@@ -21,6 +21,8 @@ Remaining Phase 1 work includes production/device acceptance of outgoing and inc
 ## Phase 2 — Privacy, Security and Persistence
 
 Privacy Shield operation authorization, Wardveil storage boundaries, call metadata persistence, retention controls, permission explanations, Private Call and minimized diagnostics.
+
+**Current state:** Android-managed automatic backup is fail-closed: the manifest disables backup and explicit Android 12+ extraction rules exclude app-managed data from both cloud backup and device-to-device transfer, with equivalent legacy full-backup exclusions. This is a platform privacy boundary only; it is not Everkeep backup/recovery implementation or acceptance.
 
 ## Phase 3 — Caller Safety and Screening
 

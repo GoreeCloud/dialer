@@ -31,6 +31,7 @@ The current source contains:
 - `ACTION_DIAL`/`tel:` intake and a local keypad without automatic carrier-call placement.
 - An `InCallService` lifecycle boundary with generated process-local call session IDs.
 - Explicit mapping for current Android call lifecycle states rather than collapsing valid special states into `UNKNOWN`.
+- API-aware lifecycle-state reads using `Call.Details.state` on API 31+ with the deprecated `Call.state` path isolated to the API 29-30 compatibility range.
 - Privacy-minimized direction evidence normalized to `INCOMING`, `OUTGOING`, or `UNKNOWN` from Android Telecom.
 - Generic terminal outcomes derived only for disconnected calls from `android.telecom.DisconnectCause.code`; localized/provider-specific reason text remains outside public runtime state.
 - State-aware Answer, Decline, End, Hold, Resume and DTMF execution boundaries.
@@ -44,13 +45,14 @@ The current source contains:
 - Content-minimized conference parent/child/conferenceable-call relationships represented only by generated session IDs.
 - Guarded pairwise conference, merge, swap and separate Development requests derived from Telecom's live relationship/capability evidence.
 - Dormant `TelecomManager.placeCall` and default-dialer role-request boundaries that stay rejected until GoreeCloud acceptance gates pass.
+- Android-managed automatic backup disabled plus explicit cloud-backup, device-transfer, and legacy full-backup exclusions for app-managed storage; this is not Everkeep implementation or recovery acceptance.
 - JVM unit-test source plus Android instrumentation-test source.
-- CI validation for JVM unit tests, Android lint, debug APK assembly, and instrumentation-test APK compilation.
+- CI validation for JVM unit tests, Android lint, debug APK assembly, minified release-variant assembly, and instrumentation-test APK compilation.
 - Architecture, privacy, security, feature, roadmap, platform-modernization, CI-validation, testing and release-gate documentation.
 
 The direction/terminal-outcome layer is transient runtime evidence only. It is not a durable Recents implementation and does not persist call history.
 
-Instrumentation-test APK compilation is build evidence only. Emulator execution, physical-device execution, carrier behavior, and human validation remain independent evidence states.
+Release-variant assembly is build evidence only. It validates release resources, R8/minification and release packaging configuration, but it does not prove signing, production distribution readiness, device behavior or Stable acceptance. Instrumentation-test APK compilation likewise does not prove emulator or physical-device execution. Carrier behavior and human validation remain independent evidence states.
 
 ## Explicitly not production-accepted
 
@@ -73,12 +75,13 @@ The source above must not be interpreted as proof that GoreeCloud Dialer is read
 - Wardveil runtime acceptance
 - Everkeep runtime backup/recovery integration
 - Call Assistant and local/remote AI provider paths
+- production signing/distribution acceptance
 - current Glaze UI release acceptance and human accessibility/release validation
 
 ## Runtime truth requirements
 
-A source file, UI control, policy object, permission declaration, role availability signal, submitted Telecom request, transient direction/outcome classification, compiled instrumentation test, or test double does not by itself prove that a user-visible capability succeeded. Device capability, carrier support, runtime state, permissions, role ownership, GoreeCloud acceptance, request submission, callback/result evidence, privacy authorization, security acceptance, device validation, and human release validation remain independent facts.
+A source file, UI control, policy object, permission declaration, role availability signal, submitted Telecom request, transient direction/outcome classification, compiled instrumentation test, release-variant build, or test double does not by itself prove that a user-visible capability succeeded. Device capability, carrier support, runtime state, permissions, role ownership, GoreeCloud acceptance, request submission, callback/result evidence, privacy authorization, security acceptance, signing/distribution evidence, device validation, and human release validation remain independent facts.
 
 ## Product scope
 
-The planned product scope is defined by the canonical GoreeCloud Dialer project specification and repository roadmap. Source documentation must continue to distinguish planned behavior, source-present Development boundaries, build/CI validation, emulator/device validation, carrier validation, human validation, and production acceptance.
+The planned product scope is defined by the canonical GoreeCloud Dialer project specification and repository roadmap. Source documentation must continue to distinguish planned behavior, source-present Development boundaries, build/CI validation, release-variant build evidence, emulator/device validation, carrier validation, signing/distribution evidence, human validation, and production acceptance.

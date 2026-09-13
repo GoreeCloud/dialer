@@ -50,6 +50,7 @@ A future move to compile SDK 37 / AGP 9.1+ is tracked as a separate platform mig
 - emergency-number classification uses Android telephony evidence; emergency and unknown classification force Android-managed phone-account routing
 - explicit phone-account selection is added to `TelecomManager.placeCall` only for numbers Android classifies as non-emergency
 - `InCallService` lifecycle boundary with process-local call sessions
+- API-aware lifecycle-state reader using `Call.Details.state` on API 31+ with the deprecated `Call.state` path isolated to the supported API 29-30 compatibility fallback
 - observable content-minimized call snapshots exposed as a `StateFlow`
 - Android Telecom direction evidence mapped only to `INCOMING`, `OUTGOING`, or `UNKNOWN`
 - generic terminal outcomes derived only after `DISCONNECTED` from `DisconnectCause.code`, including missed, rejected, busy, local, remote, error, canceled, restricted, answered-elsewhere, and pulled-call categories
@@ -71,15 +72,17 @@ A future move to compile SDK 37 / AGP 9.1+ is tracked as a separate platform mig
 - notification actions use an explicit non-exported receiver and process-local Telecom session IDs
 - `POST_NOTIFICATIONS` and full-screen-intent capability are checked at runtime; unavailable full-screen access degrades to notification presentation
 - ringtone ownership remains intentionally undeclared until a dedicated ringtone path is implemented and validated
+- Android-managed automatic backup is disabled and explicit platform rules exclude app-managed storage from cloud backup and device-to-device transfer; this is not Everkeep implementation or recovery acceptance
 - Android CI uses Node-24-capable Action lines and branch-scoped concurrency so newer commits cancel superseded runs
-- CI currently validates JVM unit tests, Android lint, debug APK assembly, and instrumentation-test APK compilation
+- CI validates JVM unit tests, Android lint, debug APK assembly, minified release-variant assembly, and instrumentation-test APK compilation
+- release-variant assembly exercises release resources, R8/minification, and packaging configuration; it does **not** prove signing, distribution readiness, device acceptance, or Stable status
 - instrumentation test source includes a canonical-package smoke test; CI compilation does **not** imply emulator or physical-device execution
 - Android platform modernization, CI evidence boundaries, testing layers, and release gates are documented separately
 - architecture, privacy, security, specifications, roadmap, feature, and user-manual documentation
 
 ## Runtime truth rule
 
-A feature is never considered implemented merely because a UI surface, configuration switch, planned contract, issue, mock, compiled test APK, or green build exists. Runtime capability, platform/carrier support, permission/role state, privacy authorization, security acceptance, request submission, verified operation result, device validation, and human release validation are separate facts.
+A feature is never considered implemented merely because a UI surface, configuration switch, planned contract, issue, mock, compiled test APK, release-variant build, or green CI run exists. Runtime capability, platform/carrier support, permission/role state, privacy authorization, security acceptance, request submission, verified operation result, device validation, signing/distribution evidence, and human release validation are separate facts.
 
 ## Documentation
 
