@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-feature android:name="android.hardware.telephony" android:required="false" />
+    <!--
+      Declared only so the explicit subscription-inventory flow can request this authority later.
+      The inventory gateway never requests or assumes the runtime grant itself and fails closed when
+      permission is absent. No call placement, call-log, contacts, SMS, or phone-number permission
+      is introduced by this boundary.
+    -->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <application
         android:allowBackup="false"
