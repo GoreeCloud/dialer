@@ -12,8 +12,8 @@ import kotlinx.coroutines.flow.asStateFlow
  *
  * The store retains Android Call objects only while Telecom owns the live call so explicit
  * controls can be executed. Public snapshots expose only generated session IDs, lifecycle
- * categories, and aggregate state. No number, caller name, account identifier, Call.Details,
- * transcript, recording, or audio is persisted or projected.
+ * categories, aggregate state, and content-free audio-control state. No number, caller name,
+ * account identifier, Call.Details, transcript, recording, or audio is persisted or projected.
  */
 data class CallRuntimeSummary(
     val sessionId: Long,
@@ -25,6 +25,7 @@ data class InCallRuntimeSnapshot(
     val calls: List<CallRuntimeSummary> = emptyList(),
     val stateCounts: Map<CallLifecycleState, Int> = emptyMap(),
     val canAddCall: Boolean? = null,
+    val isMuted: Boolean? = null,
 )
 
 object InCallRuntimeStore {
@@ -38,6 +39,7 @@ object InCallRuntimeStore {
     private val trackedByCall = IdentityHashMap<Call, TrackedCall>()
     private val trackedById = linkedMapOf<Long, TrackedCall>()
     private var canAddCall: Boolean? = null
+    private var isMuted: Boolean? = null
 
     private val mutableSnapshots = MutableStateFlow(InCallRuntimeSnapshot())
     val snapshots: StateFlow<InCallRuntimeSnapshot> = mutableSnapshots.asStateFlow()
@@ -80,6 +82,12 @@ object InCallRuntimeStore {
     }
 
     @Synchronized
+    fun onMuteStateChanged(value: Boolean) {
+        isMuted = value
+        publish()
+    }
+
+    @Synchronized
     fun execute(sessionId: Long, action: CallControlAction): CallControlResult {
         val tracked = trackedById[sessionId]
             ?: return CallControlResult.Rejected("Call session is no longer active")
@@ -91,6 +99,7 @@ object InCallRuntimeStore {
         trackedByCall.clear()
         trackedById.clear()
         canAddCall = null
+        isMuted = null
         publish()
     }
 
@@ -103,6 +112,7 @@ object InCallRuntimeStore {
             calls = summaries,
             stateCounts = summaries.groupingBy { it.state }.eachCount(),
             canAddCall = canAddCall,
+            isMuted = isMuted,
         )
     }
 }

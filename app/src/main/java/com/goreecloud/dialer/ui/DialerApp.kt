@@ -26,10 +26,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.goreecloud.dialer.core.capability.CapabilityState
 import com.goreecloud.dialer.telephony.AndroidTelephonyCapabilityProbe
+import com.goreecloud.dialer.telephony.CallAudioControlAction
+import com.goreecloud.dialer.telephony.CallAudioControlResult
 import com.goreecloud.dialer.telephony.CallControlPresentationPolicy
 import com.goreecloud.dialer.telephony.CallControlResult
+import com.goreecloud.dialer.telephony.CallLifecycleState
 import com.goreecloud.dialer.telephony.CallRuntimeSummary
 import com.goreecloud.dialer.telephony.DialRequest
+import com.goreecloud.dialer.telephony.InCallAudioControlRuntime
 import com.goreecloud.dialer.telephony.InCallRuntimeSnapshot
 import com.goreecloud.dialer.telephony.InCallRuntimeStore
 import com.goreecloud.dialer.telephony.TelephonyCapabilitySnapshot
@@ -154,7 +158,32 @@ private fun DevelopmentInCallPanel(snapshot: InCallRuntimeSnapshot) {
             Spacer(Modifier.height(8.dp))
         }
 
+        val muteEligible = snapshot.calls.any {
+            it.state == CallLifecycleState.ACTIVE || it.state == CallLifecycleState.HOLDING
+        }
+        if (muteEligible) {
+            when (val muted = snapshot.isMuted) {
+                null -> Text(
+                    "Mute state is awaiting Telecom evidence",
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                else -> Button(
+                    onClick = {
+                        val action = if (muted) {
+                            CallAudioControlAction.Unmute
+                        } else {
+                            CallAudioControlAction.Mute
+                        }
+                        operationStatus = InCallAudioControlRuntime.execute(action).message(action)
+                    },
+                ) {
+                    Text(if (muted) "Unmute" else "Mute")
+                }
+            }
+        }
+
         operationStatus?.let {
+            Spacer(Modifier.height(8.dp))
             Text(it, style = MaterialTheme.typography.bodySmall)
         }
     }
@@ -197,6 +226,15 @@ private fun DevelopmentCallControls(
                 }
             }
         }
+    }
+}
+
+private fun CallAudioControlResult.message(action: CallAudioControlAction): String {
+    val label = if (action == CallAudioControlAction.Mute) "Mute" else "Unmute"
+    return when (this) {
+        CallAudioControlResult.Succeeded -> "$label: succeeded"
+        is CallAudioControlResult.Rejected -> "$label: rejected — $reason"
+        is CallAudioControlResult.Failed -> "$label: failed — $reason"
     }
 }
 
