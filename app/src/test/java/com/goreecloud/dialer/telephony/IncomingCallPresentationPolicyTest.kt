@@ -61,4 +61,15 @@ class IncomingCallPresentationPolicyTest {
             ),
         )
     }
+
+    @Test
+    fun notificationModeTracksCallLifecycle() {
+        assertEquals(CallNotificationMode.INCOMING, CallNotificationModeResolver.resolve(CallLifecycleState.RINGING))
+        assertEquals(CallNotificationMode.ONGOING, CallNotificationModeResolver.resolve(CallLifecycleState.CONNECTING))
+        assertEquals(CallNotificationMode.ONGOING, CallNotificationModeResolver.resolve(CallLifecycleState.DIALING))
+        assertEquals(CallNotificationMode.ONGOING, CallNotificationModeResolver.resolve(CallLifecycleState.ACTIVE))
+        assertEquals(CallNotificationMode.ONGOING, CallNotificationModeResolver.resolve(CallLifecycleState.HOLDING))
+        assertEquals(CallNotificationMode.NONE, CallNotificationModeResolver.resolve(CallLifecycleState.DISCONNECTED))
+        assertEquals(CallNotificationMode.NONE, CallNotificationModeResolver.resolve(CallLifecycleState.UNKNOWN))
+    }
 }

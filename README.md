@@ -4,7 +4,7 @@ GoreeCloud Dialer is GoreeCloud's privacy-focused, intelligent Android calling a
 
 ## Status
 
-**Active Development / pre-Stable.** The repository contains a validated native Android foundation, `ACTION_DIAL` intake, a local keypad, default-dialer capability gating, a content-minimized `InCallService` lifecycle boundary, state-aware essential call-control contracts, a Development ongoing-call control surface, a dormant policy-gated `TelecomManager.placeCall` boundary, and a Development incoming-call notification/full-screen presentation boundary. Carrier call placement is not accepted, caller identity is not projected into the new incoming surface, ringtone ownership is not claimed, production incoming/ongoing UI acceptance is incomplete, and default-role requests remain disabled. Screening, voicemail, recording, transcription, translation, AI assistance, Privacy Shield acceptance, Wardveil acceptance, Everkeep backup, and cross-device calling are also **not** claimed as implemented until their runtime paths are built and verified.
+**Active Development / pre-Stable.** The repository contains a validated native Android foundation, `ACTION_DIAL` intake, a local keypad, default-dialer capability gating, a content-minimized `InCallService` lifecycle boundary, state-aware essential call-control contracts, a Development ongoing-call control surface, a dormant policy-gated `TelecomManager.placeCall` boundary, and Development incoming/ongoing `CallStyle` notification continuity. Carrier call placement is not accepted, caller identity is not projected into the call surfaces, ringtone ownership is not claimed, production incoming/ongoing UI acceptance is incomplete, and default-role requests remain disabled. Screening, voicemail, recording, transcription, translation, AI assistance, Privacy Shield acceptance, Wardveil acceptance, Everkeep backup, and cross-device calling are also **not** claimed as implemented until their runtime paths are built and verified.
 
 ## Canonical repository
 
@@ -40,7 +40,8 @@ GoreeCloud Dialer is GoreeCloud's privacy-focused, intelligent Android calling a
 - observable content-minimized call snapshots exposed as a `StateFlow`
 - state-aware answer, decline/end, hold/resume, and DTMF execution contracts
 - Development ongoing-call UI exposing only session IDs, lifecycle state, accepted controls, and explicit operation results
-- Development incoming-call notification/full-screen UI exposing only a generic incoming-call label and generated session ID
+- Development incoming-call `CallStyle` notification/full-screen UI with Answer and Decline actions
+- incoming notifications transition to ongoing `CallStyle` notifications with an explicit End action and route back to the in-call UI
 - notification actions use an explicit non-exported receiver and process-local Telecom session IDs
 - `POST_NOTIFICATIONS` and full-screen-intent capability are checked at runtime; unavailable full-screen access degrades to notification presentation
 - ringtone ownership remains intentionally undeclared until a dedicated ringtone path is implemented and validated

@@ -10,6 +10,28 @@ data class IncomingCallPresentationFacts(
     val fullScreenAllowed: Boolean,
 )
 
+enum class CallNotificationMode {
+    NONE,
+    INCOMING,
+    ONGOING,
+}
+
+object CallNotificationModeResolver {
+    fun resolve(state: CallLifecycleState): CallNotificationMode = when (state) {
+        CallLifecycleState.RINGING -> CallNotificationMode.INCOMING
+        CallLifecycleState.CONNECTING,
+        CallLifecycleState.DIALING,
+        CallLifecycleState.ACTIVE,
+        CallLifecycleState.HOLDING,
+        -> CallNotificationMode.ONGOING
+
+        CallLifecycleState.NEW,
+        CallLifecycleState.DISCONNECTED,
+        CallLifecycleState.UNKNOWN,
+        -> CallNotificationMode.NONE
+    }
+}
+
 sealed interface IncomingCallPresentationDecision {
     data object NotApplicable : IncomingCallPresentationDecision
     data class Blocked(val reason: String) : IncomingCallPresentationDecision

@@ -13,6 +13,7 @@ class CallActionReceiver : BroadcastReceiver() {
         val action = when (intent.action) {
             ACTION_ANSWER -> CallControlAction.AnswerAudio
             ACTION_DECLINE -> CallControlAction.Decline
+            ACTION_END -> CallControlAction.End
             else -> return
         }
         InCallRuntimeStore.execute(sessionId, action)
@@ -21,5 +22,6 @@ class CallActionReceiver : BroadcastReceiver() {
     companion object {
         const val ACTION_ANSWER = "com.goreecloud.dialer.action.ANSWER"
         const val ACTION_DECLINE = "com.goreecloud.dialer.action.DECLINE"
+        const val ACTION_END = "com.goreecloud.dialer.action.END"
     }
 }

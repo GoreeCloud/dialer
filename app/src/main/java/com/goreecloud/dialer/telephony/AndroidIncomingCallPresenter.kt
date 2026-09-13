@@ -13,14 +13,15 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.Person
 import androidx.core.content.ContextCompat
+import com.goreecloud.dialer.MainActivity
 import com.goreecloud.dialer.R
 
 /**
- * Development incoming-call presentation adapter.
+ * Development call-notification presenter.
  *
- * This presenter intentionally uses a generic caller label and generated session ID only. Caller
- * identity remains outside the public runtime snapshot until a separate privacy-authorized caller
- * identity projection is designed and accepted.
+ * The class name reflects its original incoming-call scope, but it now preserves presentation
+ * continuity into ongoing call states as well. Caller identity remains deliberately absent from
+ * the notification contract until a separate privacy-authorized identity projection exists.
  */
 class AndroidIncomingCallPresenter(
     context: Context,
@@ -30,12 +31,24 @@ class AndroidIncomingCallPresenter(
     fun sync(
         sessionId: Long,
         state: CallLifecycleState,
-    ): IncomingCallPresentationResult {
-        if (state != CallLifecycleState.RINGING) {
+    ): IncomingCallPresentationResult = when (CallNotificationModeResolver.resolve(state)) {
+        CallNotificationMode.NONE -> {
             cancel(sessionId)
-            return IncomingCallPresentationResult.NotApplicable
+            IncomingCallPresentationResult.NotApplicable
         }
 
+        CallNotificationMode.INCOMING -> presentIncoming(sessionId, state)
+        CallNotificationMode.ONGOING -> presentOngoing(sessionId)
+    }
+
+    fun cancel(sessionId: Long) {
+        NotificationManagerCompat.from(applicationContext).cancel(notificationId(sessionId))
+    }
+
+    private fun presentIncoming(
+        sessionId: Long,
+        state: CallLifecycleState,
+    ): IncomingCallPresentationResult {
         val notificationManager = applicationContext.getSystemService(NotificationManager::class.java)
             ?: return IncomingCallPresentationResult.Failed("Android NotificationManager is unavailable")
 
@@ -54,7 +67,7 @@ class AndroidIncomingCallPresenter(
 
             is IncomingCallPresentationDecision.Present -> try {
                 ensureChannel(notificationManager)
-                val contentIntent = activityIntent(sessionId)
+                val contentIntent = incomingActivityIntent(sessionId)
                 val declineIntent = actionIntent(
                     sessionId = sessionId,
                     action = CallActionReceiver.ACTION_DECLINE,
@@ -65,10 +78,7 @@ class AndroidIncomingCallPresenter(
                     action = CallActionReceiver.ACTION_ANSWER,
                     salt = 3,
                 )
-                val caller = Person.Builder()
-                    .setName("Incoming call")
-                    .setImportant(true)
-                    .build()
+                val caller = genericPerson("Incoming call")
 
                 val builder = NotificationCompat.Builder(applicationContext, CHANNEL_ID)
                     .setSmallIcon(R.drawable.ic_call_notification)
@@ -93,10 +103,7 @@ class AndroidIncomingCallPresenter(
                     builder.setFullScreenIntent(contentIntent, true)
                 }
 
-                NotificationManagerCompat.from(applicationContext).notify(
-                    notificationId(sessionId),
-                    builder.build(),
-                )
+                post(sessionId, builder.build())
                 IncomingCallPresentationResult.Presented(
                     fullScreenRequested = decision.requestFullScreen,
                 )
@@ -105,16 +112,63 @@ class AndroidIncomingCallPresenter(
                     "Android rejected incoming-call notification authorization",
                 )
             } catch (runtimeException: RuntimeException) {
-                IncomingCallPresentationResult.Failed(
-                    runtimeException.message?.takeIf { it.isNotBlank() }
-                        ?: runtimeException::class.java.simpleName,
-                )
+                IncomingCallPresentationResult.Failed(runtimeException.safeMessage())
             }
         }
     }
 
-    fun cancel(sessionId: Long) {
-        NotificationManagerCompat.from(applicationContext).cancel(notificationId(sessionId))
+    private fun presentOngoing(sessionId: Long): IncomingCallPresentationResult {
+        if (!notificationsAllowed()) {
+            return IncomingCallPresentationResult.Blocked(
+                "Ongoing-call notifications are not allowed",
+            )
+        }
+        val notificationManager = applicationContext.getSystemService(NotificationManager::class.java)
+            ?: return IncomingCallPresentationResult.Failed("Android NotificationManager is unavailable")
+
+        return try {
+            ensureChannel(notificationManager)
+            val contentIntent = mainActivityIntent(sessionId)
+            val endIntent = actionIntent(
+                sessionId = sessionId,
+                action = CallActionReceiver.ACTION_END,
+                salt = 4,
+            )
+            val caller = genericPerson("Active call")
+            val notification = NotificationCompat.Builder(applicationContext, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_call_notification)
+                .setCategory(NotificationCompat.CATEGORY_CALL)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
+                .setOngoing(true)
+                .setAutoCancel(false)
+                .setContentTitle("Call in progress")
+                .setContentText("Open GoreeCloud Dialer for accepted call controls.")
+                .setContentIntent(contentIntent)
+                .setStyle(
+                    NotificationCompat.CallStyle.forOngoingCall(
+                        caller,
+                        endIntent,
+                    ),
+                )
+                .addPerson(caller)
+                .build()
+            post(sessionId, notification)
+            IncomingCallPresentationResult.Presented(fullScreenRequested = false)
+        } catch (securityException: SecurityException) {
+            IncomingCallPresentationResult.Failed(
+                "Android rejected ongoing-call notification authorization",
+            )
+        } catch (runtimeException: RuntimeException) {
+            IncomingCallPresentationResult.Failed(runtimeException.safeMessage())
+        }
+    }
+
+    private fun post(sessionId: Long, notification: Notification) {
+        NotificationManagerCompat.from(applicationContext).notify(
+            notificationId(sessionId),
+            notification,
+        )
     }
 
     private fun notificationsAllowed(): Boolean {
@@ -138,10 +192,10 @@ class AndroidIncomingCallPresenter(
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         val channel = NotificationChannel(
             CHANNEL_ID,
-            "Incoming calls",
+            "Calls",
             NotificationManager.IMPORTANCE_HIGH,
         ).apply {
-            description = "Urgent GoreeCloud Dialer incoming-call presentation"
+            description = "Urgent and ongoing GoreeCloud Dialer call presentation"
             lockscreenVisibility = Notification.VISIBILITY_PRIVATE
             setSound(null, null)
             enableVibration(true)
@@ -149,12 +203,26 @@ class AndroidIncomingCallPresenter(
         notificationManager.createNotificationChannel(channel)
     }
 
-    private fun activityIntent(sessionId: Long): PendingIntent = PendingIntent.getActivity(
+    private fun genericPerson(label: String): Person = Person.Builder()
+        .setName(label)
+        .setImportant(true)
+        .build()
+
+    private fun incomingActivityIntent(sessionId: Long): PendingIntent = PendingIntent.getActivity(
         applicationContext,
         requestCode(sessionId, 1),
         Intent(applicationContext, IncomingCallActivity::class.java)
             .putExtra(EXTRA_SESSION_ID, sessionId)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_USER_ACTION),
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+    )
+
+    private fun mainActivityIntent(sessionId: Long): PendingIntent = PendingIntent.getActivity(
+        applicationContext,
+        requestCode(sessionId, 5),
+        Intent(applicationContext, MainActivity::class.java)
+            .putExtra(EXTRA_SESSION_ID, sessionId)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP),
         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
     )
 
@@ -175,6 +243,9 @@ class AndroidIncomingCallPresenter(
 
     private fun requestCode(sessionId: Long, salt: Int): Int =
         ((sessionId * 37L + salt.toLong()) and 0x7FFFFFFFL).toInt().coerceAtLeast(1)
+
+    private fun RuntimeException.safeMessage(): String =
+        message?.takeIf { it.isNotBlank() } ?: this::class.java.simpleName
 
     companion object {
         const val EXTRA_SESSION_ID = "com.goreecloud.dialer.extra.CALL_SESSION_ID"
