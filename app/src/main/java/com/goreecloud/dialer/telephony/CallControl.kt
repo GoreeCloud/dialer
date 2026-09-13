@@ -73,10 +73,10 @@ class CallControlEngine(
         state: CallLifecycleState,
     ): String? = when (action) {
         CallControlAction.AnswerAudio ->
-            if (state == CallLifecycleState.RINGING) null else "Call is not ringing"
+            if (state in RINGING_STATES) null else "Call is not ringing"
 
         CallControlAction.Decline ->
-            if (state == CallLifecycleState.RINGING) null else "Call is not ringing"
+            if (state in RINGING_STATES) null else "Call is not ringing"
 
         CallControlAction.End ->
             if (state in ENDABLE_STATES) null else "Call cannot be ended from $state"
@@ -106,10 +106,15 @@ class CallControlEngine(
     }
 
     private companion object {
+        val RINGING_STATES = setOf(
+            CallLifecycleState.RINGING,
+            CallLifecycleState.SIMULATED_RINGING,
+        )
         val ENDABLE_STATES = setOf(
             CallLifecycleState.CONNECTING,
             CallLifecycleState.DIALING,
             CallLifecycleState.RINGING,
+            CallLifecycleState.SIMULATED_RINGING,
             CallLifecycleState.ACTIVE,
             CallLifecycleState.HOLDING,
         )

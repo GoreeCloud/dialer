@@ -11,7 +11,9 @@ object CallControlPresentationPolicy {
         state: CallLifecycleState,
         holdCurrentlyAvailable: Boolean = true,
     ): List<CallControlAction> = when (state) {
-        CallLifecycleState.RINGING -> listOf(
+        CallLifecycleState.RINGING,
+        CallLifecycleState.SIMULATED_RINGING,
+        -> listOf(
             CallControlAction.AnswerAudio,
             CallControlAction.Decline,
         )
@@ -31,6 +33,10 @@ object CallControlPresentationPolicy {
         }
 
         CallLifecycleState.NEW,
+        CallLifecycleState.SELECTING_PHONE_ACCOUNT,
+        CallLifecycleState.DISCONNECTING,
+        CallLifecycleState.PULLING_CALL,
+        CallLifecycleState.AUDIO_PROCESSING,
         CallLifecycleState.DISCONNECTED,
         CallLifecycleState.UNKNOWN,
         -> emptyList()

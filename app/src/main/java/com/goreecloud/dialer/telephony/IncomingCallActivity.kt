@@ -54,9 +54,11 @@ private fun IncomingCallScreen(
     val snapshot by InCallRuntimeStore.snapshots.collectAsState()
     val call = snapshot.calls.firstOrNull { it.sessionId == sessionId }
     var operationStatus by remember { mutableStateOf<String?>(null) }
+    val ringing = call?.state == CallLifecycleState.RINGING ||
+        call?.state == CallLifecycleState.SIMULATED_RINGING
 
     LaunchedEffect(call?.state) {
-        if (call == null || call.state != CallLifecycleState.RINGING) {
+        if (call == null || !ringing) {
             onFinished()
         }
     }
@@ -89,7 +91,7 @@ private fun IncomingCallScreen(
                     horizontalArrangement = Arrangement.SpaceEvenly,
                 ) {
                     Button(
-                        enabled = call?.state == CallLifecycleState.RINGING,
+                        enabled = ringing,
                         onClick = {
                             operationStatus = InCallRuntimeStore.execute(
                                 sessionId,
@@ -100,7 +102,7 @@ private fun IncomingCallScreen(
                         Text("Answer")
                     }
                     Button(
-                        enabled = call?.state == CallLifecycleState.RINGING,
+                        enabled = ringing,
                         onClick = {
                             operationStatus = InCallRuntimeStore.execute(
                                 sessionId,

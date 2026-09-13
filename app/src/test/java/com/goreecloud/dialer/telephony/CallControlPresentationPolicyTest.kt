@@ -6,10 +6,12 @@ import org.junit.Test
 
 class CallControlPresentationPolicyTest {
     @Test
-    fun ringingCallShowsOnlyAnswerAndDecline() {
+    fun ringingStatesShowOnlyAnswerAndDecline() {
+        val expected = listOf(CallControlAction.AnswerAudio, CallControlAction.Decline)
+        assertEquals(expected, CallControlPresentationPolicy.actionsFor(CallLifecycleState.RINGING))
         assertEquals(
-            listOf(CallControlAction.AnswerAudio, CallControlAction.Decline),
-            CallControlPresentationPolicy.actionsFor(CallLifecycleState.RINGING),
+            expected,
+            CallControlPresentationPolicy.actionsFor(CallLifecycleState.SIMULATED_RINGING),
         )
     }
 
@@ -58,8 +60,17 @@ class CallControlPresentationPolicyTest {
     }
 
     @Test
-    fun terminalOrUnknownStateShowsNoControl() {
-        assertTrue(CallControlPresentationPolicy.actionsFor(CallLifecycleState.DISCONNECTED).isEmpty())
-        assertTrue(CallControlPresentationPolicy.actionsFor(CallLifecycleState.UNKNOWN).isEmpty())
+    fun specialAndTerminalStatesFailClosed() {
+        listOf(
+            CallLifecycleState.NEW,
+            CallLifecycleState.SELECTING_PHONE_ACCOUNT,
+            CallLifecycleState.DISCONNECTING,
+            CallLifecycleState.PULLING_CALL,
+            CallLifecycleState.AUDIO_PROCESSING,
+            CallLifecycleState.DISCONNECTED,
+            CallLifecycleState.UNKNOWN,
+        ).forEach { state ->
+            assertTrue(CallControlPresentationPolicy.actionsFor(state).isEmpty())
+        }
     }
 }

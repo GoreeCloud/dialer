@@ -19,6 +19,20 @@ class IncomingCallPresentationPolicyTest {
     }
 
     @Test
+    fun simulatedRingingUsesIncomingPresentation() {
+        assertEquals(
+            IncomingCallPresentationDecision.Present(requestFullScreen = false),
+            IncomingCallPresentationPolicy.decide(
+                IncomingCallPresentationFacts(
+                    state = CallLifecycleState.SIMULATED_RINGING,
+                    notificationsAllowed = true,
+                    fullScreenAllowed = false,
+                ),
+            ),
+        )
+    }
+
+    @Test
     fun ringingCallFallsBackToNotificationWhenFullScreenIsUnavailable() {
         assertEquals(
             IncomingCallPresentationDecision.Present(requestFullScreen = false),
@@ -63,13 +77,26 @@ class IncomingCallPresentationPolicyTest {
     }
 
     @Test
-    fun notificationModeTracksCallLifecycle() {
+    fun notificationModeTracksCallLifecycleWithoutGuessingSpecialStates() {
         assertEquals(CallNotificationMode.INCOMING, CallNotificationModeResolver.resolve(CallLifecycleState.RINGING))
+        assertEquals(
+            CallNotificationMode.INCOMING,
+            CallNotificationModeResolver.resolve(CallLifecycleState.SIMULATED_RINGING),
+        )
         assertEquals(CallNotificationMode.ONGOING, CallNotificationModeResolver.resolve(CallLifecycleState.CONNECTING))
         assertEquals(CallNotificationMode.ONGOING, CallNotificationModeResolver.resolve(CallLifecycleState.DIALING))
         assertEquals(CallNotificationMode.ONGOING, CallNotificationModeResolver.resolve(CallLifecycleState.ACTIVE))
         assertEquals(CallNotificationMode.ONGOING, CallNotificationModeResolver.resolve(CallLifecycleState.HOLDING))
-        assertEquals(CallNotificationMode.NONE, CallNotificationModeResolver.resolve(CallLifecycleState.DISCONNECTED))
-        assertEquals(CallNotificationMode.NONE, CallNotificationModeResolver.resolve(CallLifecycleState.UNKNOWN))
+        listOf(
+            CallLifecycleState.NEW,
+            CallLifecycleState.SELECTING_PHONE_ACCOUNT,
+            CallLifecycleState.DISCONNECTING,
+            CallLifecycleState.PULLING_CALL,
+            CallLifecycleState.AUDIO_PROCESSING,
+            CallLifecycleState.DISCONNECTED,
+            CallLifecycleState.UNKNOWN,
+        ).forEach { state ->
+            assertEquals(CallNotificationMode.NONE, CallNotificationModeResolver.resolve(state))
+        }
     }
 }

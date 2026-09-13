@@ -18,7 +18,10 @@ enum class CallNotificationMode {
 
 object CallNotificationModeResolver {
     fun resolve(state: CallLifecycleState): CallNotificationMode = when (state) {
-        CallLifecycleState.RINGING -> CallNotificationMode.INCOMING
+        CallLifecycleState.RINGING,
+        CallLifecycleState.SIMULATED_RINGING,
+        -> CallNotificationMode.INCOMING
+
         CallLifecycleState.CONNECTING,
         CallLifecycleState.DIALING,
         CallLifecycleState.ACTIVE,
@@ -26,6 +29,10 @@ object CallNotificationModeResolver {
         -> CallNotificationMode.ONGOING
 
         CallLifecycleState.NEW,
+        CallLifecycleState.SELECTING_PHONE_ACCOUNT,
+        CallLifecycleState.DISCONNECTING,
+        CallLifecycleState.PULLING_CALL,
+        CallLifecycleState.AUDIO_PROCESSING,
         CallLifecycleState.DISCONNECTED,
         CallLifecycleState.UNKNOWN,
         -> CallNotificationMode.NONE
@@ -40,10 +47,14 @@ sealed interface IncomingCallPresentationDecision {
 
 object IncomingCallPresentationPolicy {
     fun decide(facts: IncomingCallPresentationFacts): IncomingCallPresentationDecision = when {
-        facts.state != CallLifecycleState.RINGING -> IncomingCallPresentationDecision.NotApplicable
+        facts.state != CallLifecycleState.RINGING &&
+            facts.state != CallLifecycleState.SIMULATED_RINGING ->
+            IncomingCallPresentationDecision.NotApplicable
+
         !facts.notificationsAllowed -> IncomingCallPresentationDecision.Blocked(
             "Incoming-call notifications are not allowed",
         )
+
         else -> IncomingCallPresentationDecision.Present(
             requestFullScreen = facts.fullScreenAllowed,
         )
