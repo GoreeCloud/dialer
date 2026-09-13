@@ -7,7 +7,8 @@ sealed interface CallAudioControlAction {
 }
 
 sealed interface CallAudioControlResult {
-    data object Succeeded : CallAudioControlResult
+    /** Android accepted the mute-state request; a later Telecom callback is the state evidence. */
+    data object Submitted : CallAudioControlResult
     data class Rejected(val reason: String) : CallAudioControlResult
     data class Failed(val reason: String) : CallAudioControlResult
 }
@@ -21,7 +22,7 @@ class CallAudioControlEngine(
 ) {
     fun execute(action: CallAudioControlAction): CallAudioControlResult = try {
         target.setMuted(action == CallAudioControlAction.Mute)
-        CallAudioControlResult.Succeeded
+        CallAudioControlResult.Submitted
     } catch (runtimeException: RuntimeException) {
         CallAudioControlResult.Failed(
             runtimeException.message?.takeIf { it.isNotBlank() }

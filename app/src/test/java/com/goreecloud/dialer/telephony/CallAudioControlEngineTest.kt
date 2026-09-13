@@ -5,20 +5,20 @@ import org.junit.Test
 
 class CallAudioControlEngineTest {
     @Test
-    fun muteRequestsMutedState() {
+    fun muteSubmitsMutedStateRequest() {
         val target = FakeTarget()
         assertEquals(
-            CallAudioControlResult.Succeeded,
+            CallAudioControlResult.Submitted,
             CallAudioControlEngine(target).execute(CallAudioControlAction.Mute),
         )
         assertEquals(listOf(true), target.states)
     }
 
     @Test
-    fun unmuteRequestsUnmutedState() {
+    fun unmuteSubmitsUnmutedStateRequest() {
         val target = FakeTarget()
         assertEquals(
-            CallAudioControlResult.Succeeded,
+            CallAudioControlResult.Submitted,
             CallAudioControlEngine(target).execute(CallAudioControlAction.Unmute),
         )
         assertEquals(listOf(false), target.states)

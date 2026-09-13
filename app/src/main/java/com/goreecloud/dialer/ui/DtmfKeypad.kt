@@ -30,8 +30,9 @@ private const val DTMF_PULSE_MILLIS = 150L
 /**
  * Development DTMF surface for an explicitly selected live call session.
  *
- * Each button press creates one short user-driven tone pulse. No number, IVR response, contact,
- * transcript, or assistant state can trigger this surface automatically.
+ * Each button press creates one short user-driven tone request. No number, IVR response, contact,
+ * transcript, or assistant state can trigger this surface automatically. Non-throwing Android
+ * calls are treated as submitted requests rather than proof that remote signaling succeeded.
  */
 @Composable
 internal fun DevelopmentDtmfKeypad(
@@ -47,7 +48,7 @@ internal fun DevelopmentDtmfKeypad(
     ) {
         Text("Keypad", style = MaterialTheme.typography.titleSmall)
         Text(
-            "DTMF tones are sent only from an explicit key press.",
+            "DTMF tones are requested only from an explicit key press.",
             style = MaterialTheme.typography.bodySmall,
         )
         Spacer(Modifier.height(8.dp))
@@ -69,7 +70,7 @@ internal fun DevelopmentDtmfKeypad(
                             if (busy) return@Button
                             busy = true
                             scope.launch {
-                                var toneStarted = false
+                                var toneStartSubmitted = false
                                 try {
                                     when (
                                         val startResult = InCallRuntimeStore.execute(
@@ -77,8 +78,9 @@ internal fun DevelopmentDtmfKeypad(
                                             CallControlAction.StartDtmf(digit),
                                         )
                                     ) {
-                                        CallControlResult.Succeeded -> {
-                                            toneStarted = true
+                                        CallControlResult.Submitted -> {
+                                            toneStartSubmitted = true
+                                            onResult("DTMF $digit: start request submitted")
                                             delay(DTMF_PULSE_MILLIS)
                                         }
 
@@ -95,15 +97,15 @@ internal fun DevelopmentDtmfKeypad(
                                         }
                                     }
                                 } finally {
-                                    if (toneStarted) {
+                                    if (toneStartSubmitted) {
                                         when (
                                             val stopResult = InCallRuntimeStore.execute(
                                                 call.sessionId,
                                                 CallControlAction.StopDtmf,
                                             )
                                         ) {
-                                            CallControlResult.Succeeded ->
-                                                onResult("DTMF $digit: pulse completed")
+                                            CallControlResult.Submitted ->
+                                                onResult("DTMF $digit: stop request submitted")
 
                                             is CallControlResult.Rejected ->
                                                 onResult(

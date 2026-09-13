@@ -15,7 +15,8 @@ sealed interface CallControlAction {
 }
 
 sealed interface CallControlResult {
-    data object Succeeded : CallControlResult
+    /** Android accepted the synchronous API invocation; later call-state evidence determines effect. */
+    data object Submitted : CallControlResult
     data class Rejected(val reason: String) : CallControlResult
     data class Failed(val reason: String) : CallControlResult
 }
@@ -37,6 +38,9 @@ interface CallControlTarget {
 /**
  * State- and capability-aware execution boundary. It refuses controls that do not make sense for
  * the current call state or that Android Telecom does not currently report as available.
+ *
+ * A non-throwing Android method call is reported as Submitted, never as completed/succeeded. The
+ * authoritative outcome is the later Telecom lifecycle/capability state observed by the service.
  */
 class CallControlEngine(
     private val target: CallControlTarget,
@@ -55,11 +59,11 @@ class CallControlEngine(
                 is CallControlAction.StartDtmf -> target.startDtmf(action.digit)
                 CallControlAction.StopDtmf -> target.stopDtmf()
             }
-            CallControlResult.Succeeded
-        } catch (throwable: RuntimeException) {
+            CallControlResult.Submitted
+        } catch (runtimeException: RuntimeException) {
             CallControlResult.Failed(
-                throwable.message?.takeIf { it.isNotBlank() }
-                    ?: throwable::class.java.simpleName,
+                runtimeException.message?.takeIf { it.isNotBlank() }
+                    ?: runtimeException::class.java.simpleName,
             )
         }
     }

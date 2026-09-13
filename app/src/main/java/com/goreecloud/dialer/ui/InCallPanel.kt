@@ -204,8 +204,8 @@ private fun DevelopmentCallControls(
                             val result = InCallRuntimeStore.execute(call.sessionId, action)
                             onResult(
                                 when (result) {
-                                    CallControlResult.Succeeded ->
-                                        "${action.presentationLabel()}: succeeded"
+                                    CallControlResult.Submitted ->
+                                        "${action.presentationLabel()}: request submitted"
 
                                     is CallControlResult.Rejected ->
                                         "${action.presentationLabel()}: rejected — ${result.reason}"
@@ -258,7 +258,7 @@ private fun DevelopmentCallControls(
 private fun CallAudioControlResult.message(action: CallAudioControlAction): String {
     val label = if (action == CallAudioControlAction.Mute) "Mute" else "Unmute"
     return when (this) {
-        CallAudioControlResult.Succeeded -> "$label: succeeded"
+        CallAudioControlResult.Submitted -> "$label: request submitted"
         is CallAudioControlResult.Rejected -> "$label: rejected — $reason"
         is CallAudioControlResult.Failed -> "$label: failed — $reason"
     }

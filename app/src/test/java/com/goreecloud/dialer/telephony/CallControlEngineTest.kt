@@ -6,10 +6,10 @@ import org.junit.Test
 
 class CallControlEngineTest {
     @Test
-    fun ringingCallCanBeAnswered() {
+    fun ringingCallCanSubmitAnswer() {
         val target = FakeTarget(CallLifecycleState.RINGING)
         assertEquals(
-            CallControlResult.Succeeded,
+            CallControlResult.Submitted,
             CallControlEngine(target).execute(CallControlAction.AnswerAudio),
         )
         assertEquals(listOf("answer"), target.events)
@@ -24,17 +24,17 @@ class CallControlEngineTest {
     }
 
     @Test
-    fun activeCallCanBeHeldAndHoldingCallCanBeResumed() {
+    fun activeCallCanSubmitHoldAndHoldingCallCanSubmitResume() {
         val active = FakeTarget(CallLifecycleState.ACTIVE)
         assertEquals(
-            CallControlResult.Succeeded,
+            CallControlResult.Submitted,
             CallControlEngine(active).execute(CallControlAction.Hold),
         )
         assertEquals(listOf("hold"), active.events)
 
         val held = FakeTarget(CallLifecycleState.HOLDING)
         assertEquals(
-            CallControlResult.Succeeded,
+            CallControlResult.Submitted,
             CallControlEngine(held).execute(CallControlAction.Resume),
         )
         assertEquals(listOf("resume"), held.events)
@@ -73,7 +73,7 @@ class CallControlEngineTest {
     fun dtmfRequiresValidDigitAndConnectedState() {
         val active = FakeTarget(CallLifecycleState.ACTIVE)
         assertEquals(
-            CallControlResult.Succeeded,
+            CallControlResult.Submitted,
             CallControlEngine(active).execute(CallControlAction.StartDtmf('#')),
         )
         assertEquals(listOf("dtmf:#"), active.events)
@@ -87,7 +87,7 @@ class CallControlEngineTest {
     }
 
     @Test
-    fun runtimeFailureIsReportedInsteadOfClaimingSuccess() {
+    fun runtimeFailureIsReportedInsteadOfClaimingSubmission() {
         val target = FakeTarget(CallLifecycleState.ACTIVE, fail = true)
         val result = CallControlEngine(target).execute(CallControlAction.End)
         assertTrue(result is CallControlResult.Failed)

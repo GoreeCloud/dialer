@@ -122,7 +122,7 @@ private fun IncomingCallScreen(
 }
 
 private fun CallControlResult.message(action: String): String = when (this) {
-    CallControlResult.Succeeded -> "$action: succeeded"
+    CallControlResult.Submitted -> "$action: request submitted"
     is CallControlResult.Rejected -> "$action: rejected — $reason"
     is CallControlResult.Failed -> "$action: failed — $reason"
 }
