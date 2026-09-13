@@ -154,15 +154,26 @@ private fun DevelopmentHome(
         )
 
         Spacer(Modifier.height(20.dp))
-        Text(
-            "ACTION_DIAL: ${capabilitySnapshot.dialIntentHandling.describe()}",
-            style = MaterialTheme.typography.bodyMedium,
-        )
-        Text(
-            "Default dialer role: ${capabilitySnapshot.defaultDialerRole.describe()}",
-            style = MaterialTheme.typography.bodyMedium,
-        )
+        Text("Telephony capability evidence", style = MaterialTheme.typography.titleSmall)
+        CapabilityEvidenceRow("ACTION_DIAL", capabilitySnapshot.dialIntentHandling)
+        CapabilityEvidenceRow("Default dialer role", capabilitySnapshot.defaultDialerRole)
+        CapabilityEvidenceRow("Outgoing calls", capabilitySnapshot.outgoingCalls)
+        CapabilityEvidenceRow("Multi-SIM routing", capabilitySnapshot.multiSimRouting)
+        CapabilityEvidenceRow("Wi-Fi Calling state", capabilitySnapshot.wifiCallingState)
+        CapabilityEvidenceRow("Supplementary services", capabilitySnapshot.supplementaryServices)
     }
+}
+
+@Composable
+private fun CapabilityEvidenceRow(
+    label: String,
+    state: CapabilityState,
+) {
+    Text(
+        "$label: ${state.describe()}",
+        style = MaterialTheme.typography.bodySmall,
+        modifier = Modifier.fillMaxWidth(),
+    )
 }
 
 @Composable

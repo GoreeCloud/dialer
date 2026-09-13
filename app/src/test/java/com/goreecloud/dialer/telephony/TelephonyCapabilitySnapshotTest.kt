@@ -12,7 +12,12 @@ class TelephonyCapabilitySnapshotTest {
         assertTrue(snapshot.dialIntentHandling is CapabilityState.Unavailable)
         assertTrue(snapshot.outgoingCalls is CapabilityState.Unavailable)
         assertTrue(snapshot.incomingCalls is CapabilityState.Unavailable)
+        assertTrue(snapshot.inCallControls is CapabilityState.Unavailable)
+        assertTrue(snapshot.multiSimRouting is CapabilityState.Unavailable)
+        assertTrue(snapshot.wifiCallingState is CapabilityState.Unavailable)
+        assertTrue(snapshot.supplementaryServices is CapabilityState.Unavailable)
         assertTrue(snapshot.callScreening is CapabilityState.Unavailable)
+        assertTrue(snapshot.visualVoicemail is CapabilityState.Unavailable)
         assertTrue(snapshot.callRecording is CapabilityState.Unavailable)
     }
 }

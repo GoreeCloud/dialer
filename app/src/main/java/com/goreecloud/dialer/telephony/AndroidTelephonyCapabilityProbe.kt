@@ -25,19 +25,33 @@ class AndroidTelephonyCapabilityProbe(
             requirementsReason = applicationAcceptance.unavailableReason(),
         )
 
-        fun notImplemented(reason: String): CapabilityState =
+        fun unavailable(reason: String): CapabilityState =
             if (hasTelephony) CapabilityState.Unavailable(reason) else CapabilityState.Unsupported
 
         return TelephonyCapabilitySnapshot(
             defaultDialerRole = defaultDialerRole,
             dialIntentHandling = CapabilityState.Available,
-            outgoingCalls = notImplemented("ACTION_DIAL is handled; TelecomManager call placement is not implemented"),
-            incomingCalls = notImplemented("InCallService lifecycle exists; production incoming-call presentation is not accepted"),
-            inCallControls = notImplemented("Development controls exist; production in-call UI acceptance is incomplete"),
-            multiSimRouting = notImplemented("Subscription routing not implemented"),
-            callScreening = notImplemented("Call screening service not implemented"),
-            visualVoicemail = notImplemented("Voicemail adapter not implemented"),
-            callRecording = notImplemented("Recording capability not implemented"),
+            outgoingCalls = unavailable(
+                "TelecomManager placement boundary exists; carrier call placement runtime acceptance is incomplete",
+            ),
+            incomingCalls = unavailable(
+                "InCallService lifecycle exists; production incoming-call presentation is not accepted",
+            ),
+            inCallControls = unavailable(
+                "Development controls exist; production in-call UI acceptance is incomplete",
+            ),
+            multiSimRouting = unavailable(
+                "Call-capable phone-account discovery and explicit routing exist; production multi-SIM acceptance is incomplete",
+            ),
+            wifiCallingState = unavailable(
+                "Precise Wi-Fi Calling/IMS state requires authorized precise-telephony or carrier access; this Development build does not request or infer it",
+            ),
+            supplementaryServices = unavailable(
+                "Supplementary-service state is exposed only when Android provides an authorized platform signal; no accepted observer exists in this Development build",
+            ),
+            callScreening = unavailable("Call screening service not implemented"),
+            visualVoicemail = unavailable("Voicemail adapter not implemented"),
+            callRecording = unavailable("Recording capability not implemented"),
         )
     }
 }
