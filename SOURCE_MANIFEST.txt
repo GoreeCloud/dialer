@@ -27,6 +27,7 @@ Capability and telephony contracts
 - app/src/main/java/com/goreecloud/dialer/telephony/GoreeCloudInCallService.kt
 - app/src/main/java/com/goreecloud/dialer/telephony/CallControl.kt
 - app/src/main/java/com/goreecloud/dialer/telephony/AndroidCallControlTarget.kt
+- app/src/main/java/com/goreecloud/dialer/telephony/CallControlPresentationPolicy.kt
 
 Tests
 - app/src/test/java/com/goreecloud/dialer/telephony/TelephonyCapabilitySnapshotTest.kt
@@ -34,6 +35,7 @@ Tests
 - app/src/test/java/com/goreecloud/dialer/telephony/DialRequestParserTest.kt
 - app/src/test/java/com/goreecloud/dialer/telephony/CallLifecycleStateMapperTest.kt
 - app/src/test/java/com/goreecloud/dialer/telephony/CallControlEngineTest.kt
+- app/src/test/java/com/goreecloud/dialer/telephony/CallControlPresentationPolicyTest.kt
 
 Product documentation
 - README.md
