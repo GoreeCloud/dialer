@@ -26,5 +26,7 @@ jobs:
           gradle-version: '8.11.1'
       - name: Unit tests
         run: gradle :app:testDebugUnitTest --stacktrace
+      - name: Android lint
+        run: gradle :app:lintDebug --stacktrace
       - name: Assemble debug
         run: gradle :app:assembleDebug --stacktrace
