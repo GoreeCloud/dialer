@@ -8,6 +8,7 @@ import android.telecom.CallAudioState
 import android.telecom.CallEndpoint
 import android.telecom.CallEndpointException
 import android.telecom.InCallService
+import androidx.annotation.RequiresApi
 import java.util.IdentityHashMap
 import java.util.concurrent.atomic.AtomicLong
 
@@ -163,9 +164,11 @@ class GoreeCloudInCallService : InCallService() {
         super.onDestroy()
     }
 
+    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     private fun routeIdForApi34(endpoint: CallEndpoint): Long =
         routeIdsByIdentifier.getOrPut(endpoint.identifier) { nextRouteId.getAndIncrement() }
 
+    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     private fun endpointKindApi34(type: Int): CallEndpointKind = when (type) {
         CallEndpoint.TYPE_EARPIECE -> CallEndpointKind.EARPIECE
         CallEndpoint.TYPE_BLUETOOTH -> CallEndpointKind.BLUETOOTH
@@ -175,6 +178,7 @@ class GoreeCloudInCallService : InCallService() {
         else -> CallEndpointKind.UNKNOWN
     }
 
+    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     private fun requestEndpointApi34(routeId: Long): CallEndpointRoutingResult {
         val endpoint = endpointsByRouteId[routeId]
             ?: return CallEndpointRoutingResult.Rejected(
