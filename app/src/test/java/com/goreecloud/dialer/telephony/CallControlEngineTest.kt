@@ -41,6 +41,35 @@ class CallControlEngineTest {
     }
 
     @Test
+    fun holdAndResumeRequireLiveTelecomCapability() {
+        val active = FakeTarget(
+            state = CallLifecycleState.ACTIVE,
+            holdCurrentlyAvailable = false,
+        )
+        val holdResult = CallControlEngine(active).execute(CallControlAction.Hold)
+        assertEquals(
+            CallControlResult.Rejected(
+                "Android Telecom does not currently allow this call to be held",
+            ),
+            holdResult,
+        )
+        assertTrue(active.events.isEmpty())
+
+        val held = FakeTarget(
+            state = CallLifecycleState.HOLDING,
+            holdCurrentlyAvailable = false,
+        )
+        val resumeResult = CallControlEngine(held).execute(CallControlAction.Resume)
+        assertEquals(
+            CallControlResult.Rejected(
+                "Android Telecom does not currently allow this call to be resumed",
+            ),
+            resumeResult,
+        )
+        assertTrue(held.events.isEmpty())
+    }
+
+    @Test
     fun dtmfRequiresValidDigitAndConnectedState() {
         val active = FakeTarget(CallLifecycleState.ACTIVE)
         assertEquals(
@@ -67,6 +96,7 @@ class CallControlEngineTest {
     private class FakeTarget(
         override val state: CallLifecycleState,
         private val fail: Boolean = false,
+        override val holdCurrentlyAvailable: Boolean = true,
     ) : CallControlTarget {
         val events = mutableListOf<String>()
 
