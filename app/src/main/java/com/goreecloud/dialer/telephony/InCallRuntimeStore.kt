@@ -12,13 +12,15 @@ import kotlinx.coroutines.flow.asStateFlow
  *
  * The store retains Android Call objects only while Telecom owns the live call so explicit
  * controls can be executed. Public snapshots expose only generated session/route IDs, lifecycle
- * categories, aggregate state, endpoint categories, and content-free audio-control state. No
- * number, caller name, account identifier, endpoint device name, Call.Details, transcript,
- * recording, or audio is persisted or projected.
+ * categories, aggregate state, endpoint categories, content-free audio-control state, and narrow
+ * control-capability booleans. No number, caller name, account identifier, endpoint device name,
+ * Call.Details object, transcript, recording, or audio is persisted or projected.
  */
 data class CallRuntimeSummary(
     val sessionId: Long,
     val state: CallLifecycleState,
+    val holdSupported: Boolean,
+    val holdCurrentlyAvailable: Boolean,
 )
 
 data class InCallRuntimeSnapshot(
@@ -38,6 +40,7 @@ object InCallRuntimeStore {
         val sessionId: Long,
         val call: Call,
         var state: CallLifecycleState,
+        var capabilities: CallControlCapabilities,
     )
 
     private val nextSessionId = AtomicLong(1)
@@ -63,6 +66,7 @@ object InCallRuntimeStore {
             sessionId = nextSessionId.getAndIncrement(),
             call = call,
             state = CallLifecycleStateMapper.fromAndroid(call.state),
+            capabilities = AndroidCallControlCapabilities.from(call.details),
         )
         trackedByCall[call] = tracked
         trackedById[tracked.sessionId] = tracked
@@ -74,6 +78,13 @@ object InCallRuntimeStore {
     fun onCallStateChanged(call: Call, state: Int) {
         val tracked = trackedByCall[call] ?: return
         tracked.state = CallLifecycleStateMapper.fromAndroid(state)
+        publish()
+    }
+
+    @Synchronized
+    fun onCallDetailsChanged(call: Call, details: Call.Details) {
+        val tracked = trackedByCall[call] ?: return
+        tracked.capabilities = AndroidCallControlCapabilities.from(details)
         publish()
     }
 
@@ -143,7 +154,12 @@ object InCallRuntimeStore {
 
     private fun publish() {
         val summaries = trackedById.values.map {
-            CallRuntimeSummary(sessionId = it.sessionId, state = it.state)
+            CallRuntimeSummary(
+                sessionId = it.sessionId,
+                state = it.state,
+                holdSupported = it.capabilities.holdSupported,
+                holdCurrentlyAvailable = it.capabilities.holdCurrentlyAvailable,
+            )
         }
         mutableSnapshots.value = InCallRuntimeSnapshot(
             trackedCallCount = summaries.size,
