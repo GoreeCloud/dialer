@@ -11,9 +11,10 @@ import kotlinx.coroutines.flow.asStateFlow
  * Process-local call runtime authority.
  *
  * The store retains Android Call objects only while Telecom owns the live call so explicit
- * controls can be executed. Public snapshots expose only generated session IDs, lifecycle
- * categories, aggregate state, and content-free audio-control state. No number, caller name,
- * account identifier, Call.Details, transcript, recording, or audio is persisted or projected.
+ * controls can be executed. Public snapshots expose only generated session/route IDs, lifecycle
+ * categories, aggregate state, endpoint categories, and content-free audio-control state. No
+ * number, caller name, account identifier, endpoint device name, Call.Details, transcript,
+ * recording, or audio is persisted or projected.
  */
 data class CallRuntimeSummary(
     val sessionId: Long,
@@ -26,6 +27,10 @@ data class InCallRuntimeSnapshot(
     val stateCounts: Map<CallLifecycleState, Int> = emptyMap(),
     val canAddCall: Boolean? = null,
     val isMuted: Boolean? = null,
+    val endpointRoutingSupported: Boolean = false,
+    val availableEndpoints: List<CallEndpointRuntimeSummary> = emptyList(),
+    val currentEndpointId: Long? = null,
+    val lastEndpointRequest: CallEndpointRequestEvidence? = null,
 )
 
 object InCallRuntimeStore {
@@ -40,6 +45,10 @@ object InCallRuntimeStore {
     private val trackedById = linkedMapOf<Long, TrackedCall>()
     private var canAddCall: Boolean? = null
     private var isMuted: Boolean? = null
+    private var endpointRoutingSupported: Boolean = false
+    private var availableEndpoints: List<CallEndpointRuntimeSummary> = emptyList()
+    private var currentEndpointId: Long? = null
+    private var lastEndpointRequest: CallEndpointRequestEvidence? = null
 
     private val mutableSnapshots = MutableStateFlow(InCallRuntimeSnapshot())
     val snapshots: StateFlow<InCallRuntimeSnapshot> = mutableSnapshots.asStateFlow()
@@ -88,6 +97,31 @@ object InCallRuntimeStore {
     }
 
     @Synchronized
+    fun onAvailableEndpointsChanged(
+        supported: Boolean,
+        endpoints: List<CallEndpointRuntimeSummary>,
+    ) {
+        endpointRoutingSupported = supported
+        availableEndpoints = endpoints
+        if (currentEndpointId !in endpoints.map { it.routeId }) {
+            currentEndpointId = null
+        }
+        publish()
+    }
+
+    @Synchronized
+    fun onCurrentEndpointChanged(routeId: Long) {
+        currentEndpointId = routeId
+        publish()
+    }
+
+    @Synchronized
+    fun onEndpointRequestChanged(evidence: CallEndpointRequestEvidence) {
+        lastEndpointRequest = evidence
+        publish()
+    }
+
+    @Synchronized
     fun execute(sessionId: Long, action: CallControlAction): CallControlResult {
         val tracked = trackedById[sessionId]
             ?: return CallControlResult.Rejected("Call session is no longer active")
@@ -100,6 +134,10 @@ object InCallRuntimeStore {
         trackedById.clear()
         canAddCall = null
         isMuted = null
+        endpointRoutingSupported = false
+        availableEndpoints = emptyList()
+        currentEndpointId = null
+        lastEndpointRequest = null
         publish()
     }
 
@@ -113,6 +151,10 @@ object InCallRuntimeStore {
             stateCounts = summaries.groupingBy { it.state }.eachCount(),
             canAddCall = canAddCall,
             isMuted = isMuted,
+            endpointRoutingSupported = endpointRoutingSupported,
+            availableEndpoints = availableEndpoints,
+            currentEndpointId = currentEndpointId,
+            lastEndpointRequest = lastEndpointRequest,
         )
     }
 }

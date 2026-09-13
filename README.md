@@ -4,7 +4,7 @@ GoreeCloud Dialer is GoreeCloud's privacy-focused, intelligent Android calling a
 
 ## Status
 
-**Active Development / pre-Stable.** The repository contains a validated native Android foundation, `ACTION_DIAL` intake, a local keypad, default-dialer capability gating, a content-minimized `InCallService` lifecycle boundary, state-aware essential call-control contracts, Development incoming/ongoing call presentation, a dormant policy-gated `TelecomManager.placeCall` boundary, a dormant default-dialer role-request preparer, and a Development mute/unmute control path driven by Telecom audio-state evidence. Carrier call placement is not accepted, caller identity is not projected into the call surfaces, ringtone ownership is not claimed, production incoming/ongoing UI acceptance is incomplete, and no code currently launches the role-consent request. Speaker/Bluetooth endpoint routing, screening, voicemail, recording, transcription, translation, AI assistance, Privacy Shield acceptance, Wardveil acceptance, Everkeep backup, and cross-device calling are also **not** claimed as implemented until their runtime paths are built and verified.
+**Active Development / pre-Stable.** The repository contains a validated native Android foundation, `ACTION_DIAL` intake, a local keypad, default-dialer capability gating, a content-minimized `InCallService` lifecycle boundary, state-aware essential call-control contracts, Development incoming/ongoing call presentation, a dormant policy-gated `TelecomManager.placeCall` boundary, a dormant default-dialer role-request preparer, Telecom-evidenced mute/unmute control, and API 34+ `CallEndpoint` routing using only endpoints supplied by Telecom. Carrier call placement is not accepted, caller identity and endpoint device names are not projected into the call surfaces, ringtone ownership is not claimed, production incoming/ongoing UI acceptance is incomplete, and no code currently launches the role-consent request. Legacy pre-Android-14 speaker/Bluetooth routing is intentionally unavailable rather than relying on deprecated APIs. Screening, voicemail, recording, transcription, translation, AI assistance, Privacy Shield acceptance, Wardveil acceptance, Everkeep backup, and cross-device calling are also **not** claimed as implemented until their runtime paths are built and verified.
 
 ## Canonical repository
 
@@ -41,7 +41,11 @@ GoreeCloud Dialer is GoreeCloud's privacy-focused, intelligent Android calling a
 - observable content-minimized call snapshots exposed as a `StateFlow`
 - state-aware answer, decline/end, hold/resume, and DTMF execution contracts
 - process-local mute-state evidence from Telecom and a service-owned mute/unmute command boundary
-- Development ongoing-call UI exposing session IDs, lifecycle state, accepted controls, mute state, and explicit operation results
+- API 34+ call endpoint discovery through `onAvailableCallEndpointsChanged` and routing through `requestCallEndpointChange`
+- endpoint UI exposes only generated route IDs/categories; Telecom endpoint names and device identities are not projected
+- endpoint requests distinguish submitted, succeeded, and failed evidence
+- pre-API-34 endpoint switching remains explicitly unavailable instead of using deprecated `setAudioRoute`
+- Development ongoing-call UI exposing session IDs, lifecycle state, accepted controls, mute state, endpoint categories, and explicit operation results
 - Development incoming-call `CallStyle` notification/full-screen UI with Answer and Decline actions
 - incoming notifications transition to ongoing `CallStyle` notifications with an explicit End action and route back to the in-call UI
 - notification actions use an explicit non-exported receiver and process-local Telecom session IDs

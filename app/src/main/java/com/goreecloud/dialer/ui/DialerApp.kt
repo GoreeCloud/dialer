@@ -30,10 +30,14 @@ import com.goreecloud.dialer.telephony.CallAudioControlAction
 import com.goreecloud.dialer.telephony.CallAudioControlResult
 import com.goreecloud.dialer.telephony.CallControlPresentationPolicy
 import com.goreecloud.dialer.telephony.CallControlResult
+import com.goreecloud.dialer.telephony.CallEndpointRequestState
+import com.goreecloud.dialer.telephony.CallEndpointRoutingResult
+import com.goreecloud.dialer.telephony.CallEndpointRuntimeSummary
 import com.goreecloud.dialer.telephony.CallLifecycleState
 import com.goreecloud.dialer.telephony.CallRuntimeSummary
 import com.goreecloud.dialer.telephony.DialRequest
 import com.goreecloud.dialer.telephony.InCallAudioControlRuntime
+import com.goreecloud.dialer.telephony.InCallEndpointRoutingRuntime
 import com.goreecloud.dialer.telephony.InCallRuntimeSnapshot
 import com.goreecloud.dialer.telephony.InCallRuntimeStore
 import com.goreecloud.dialer.telephony.TelephonyCapabilitySnapshot
@@ -145,7 +149,7 @@ private fun DevelopmentInCallPanel(snapshot: InCallRuntimeSnapshot) {
     ) {
         Text("Live Telecom sessions", style = MaterialTheme.typography.titleMedium)
         Text(
-            "Development control surface — no caller identity or call content is projected.",
+            "Development control surface — no caller identity, endpoint device name, or call content is projected.",
             style = MaterialTheme.typography.bodySmall,
         )
         Spacer(Modifier.height(8.dp))
@@ -158,34 +162,105 @@ private fun DevelopmentInCallPanel(snapshot: InCallRuntimeSnapshot) {
             Spacer(Modifier.height(8.dp))
         }
 
-        val muteEligible = snapshot.calls.any {
+        val audioEligible = snapshot.calls.any {
             it.state == CallLifecycleState.ACTIVE || it.state == CallLifecycleState.HOLDING
         }
-        if (muteEligible) {
-            when (val muted = snapshot.isMuted) {
-                null -> Text(
-                    "Mute state is awaiting Telecom evidence",
-                    style = MaterialTheme.typography.bodySmall,
-                )
-                else -> Button(
-                    onClick = {
-                        val action = if (muted) {
-                            CallAudioControlAction.Unmute
-                        } else {
-                            CallAudioControlAction.Mute
-                        }
-                        operationStatus = InCallAudioControlRuntime.execute(action).message(action)
-                    },
-                ) {
-                    Text(if (muted) "Unmute" else "Mute")
-                }
-            }
+        if (audioEligible) {
+            DevelopmentAudioControls(
+                snapshot = snapshot,
+                onResult = { operationStatus = it },
+            )
         }
 
         operationStatus?.let {
             Spacer(Modifier.height(8.dp))
             Text(it, style = MaterialTheme.typography.bodySmall)
         }
+    }
+}
+
+@Composable
+private fun DevelopmentAudioControls(
+    snapshot: InCallRuntimeSnapshot,
+    onResult: (String) -> Unit,
+) {
+    when (val muted = snapshot.isMuted) {
+        null -> Text(
+            "Mute state is awaiting Telecom evidence",
+            style = MaterialTheme.typography.bodySmall,
+        )
+        else -> Button(
+            onClick = {
+                val action = if (muted) {
+                    CallAudioControlAction.Unmute
+                } else {
+                    CallAudioControlAction.Mute
+                }
+                onResult(InCallAudioControlRuntime.execute(action).message(action))
+            },
+        ) {
+            Text(if (muted) "Unmute" else "Mute")
+        }
+    }
+
+    Spacer(Modifier.height(8.dp))
+    if (!snapshot.endpointRoutingSupported) {
+        Text(
+            "Endpoint routing requires Android 14+ CallEndpoint support",
+            style = MaterialTheme.typography.bodySmall,
+        )
+    } else if (snapshot.availableEndpoints.isEmpty()) {
+        Text(
+            "Waiting for Telecom endpoint evidence",
+            style = MaterialTheme.typography.bodySmall,
+        )
+    } else {
+        Text("Audio endpoint", style = MaterialTheme.typography.titleSmall)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+        ) {
+            snapshot.availableEndpoints.forEach { endpoint ->
+                EndpointButton(
+                    endpoint = endpoint,
+                    selected = endpoint.routeId == snapshot.currentEndpointId,
+                    onResult = onResult,
+                )
+            }
+        }
+        snapshot.lastEndpointRequest?.let { request ->
+            val text = when (request.state) {
+                CallEndpointRequestState.SUBMITTED -> "Endpoint request submitted"
+                CallEndpointRequestState.SUCCEEDED -> "Endpoint request succeeded"
+                CallEndpointRequestState.FAILED ->
+                    "Endpoint request failed — ${request.reason ?: "unknown reason"}"
+            }
+            Text(text, style = MaterialTheme.typography.bodySmall)
+        }
+    }
+}
+
+@Composable
+private fun EndpointButton(
+    endpoint: CallEndpointRuntimeSummary,
+    selected: Boolean,
+    onResult: (String) -> Unit,
+) {
+    Button(
+        enabled = !selected,
+        onClick = {
+            onResult(
+                when (val result = InCallEndpointRoutingRuntime.request(endpoint.routeId)) {
+                    CallEndpointRoutingResult.Submitted -> "${endpoint.kind}: route request submitted"
+                    is CallEndpointRoutingResult.Rejected ->
+                        "${endpoint.kind}: rejected — ${result.reason}"
+                    is CallEndpointRoutingResult.Failed ->
+                        "${endpoint.kind}: failed — ${result.reason}"
+                },
+            )
+        },
+    ) {
+        Text(if (selected) "${endpoint.kind} ✓" else endpoint.kind.toString())
     }
 }
 

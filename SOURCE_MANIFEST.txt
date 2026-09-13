@@ -33,6 +33,7 @@ Capability and telephony contracts
 - app/src/main/java/com/goreecloud/dialer/telephony/AndroidCallControlTarget.kt
 - app/src/main/java/com/goreecloud/dialer/telephony/CallControlPresentationPolicy.kt
 - app/src/main/java/com/goreecloud/dialer/telephony/CallAudioControl.kt
+- app/src/main/java/com/goreecloud/dialer/telephony/CallEndpointRouting.kt
 - app/src/main/java/com/goreecloud/dialer/telephony/IncomingCallPresentation.kt
 - app/src/main/java/com/goreecloud/dialer/telephony/AndroidIncomingCallPresenter.kt
 - app/src/main/java/com/goreecloud/dialer/telephony/IncomingCallActivity.kt
@@ -49,6 +50,7 @@ Tests
 - app/src/test/java/com/goreecloud/dialer/telephony/CallControlEngineTest.kt
 - app/src/test/java/com/goreecloud/dialer/telephony/CallControlPresentationPolicyTest.kt
 - app/src/test/java/com/goreecloud/dialer/telephony/CallAudioControlEngineTest.kt
+- app/src/test/java/com/goreecloud/dialer/telephony/CallEndpointRoutingRuntimeTest.kt
 - app/src/test/java/com/goreecloud/dialer/telephony/IncomingCallPresentationPolicyTest.kt
 
 Product documentation
