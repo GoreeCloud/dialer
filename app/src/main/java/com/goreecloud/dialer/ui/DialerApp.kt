@@ -10,16 +10,25 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.goreecloud.dialer.core.capability.CapabilityState
+import com.goreecloud.dialer.telephony.AndroidTelephonyCapabilityProbe
 import com.goreecloud.dialer.telephony.TelephonyCapabilitySnapshot
 
 @Composable
 fun DialerApp() {
+    val applicationContext = LocalContext.current.applicationContext
+    val capabilitySnapshot = remember(applicationContext) {
+        AndroidTelephonyCapabilityProbe(applicationContext).snapshot()
+    }
+
     MaterialTheme {
         Scaffold { innerPadding ->
             DevelopmentHome(
-                capabilitySnapshot = TelephonyCapabilitySnapshot.developmentPlaceholder(),
+                capabilitySnapshot = capabilitySnapshot,
                 modifier = Modifier.padding(innerPadding),
             )
         }
@@ -45,8 +54,19 @@ private fun DevelopmentHome(
         )
         Spacer(Modifier.height(16.dp))
         Text(
-            "Default dialer role: ${capabilitySnapshot.defaultDialerRole::class.simpleName}",
+            "Default dialer role: ${capabilitySnapshot.defaultDialerRole.describe()}",
             style = MaterialTheme.typography.bodyMedium,
         )
     }
+}
+
+private fun CapabilityState.describe(): String = when (this) {
+    CapabilityState.Unsupported -> "unsupported"
+    is CapabilityState.Unavailable -> "unavailable — $reason"
+    is CapabilityState.PermissionRequired -> "permission required — $permission"
+    is CapabilityState.RoleRequired -> "role required — $role"
+    CapabilityState.Available -> "available"
+    CapabilityState.Active -> "active"
+    is CapabilityState.Failed -> "failed — $reason"
+    CapabilityState.Succeeded -> "succeeded"
 }

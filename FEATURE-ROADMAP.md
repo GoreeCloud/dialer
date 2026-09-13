@@ -4,11 +4,13 @@
 
 Native Android source tree, build configuration, CI, source documentation, tests and truthful Development status.
 
-**Current state:** foundation started in source. Build/CI still requires successful workflow validation before this phase is complete.
+**Current state:** Android unit tests and debug assembly are validated in CI. The source manifest/provenance inventory and remaining repository-governance items still need completion before Phase 0 is closed.
 
 ## Phase 1 — Core Telephony
 
 Default-dialer role, outgoing/incoming calls, call controls, DTMF, Recents, contacts, Favorites, SIM routing and emergency-safe boundaries.
+
+**Current state:** runtime detection of device telephony plus Android `ROLE_DIALER` availability/ownership is implemented. The application intentionally does not request the role until `ACTION_DIAL` and the required `InCallService` incoming/ongoing call UI are implemented and validated.
 
 ## Phase 2 — Privacy, Security and Persistence
 

@@ -1,0 +1,38 @@
+GoreeCloud Dialer Source Manifest
+Repository: GoreeCloud/goreecloud-dialer
+Status: Active Development / pre-Stable
+
+Build and project configuration
+- settings.gradle.kts
+- build.gradle.kts
+- gradle.properties
+- app/build.gradle.kts
+- app/proguard-rules.pro
+- .github/workflows/android.yml
+
+Android application
+- app/src/main/AndroidManifest.xml
+- app/src/main/java/com/goreecloud/dialer/MainActivity.kt
+- app/src/main/java/com/goreecloud/dialer/ui/DialerApp.kt
+
+Capability and telephony contracts
+- app/src/main/java/com/goreecloud/dialer/core/capability/CapabilityState.kt
+- app/src/main/java/com/goreecloud/dialer/telephony/TelephonyCapabilitySnapshot.kt
+- app/src/main/java/com/goreecloud/dialer/telephony/DialerRoleCapabilityResolver.kt
+- app/src/main/java/com/goreecloud/dialer/telephony/AndroidTelephonyCapabilityProbe.kt
+
+Tests
+- app/src/test/java/com/goreecloud/dialer/telephony/TelephonyCapabilitySnapshotTest.kt
+- app/src/test/java/com/goreecloud/dialer/telephony/DialerRoleCapabilityResolverTest.kt
+
+Product documentation
+- README.md
+- SPECIFICATIONS.md
+- FEATURES.md
+- FEATURE-ROADMAP.md
+- USER-MANUAL.md
+- docs/architecture.md
+- docs/privacy.md
+- docs/security.md
+
+This manifest is a provenance inventory, not proof that planned telephony or intelligent calling capabilities are implemented.

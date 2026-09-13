@@ -6,8 +6,10 @@
 - Compose Development screen.
 - Explicit pre-Stable status.
 - Capability-state model that avoids a misleading global supported/ready state.
-- Initial telephony capability snapshot with truthful unavailable placeholders.
-- Unit test covering non-claim behavior.
+- Runtime probe for Android telephony presence and `ROLE_DIALER` availability/ownership.
+- Telephony capability snapshot that keeps unimplemented call functions unavailable.
+- Unit tests covering non-claim and role-state behavior.
+- CI validation for unit tests and debug assembly.
 
 ## Planned product capabilities
 

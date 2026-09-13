@@ -27,9 +27,15 @@ Authorization, capability, activation, and operation success are separate facts.
 
 Every capability should distinguish unsupported, unavailable, permission/role required, available, active, failed, and succeeded states. User interfaces should surface why a capability is unavailable when that information helps the user act.
 
+The current Android probe reads whether the device advertises telephony, whether the Android dialer role exists, and whether GoreeCloud Dialer already holds that role. It does not request the role.
+
+## Default-dialer eligibility gate
+
+Android requires a default-phone candidate to handle `Intent.ACTION_DIAL` and fully implement `InCallService`, including incoming and ongoing call UI. GoreeCloud Dialer therefore must not expose a role-request action until those requirements are implemented and validated together. Detecting that `ROLE_DIALER` exists is not proof that this Development build is eligible to acquire it.
+
 ## Emergency boundary
 
-Emergency calling is outside experimental automation. Screening, AI, routing suggestions, recording defaults, and Call Assistant must never interfere with emergency call initiation or platform emergency behavior.
+Emergency calling is outside experimental automation. Screening, AI, routing suggestions, recording defaults, and Call Assistant must never interfere with emergency call initiation or platform emergency behavior. Android's preloaded dialer remains the emergency-call UI authority even when another application holds the dialer role; future outgoing-call integration must use the platform Telecom call path rather than attempting to bypass it.
 
 ## Local-first boundary
 
