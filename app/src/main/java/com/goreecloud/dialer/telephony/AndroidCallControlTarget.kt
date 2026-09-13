@@ -8,7 +8,7 @@ class AndroidCallControlTarget(
     private val call: Call,
 ) : CallControlTarget {
     override val state: CallLifecycleState
-        get() = CallLifecycleStateMapper.fromAndroid(call.state)
+        get() = AndroidCallStateReader.lifecycle(call)
 
     override val holdCurrentlyAvailable: Boolean
         get() = call.details.can(Call.Details.CAPABILITY_HOLD)
