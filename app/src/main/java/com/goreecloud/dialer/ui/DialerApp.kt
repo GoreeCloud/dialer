@@ -21,6 +21,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -44,7 +45,7 @@ fun DialerApp(initialDialRequest: DialRequest? = null) {
         AndroidTelephonyCapabilityProbe(applicationContext).snapshot()
     }
     val inCallRuntime by InCallRuntimeStore.snapshots.collectAsState()
-    var phoneAccountRefresh by remember { mutableStateOf(0) }
+    var phoneAccountRefresh by remember { mutableIntStateOf(0) }
     var selectedPhoneAccountRouteId by rememberSaveable { mutableStateOf<Long?>(null) }
     val phoneAccountDiscovery = remember(applicationContext, phoneAccountRefresh) {
         PhoneAccountRoutingRuntime.discover(applicationContext)
