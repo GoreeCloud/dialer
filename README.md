@@ -4,7 +4,7 @@ GoreeCloud Dialer is GoreeCloud's privacy-focused, intelligent Android calling a
 
 ## Status
 
-**Active Development / pre-Stable.** The repository contains a validated native Android foundation, `ACTION_DIAL` intake, a local keypad, default-dialer capability gating, a content-minimized `InCallService` lifecycle boundary, state-aware essential call-control contracts, and a Development ongoing-call control surface driven by live process-local Telecom state. Carrier call placement, production incoming-call presentation/ringing, complete ongoing-call UI acceptance, default-role requests, screening, voicemail, recording, transcription, translation, AI assistance, Privacy Shield acceptance, Wardveil acceptance, Everkeep backup, and cross-device calling are **not** claimed as implemented until their runtime paths are built and verified.
+**Active Development / pre-Stable.** The repository contains a validated native Android foundation, `ACTION_DIAL` intake, a local keypad, default-dialer capability gating, a content-minimized `InCallService` lifecycle boundary, state-aware essential call-control contracts, a Development ongoing-call control surface, a dormant policy-gated `TelecomManager.placeCall` boundary, and a Development incoming-call notification/full-screen presentation boundary. Carrier call placement is not accepted, caller identity is not projected into the new incoming surface, ringtone ownership is not claimed, production incoming/ongoing UI acceptance is incomplete, and default-role requests remain disabled. Screening, voicemail, recording, transcription, translation, AI assistance, Privacy Shield acceptance, Wardveil acceptance, Everkeep backup, and cross-device calling are also **not** claimed as implemented until their runtime paths are built and verified.
 
 ## Canonical repository
 
@@ -34,10 +34,16 @@ GoreeCloud Dialer is GoreeCloud's privacy-focused, intelligent Android calling a
 - Compose application shell and local keypad
 - `ACTION_DIAL` and `tel:` intent intake without call placement side effects
 - Android telephony and `ROLE_DIALER` capability probe with the role-request gate still closed
+- explicit default-dialer acceptance model for dial intent, service, placement, incoming UI, and ongoing UI
+- dormant outgoing-call placement adapter requiring telephony, Telecom, GoreeCloud acceptance, active default-dialer role, and `CALL_PHONE`
 - `InCallService` lifecycle boundary with process-local call sessions
 - observable content-minimized call snapshots exposed as a `StateFlow`
 - state-aware answer, decline/end, hold/resume, and DTMF execution contracts
 - Development ongoing-call UI exposing only session IDs, lifecycle state, accepted controls, and explicit operation results
+- Development incoming-call notification/full-screen UI exposing only a generic incoming-call label and generated session ID
+- notification actions use an explicit non-exported receiver and process-local Telecom session IDs
+- `POST_NOTIFICATIONS` and full-screen-intent capability are checked at runtime; unavailable full-screen access degrades to notification presentation
+- ringtone ownership remains intentionally undeclared until a dedicated ringtone path is implemented and validated
 - unit tests and Android CI covering unit tests plus debug assembly
 - architecture, privacy, security, specifications, roadmap, feature, and user-manual documentation
 

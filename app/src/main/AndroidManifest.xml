@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-feature android:name="android.hardware.telephony" android:required="false" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
 
     <application
         android:allowBackup="false"
@@ -26,10 +28,22 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".telephony.IncomingCallActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true" />
+
+        <receiver
+            android:name=".telephony.CallActionReceiver"
+            android:exported="false" />
+
         <!--
-          This service is a Development lifecycle boundary only. UI/ringing metadata is
-          intentionally omitted until incoming and ongoing call UI is implemented and
-          accepted. GoreeCloud Dialer therefore does not request ROLE_DIALER yet.
+          The service lifecycle and Development incoming-call presentation boundary exist, but
+          GoreeCloud intentionally does not yet declare IN_CALL_SERVICE_UI or
+          IN_CALL_SERVICE_RINGING ownership. UI replacement and ringtone ownership remain behind
+          explicit acceptance gates until end-to-end device validation is complete.
         -->
         <service
             android:name=".telephony.GoreeCloudInCallService"
