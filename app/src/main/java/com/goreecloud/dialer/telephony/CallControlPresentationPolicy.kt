@@ -1,13 +1,16 @@
 package com.goreecloud.dialer.telephony
 
 /**
- * Maps a content-minimized call lifecycle state to user-visible essential controls.
+ * Maps content-minimized call lifecycle/capability state to user-visible essential controls.
  *
  * This policy does not inspect caller identity, phone numbers, call details, or audio. It also
  * does not make any control automatic: every returned action still requires an explicit tap.
  */
 object CallControlPresentationPolicy {
-    fun actionsFor(state: CallLifecycleState): List<CallControlAction> = when (state) {
+    fun actionsFor(
+        state: CallLifecycleState,
+        holdCurrentlyAvailable: Boolean = true,
+    ): List<CallControlAction> = when (state) {
         CallLifecycleState.RINGING -> listOf(
             CallControlAction.AnswerAudio,
             CallControlAction.Decline,
@@ -17,15 +20,15 @@ object CallControlPresentationPolicy {
         CallLifecycleState.DIALING,
         -> listOf(CallControlAction.End)
 
-        CallLifecycleState.ACTIVE -> listOf(
-            CallControlAction.Hold,
-            CallControlAction.End,
-        )
+        CallLifecycleState.ACTIVE -> buildList {
+            if (holdCurrentlyAvailable) add(CallControlAction.Hold)
+            add(CallControlAction.End)
+        }
 
-        CallLifecycleState.HOLDING -> listOf(
-            CallControlAction.Resume,
-            CallControlAction.End,
-        )
+        CallLifecycleState.HOLDING -> buildList {
+            if (holdCurrentlyAvailable) add(CallControlAction.Resume)
+            add(CallControlAction.End)
+        }
 
         CallLifecycleState.NEW,
         CallLifecycleState.DISCONNECTED,
