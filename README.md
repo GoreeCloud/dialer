@@ -78,13 +78,17 @@ A future move to compile SDK 37 / AGP 9.1+ is tracked as a separate platform mig
 - Development incoming-call `CallStyle` notification/full-screen UI with Answer and Decline actions
 - incoming notifications transition to ongoing `CallStyle` notifications with an explicit End action and route back to the in-call UI
 - notification actions use an explicit non-exported receiver and process-local Telecom session IDs
-- `POST_NOTIFICATIONS` and full-screen-intent capability are checked at runtime; unavailable full-screen access degrades to notification presentation
+- content-free incoming-call notification access evidence for app notifications, Android 13+ `POST_NOTIFICATIONS`, and Android 14+ full-screen call access
+- explicit Development actions let the user request `POST_NOTIFICATIONS` or open Android notification/full-screen settings; GoreeCloud does not auto-launch either prompt/settings surface
+- access evidence refreshes after permission results and Activity resume, while the notification presenter re-checks authorization immediately before posting to protect against revocation races
+- unavailable full-screen access degrades to notification presentation rather than falsely claiming full-screen delivery
 - ringtone ownership remains intentionally undeclared until a dedicated ringtone path is implemented and validated
 - Android-managed automatic backup is disabled and explicit platform rules exclude app-managed storage from cloud backup and device-to-device transfer; this is not Everkeep implementation or recovery acceptance
 - Android CI uses Node-24-capable Action lines and branch-scoped concurrency so newer commits cancel superseded runs
 - CI validates JVM unit tests, Android lint, debug APK assembly, minified release-variant assembly, and instrumentation-test APK compilation
 - CI then executes deterministic managed-emulator acceptance on Android 11 / API 30 and Android 14 / API 34
 - API 34 acceptance checks modern `CallEndpoint`/`InCallService` API availability and full-screen-intent capability probing without claiming successful endpoint switching on a live call
+- managed-device HTML/XML reports are preserved as separate short-retention CI artifacts for API 30 and API 34, including failed runs
 - release-variant assembly exercises release resources, R8/minification, and packaging configuration; it does **not** prove signing, distribution readiness, device acceptance, or Stable status
 - physical-device and carrier acceptance is tracked separately in `docs/physical-device-acceptance.md` and Issue #14
 - Android platform modernization, CI evidence boundaries, testing layers, release gates, and physical-device evidence requirements are documented separately

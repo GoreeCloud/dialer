@@ -44,6 +44,9 @@ The current source contains:
 - Live `Call.Details` evidence for hold support/current availability, mute support, and conference manage/merge/swap/separate capabilities; missing details fail closed.
 - User-driven Development DTMF presentation with bounded pulses and explicit cleanup.
 - Development incoming/ongoing `CallStyle` presentation and explicit operation-result messaging.
+- Content-free incoming-call access evidence for app-level notification enablement, Android 13+ `POST_NOTIFICATIONS`, and Android 14+ full-screen intent access.
+- Explicit user-triggered Development actions for notification permission and Android notification/full-screen settings; these surfaces are never launched automatically.
+- Incoming-call access evidence refreshes after permission results and Activity resume, while the final notification post path re-checks authorization immediately before posting.
 - Telecom mute-state tracking and API 34+ `CallEndpoint` discovery/routing.
 - Explicit system-default or anonymous phone-account route selection, with stale selections rejected rather than silently changed.
 - Emergency classification and routing policy that delegates emergency or indeterminate-emergency phone-account choice to Android Telecom.
@@ -54,13 +57,14 @@ The current source contains:
 - JVM unit-test source plus Android instrumentation-test source.
 - CI validation for JVM unit tests, Android lint, debug APK assembly, minified release-variant assembly, and instrumentation-test APK compilation.
 - Managed-emulator execution on Android 11 / API 30 and Android 14 / API 34 after the build gate passes.
-- Android-14-specific runtime checks for modern `CallEndpoint`/`InCallService` API presence, full-screen-intent capability probing, and fail-closed role-consent behavior.
+- Android-14-specific runtime checks for modern `CallEndpoint`/`InCallService` API presence, full-screen-intent capability probing, incoming-call access settings construction, and fail-closed role-consent behavior.
+- Separate short-retention managed-device report artifacts for API 30 and API 34, including failed runs, so emulator evidence is inspectable rather than log-only.
 - A repository physical-device/carrier acceptance template for the remaining real telephony evidence.
 - Architecture, privacy, security, feature, roadmap, platform-modernization, CI-validation, testing, release-gate, and physical-device-acceptance documentation.
 
 The direction/terminal-outcome layer is transient runtime evidence only. It is not a durable Recents implementation and does not persist call history.
 
-Release-variant assembly is build evidence only. Managed-emulator success is Android runtime evidence only. Neither proves signing, production distribution readiness, carrier behavior, physical-device behavior, live endpoint changes, or Stable acceptance.
+Release-variant assembly is build evidence only. Managed-emulator success is Android runtime evidence only. Neither proves signing, production distribution readiness, carrier behavior, physical-device behavior, live endpoint changes, real incoming-call delivery, or Stable acceptance.
 
 ## Explicitly not production-accepted
 
@@ -69,6 +73,7 @@ The source above must not be interpreted as proof that GoreeCloud Dialer is read
 - carrier call placement and physical-device/carrier validation
 - end-to-end default-dialer role acceptance; the role-consent surface remains blocked by current GoreeCloud acceptance state
 - production incoming and ongoing call UI acceptance on real calls/OEM devices
+- real-world notification/full-screen incoming-call delivery across supported OEM devices and lock-screen states
 - ringtone ownership
 - durable Recents/call-history persistence and retention
 - production multi-SIM routing acceptance
@@ -91,7 +96,7 @@ The source above must not be interpreted as proof that GoreeCloud Dialer is read
 
 ## Runtime truth requirements
 
-A source file, UI control, policy object, permission declaration, role availability signal, submitted Telecom request, transient direction/outcome classification, compiled instrumentation test, release-variant build, emulator pass, or test double does not by itself prove that a user-visible production capability succeeded. Device capability, carrier support, runtime state, permissions, role ownership, GoreeCloud acceptance, request submission, callback/result evidence, privacy authorization, security acceptance, physical-device validation, carrier validation, signing/distribution evidence, and human release validation remain independent facts.
+A source file, UI control, permission declaration, settings intent, policy object, role availability signal, submitted Telecom request, transient direction/outcome classification, compiled instrumentation test, release-variant build, emulator pass, or test double does not by itself prove that a user-visible production capability succeeded. Device capability, carrier support, runtime state, permissions, role ownership, GoreeCloud acceptance, request submission, callback/result evidence, privacy authorization, security acceptance, physical-device validation, carrier validation, signing/distribution evidence, and human release validation remain independent facts.
 
 ## Product scope
 

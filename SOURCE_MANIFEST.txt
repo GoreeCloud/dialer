@@ -48,6 +48,7 @@ Capability and telephony contracts
 - app/src/main/java/com/goreecloud/dialer/telephony/CallAudioControl.kt
 - app/src/main/java/com/goreecloud/dialer/telephony/CallEndpointRouting.kt
 - app/src/main/java/com/goreecloud/dialer/telephony/IncomingCallPresentation.kt
+- app/src/main/java/com/goreecloud/dialer/telephony/IncomingCallNotificationAccess.kt
 - app/src/main/java/com/goreecloud/dialer/telephony/AndroidIncomingCallPresenter.kt
 - app/src/main/java/com/goreecloud/dialer/telephony/IncomingCallActivity.kt
 - app/src/main/java/com/goreecloud/dialer/telephony/CallActionReceiver.kt

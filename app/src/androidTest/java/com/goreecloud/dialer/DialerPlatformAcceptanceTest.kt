@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.telecom.InCallService
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SdkSuppress
 import androidx.test.platform.app.InstrumentationRegistry
@@ -62,11 +63,25 @@ class DialerPlatformAcceptanceTest {
     fun inCallServiceManifestMatchesDefaultPhoneBindingContract() {
         val info = targetContext.packageManager.getServiceInfo(
             ComponentName(targetContext, GoreeCloudInCallService::class.java),
-            0,
+            PackageManager.GET_META_DATA,
         )
 
         assertTrue(info.exported)
         assertEquals(Manifest.permission.BIND_INCALL_SERVICE, info.permission)
+        assertFalse(info.metaData?.getBoolean(InCallService.METADATA_IN_CALL_SERVICE_UI, false) == true)
+        assertFalse(info.metaData?.getBoolean(InCallService.METADATA_IN_CALL_SERVICE_RINGING, false) == true)
+    }
+
+    @Test
+    fun incomingCallPresentationPermissionsRemainDeclared() {
+        val packageInfo = targetContext.packageManager.getPackageInfo(
+            targetContext.packageName,
+            PackageManager.GET_PERMISSIONS,
+        )
+        val requestedPermissions = packageInfo.requestedPermissions?.toSet().orEmpty()
+
+        assertTrue(Manifest.permission.POST_NOTIFICATIONS in requestedPermissions)
+        assertTrue(Manifest.permission.USE_FULL_SCREEN_INTENT in requestedPermissions)
     }
 
     @Test
