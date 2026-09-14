@@ -11,6 +11,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.goreecloud.dialer.telephony.AndroidDialRequestReader
 import com.goreecloud.dialer.telephony.DialRequest
+import com.goreecloud.dialer.telephony.PreCallRouteReadinessCoordinator
 import com.goreecloud.dialer.telephony.SubscriptionInventoryGateway
 import com.goreecloud.dialer.telephony.SubscriptionInventoryResult
 import com.goreecloud.dialer.ui.DialerApp
@@ -36,6 +37,12 @@ class MainActivity : ComponentActivity() {
                     readPhoneStatePermissionLauncher.launch(Manifest.permission.READ_PHONE_STATE)
                 },
                 onRefreshSubscriptionInventory = ::refreshSubscriptionInventory,
+                onEvaluatePreCallRoute = { selectedSubscriptionId ->
+                    PreCallRouteReadinessCoordinator(applicationContext).evaluate(
+                        explicitlySelectedSubscriptionId = selectedSubscriptionId,
+                        isEmergencyCall = false,
+                    )
+                },
             )
         }
     }
