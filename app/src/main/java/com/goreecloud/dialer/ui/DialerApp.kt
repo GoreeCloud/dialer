@@ -8,25 +8,31 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.goreecloud.dialer.core.capability.CapabilityState
+import com.goreecloud.dialer.telephony.ActiveSubscription
 import com.goreecloud.dialer.telephony.AndroidTelephonyCapabilityProbe
 import com.goreecloud.dialer.telephony.DialRequest
 import com.goreecloud.dialer.telephony.SubscriptionInventoryResult
+import com.goreecloud.dialer.telephony.SubscriptionRouteDecision
+import com.goreecloud.dialer.telephony.SubscriptionRoutePolicy
 import com.goreecloud.dialer.telephony.TelephonyCapabilitySnapshot
 
 @Composable
@@ -65,22 +71,25 @@ private fun DevelopmentHome(
     modifier: Modifier = Modifier,
 ) {
     var number by rememberSaveable(initialNumber) { mutableStateOf(initialNumber) }
+    var selectedSubscriptionId by rememberSaveable { mutableStateOf<Int?>(null) }
 
     Column(
-        modifier = modifier.fillMaxSize().padding(24.dp),
-        verticalArrangement = Arrangement.Center,
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text("GoreeCloud Dialer", style = MaterialTheme.typography.headlineMedium)
-        Spacer(Modifier.height(4.dp))
         Text("Active Development / pre-Stable", style = MaterialTheme.typography.titleMedium)
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(12.dp))
 
         Text(
             text = number.ifEmpty { "Enter a number" },
             style = MaterialTheme.typography.headlineSmall,
         )
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(4.dp))
 
         listOf(
             listOf("1", "2", "3"),
@@ -98,7 +107,6 @@ private fun DevelopmentHome(
                     }
                 }
             }
-            Spacer(Modifier.height(8.dp))
         }
 
         TextButton(
@@ -116,14 +124,17 @@ private fun DevelopmentHome(
             style = MaterialTheme.typography.bodySmall,
         )
 
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(12.dp))
         SubscriptionInventoryStatus(
             result = subscriptionInventory,
+            selectedSubscriptionId = selectedSubscriptionId,
+            onSelectSubscription = { selectedSubscriptionId = it },
+            onClearSelection = { selectedSubscriptionId = null },
             onRequestPermission = onRequestSubscriptionPermission,
             onRefresh = onRefreshSubscriptionInventory,
         )
 
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(4.dp))
         Text(
             "ACTION_DIAL: ${capabilitySnapshot.dialIntentHandling.describe()}",
             style = MaterialTheme.typography.bodyMedium,
@@ -138,6 +149,9 @@ private fun DevelopmentHome(
 @Composable
 private fun SubscriptionInventoryStatus(
     result: SubscriptionInventoryResult?,
+    selectedSubscriptionId: Int?,
+    onSelectSubscription: (Int) -> Unit,
+    onClearSelection: () -> Unit,
     onRequestPermission: () -> Unit,
     onRefresh: () -> Unit,
 ) {
@@ -169,19 +183,91 @@ private fun SubscriptionInventoryStatus(
             TextButton(onClick = onRefresh) { Text("Retry") }
         }
         is SubscriptionInventoryResult.Available -> {
-            Text(
-                when (result.subscriptions.size) {
-                    0 -> "No active carrier subscriptions were reported."
-                    1 -> "1 active carrier subscription is available."
-                    else -> "${result.subscriptions.size} active carrier subscriptions are available."
-                },
-                style = MaterialTheme.typography.bodySmall,
+            SubscriptionSelectionStatus(
+                subscriptions = result.subscriptions,
+                selectedSubscriptionId = selectedSubscriptionId,
+                onSelectSubscription = onSelectSubscription,
+                onClearSelection = onClearSelection,
             )
-            Text(
-                "No subscription is selected automatically by this screen.",
-                style = MaterialTheme.typography.bodySmall,
-            )
-            TextButton(onClick = onRefresh) { Text("Refresh") }
+            TextButton(onClick = onRefresh) { Text("Refresh SIM inventory") }
+        }
+    }
+}
+
+@Composable
+private fun SubscriptionSelectionStatus(
+    subscriptions: List<ActiveSubscription>,
+    selectedSubscriptionId: Int?,
+    onSelectSubscription: (Int) -> Unit,
+    onClearSelection: () -> Unit,
+) {
+    val orderedSubscriptions = subscriptions
+        .distinctBy { it.subscriptionId }
+        .sortedBy { it.subscriptionId }
+    val decision = SubscriptionRoutePolicy.decide(
+        activeSubscriptions = orderedSubscriptions,
+        explicitlySelectedSubscriptionId = selectedSubscriptionId,
+        isEmergencyCall = false,
+    )
+
+    Text(
+        when (orderedSubscriptions.size) {
+            0 -> "No active carrier subscriptions were reported."
+            1 -> "1 active carrier subscription is available."
+            else -> "${orderedSubscriptions.size} active carrier subscriptions are available."
+        },
+        style = MaterialTheme.typography.bodySmall,
+    )
+
+    if (orderedSubscriptions.size > 1) {
+        Text(
+            "Choose a SIM explicitly for future non-emergency route evaluation.",
+            style = MaterialTheme.typography.bodySmall,
+        )
+        orderedSubscriptions.forEachIndexed { index, subscription ->
+            val label = "SIM ${index + 1}"
+            if (subscription.subscriptionId == selectedSubscriptionId) {
+                Button(onClick = { onSelectSubscription(subscription.subscriptionId) }) {
+                    Text("$label selected")
+                }
+            } else {
+                OutlinedButton(onClick = { onSelectSubscription(subscription.subscriptionId) }) {
+                    Text("Use $label")
+                }
+            }
+        }
+    }
+
+    if (selectedSubscriptionId != null) {
+        TextButton(onClick = onClearSelection) { Text("Clear SIM selection") }
+    }
+
+    Text(
+        text = routePreviewText(decision, orderedSubscriptions),
+        style = MaterialTheme.typography.bodySmall,
+    )
+    Text(
+        "This is a non-emergency policy preview only. A future call action must re-read active SIMs and re-run routing policy; emergency routing always defers to Android Telecom.",
+        style = MaterialTheme.typography.bodySmall,
+    )
+}
+
+private fun routePreviewText(
+    decision: SubscriptionRouteDecision,
+    subscriptions: List<ActiveSubscription>,
+): String = when (decision) {
+    SubscriptionRouteDecision.DeferEmergencyToPlatform ->
+        "Emergency routing is delegated to Android Telecom."
+    is SubscriptionRouteDecision.RequiresUserSelection ->
+        "Route preview: explicit SIM selection is required."
+    is SubscriptionRouteDecision.Unavailable ->
+        "Route preview unavailable — ${decision.reason}"
+    is SubscriptionRouteDecision.UseSubscription -> {
+        val ordinal = subscriptions.indexOfFirst { it.subscriptionId == decision.subscriptionId }
+        if (ordinal >= 0) {
+            "Route preview: SIM ${ordinal + 1} is currently accepted by the non-emergency policy."
+        } else {
+            "Route preview unavailable — selected SIM is not in the current inventory."
         }
     }
 }
