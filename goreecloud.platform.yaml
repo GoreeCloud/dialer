@@ -80,14 +80,6 @@ platform_systems:
       - SPECIFICATIONS.md
     notes: GoreeCloud Identity remains the future authority for account-bound calling services and device/session authorization where applicable, but the current local carrier-routing Development path has no accepted Identity registration, credential exchange, protected session storage, or production Identity runtime.
 
-  sync:
-    result: applicable-blocked
-    version: null
-    evidence:
-      - README.md
-      - FEATURE-ROADMAP.md
-    notes: No accepted GoreeCloud Sync change tracking, version coordination, conflict handling, authorized replication, offline-resume, or cross-device calling-state synchronization exists. Local Android Telecom state, SIM inventory, call history, Everkeep recovery, and future account portability must not be represented as Sync acceptance.
-
 health:
   health_endpoint: null
   readiness_endpoint: null
@@ -151,7 +143,7 @@ conformance:
     - GLAZE UI V1.4 source adoption is in progress; complete rendered, accessibility, adaptive/form-factor, representative-device, performance, rollback, release, production, and applicable V1.4.1 human/manual/device acceptance remain outstanding.
     - GoreeCloud Mesh registration, capability/event transport, cross-device coordination, and runtime acceptance are not established.
     - GoreeCloud Identity registration, credential/session runtime, protected credential storage, and production acceptance are not established.
-    - GoreeCloud Sync change tracking, version/conflict reconciliation, authorized replication, offline-resume, and cross-device continuity acceptance are not established.
+    - GoreeCloud Sync remains a separate application/service capability. Change tracking, version/conflict reconciliation, authorized replication, offline-resume, and cross-device continuity acceptance are not established.
     - Carrier call placement remains disabled; default-role acquisition, incoming/ongoing call UI, user-facing call controls, screening, voicemail, recording, transcription, translation, AI assistance, and emergency-call runtime acceptance remain separately blocked Development capabilities.
     - Multi-SIM policy and Telecom-account readiness are Development pre-call evidence only and do not authorize or place calls.
     - Production signing, distribution, representative physical-device acceptance, release provenance, Release Candidate approval, and Stable qualification remain outstanding.
