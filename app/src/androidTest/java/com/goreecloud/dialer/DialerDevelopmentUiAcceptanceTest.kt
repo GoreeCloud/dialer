@@ -16,13 +16,13 @@ class DialerDevelopmentUiAcceptanceTest {
 
     @Test
     fun carrierCallButtonRemainsBlocked() {
-        composeRule.onNodeWithText("Call", useUnmergedTree = true)
+        composeRule.onNodeWithText("Call")
             .assertIsNotEnabled()
     }
 
     @Test
     fun defaultDialerRoleRequestRemainsBlockedByCurrentAcceptance() {
-        composeRule.onNodeWithText("Default dialer request blocked", useUnmergedTree = true)
+        composeRule.onNodeWithText("Default dialer request blocked")
             .assertIsNotEnabled()
     }
 }
