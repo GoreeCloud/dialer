@@ -15,6 +15,7 @@ import com.goreecloud.dialer.telephony.PreCallRouteReadinessCoordinator
 import com.goreecloud.dialer.telephony.SubscriptionInventoryGateway
 import com.goreecloud.dialer.telephony.SubscriptionInventoryResult
 import com.goreecloud.dialer.ui.DialerApp
+import com.goreecloud.dialer.ui.GlazeDialerTheme
 
 class MainActivity : ComponentActivity() {
     private var dialRequest by mutableStateOf<DialRequest?>(null)
@@ -30,20 +31,22 @@ class MainActivity : ComponentActivity() {
         dialRequest = AndroidDialRequestReader.read(intent)
         refreshSubscriptionInventory()
         setContent {
-            DialerApp(
-                initialDialRequest = dialRequest,
-                subscriptionInventory = subscriptionInventory,
-                onRequestSubscriptionPermission = {
-                    readPhoneStatePermissionLauncher.launch(Manifest.permission.READ_PHONE_STATE)
-                },
-                onRefreshSubscriptionInventory = ::refreshSubscriptionInventory,
-                onEvaluatePreCallRoute = { selectedSubscriptionId ->
-                    PreCallRouteReadinessCoordinator(applicationContext).evaluate(
-                        explicitlySelectedSubscriptionId = selectedSubscriptionId,
-                        isEmergencyCall = false,
-                    )
-                },
-            )
+            GlazeDialerTheme {
+                DialerApp(
+                    initialDialRequest = dialRequest,
+                    subscriptionInventory = subscriptionInventory,
+                    onRequestSubscriptionPermission = {
+                        readPhoneStatePermissionLauncher.launch(Manifest.permission.READ_PHONE_STATE)
+                    },
+                    onRefreshSubscriptionInventory = ::refreshSubscriptionInventory,
+                    onEvaluatePreCallRoute = { selectedSubscriptionId ->
+                        PreCallRouteReadinessCoordinator(applicationContext).evaluate(
+                            explicitlySelectedSubscriptionId = selectedSubscriptionId,
+                            isEmergencyCall = false,
+                        )
+                    },
+                )
+            }
         }
     }
 
