@@ -80,6 +80,16 @@ jobs:
           gradle :app:pixel2Api30DebugAndroidTest
           -Pandroid.testoptions.manageddevices.emulator.gpu=swiftshader_indirect
           --stacktrace
+      - name: Upload Android 11 acceptance evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: dialer-managed-device-api30-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            app/build/reports/androidTests/managedDevice/debug/pixel2Api30/
+            app/build/outputs/androidTest-results/managedDevice/debug/pixel2Api30/
+          if-no-files-found: warn
+          retention-days: 14
 
   emulator-acceptance-api34:
     name: emulator-acceptance-api34
@@ -116,3 +126,13 @@ jobs:
           gradle :app:pixel2Api34DebugAndroidTest
           -Pandroid.testoptions.manageddevices.emulator.gpu=swiftshader_indirect
           --stacktrace
+      - name: Upload Android 14 acceptance evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: dialer-managed-device-api34-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            app/build/reports/androidTests/managedDevice/debug/pixel2Api34/
+            app/build/outputs/androidTest-results/managedDevice/debug/pixel2Api34/
+          if-no-files-found: warn
+          retention-days: 14

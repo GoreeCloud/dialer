@@ -25,6 +25,12 @@ Both lanes execute the shared deterministic Android instrumentation suite. The A
 
 The managed-emulator gates exercise deterministic Android runtime contracts such as Activity startup, `ACTION_DIAL` resolution, the `InCallService` manifest contract, fail-closed role-request behavior, Development control gating, the disabled Android automatic-backup flag, and supported platform API presence. GitHub Actions runs the managed devices with software rendering and explicit KVM access. Emulator success is recorded separately from build-only evidence.
 
+## Acceptance evidence artifacts
+
+Each managed-emulator job uploads its generated Android managed-device HTML report and machine-readable test-result output using the current supported `actions/upload-artifact` line. The upload step runs with `always()` so reports are retained for both successful and failed executions when files were produced.
+
+API 30 and API 34 use unique artifact names. Artifacts are retained for 14 days and remain workflow evidence only; artifact presence does not strengthen an acceptance result beyond the tests that actually ran.
+
 ## What a fully green run proves
 
 A fully green run proves that the checked source revision passed the five build-level validations plus the configured API 30 and API 34 managed-emulator suites in GitHub Actions.
@@ -49,4 +55,4 @@ A green run does not prove:
 - accessibility human validation
 - Stable release readiness
 
-These require independent evidence and must not be inferred from CI compilation, packaging, minification, JVM tests, or managed-emulator success.
+These require independent evidence and must not be inferred from CI compilation, packaging, minification, JVM tests, managed-emulator success, or uploaded test artifacts.
