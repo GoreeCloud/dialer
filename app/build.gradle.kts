@@ -35,6 +35,12 @@ android {
                     apiLevel = 30
                     systemImageSource = "aosp-atd"
                 }
+                create<com.android.build.api.dsl.ManagedVirtualDevice>("pixel2Api34") {
+                    device = "Pixel 2"
+                    apiLevel = 34
+                    systemImageSource = "aosp"
+                    require64Bit = true
+                }
             }
         }
     }
