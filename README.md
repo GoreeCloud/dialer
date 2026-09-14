@@ -8,6 +8,8 @@ GoreeCloud Dialer is GoreeCloud's privacy-focused, intelligent Android calling a
 
 Carrier call placement is not accepted, conference operations are not production-accepted, call direction/outcome evidence is transient rather than durable call history, caller identity, endpoint device names, phone-account labels, phone numbers, carrier names, SIM identifiers, subscription identifiers, and provider-specific disconnect reason strings are not projected into these Development surfaces, ringtone ownership is not claimed, and production incoming/ongoing UI acceptance is incomplete. The role-consent surface can launch Android's prompt only after the capability model reaches `RoleRequired` and the independent GoreeCloud preparer returns `Prepared`; current Development acceptance keeps that path blocked. Precise Wi-Fi Calling/IMS and supplementary-service state are not inferred from connectivity or carrier heuristics; they remain unavailable until GoreeCloud has an authorized Android platform signal and an accepted observer. Legacy pre-Android-14 speaker/Bluetooth routing is intentionally unavailable rather than relying on deprecated APIs. Screening, voicemail, recording, transcription, translation, AI assistance, Privacy Shield acceptance, Wardveil acceptance, Everkeep backup, and cross-device calling are also **not** claimed as implemented until their runtime paths are built and verified.
 
+CI now includes executable managed-emulator acceptance on Android 11 / API 30 and Android 14 / API 34. Those lanes verify deterministic Android runtime contracts and modern API presence, but they do not substitute for physical-device, carrier, SIM/eSIM, emergency-network, OEM, live audio-route, or human acceptance.
+
 ## Canonical repository
 
 `GoreeCloud/goreecloud-dialer` is the canonical source repository for GoreeCloud Dialer.
@@ -81,14 +83,16 @@ A future move to compile SDK 37 / AGP 9.1+ is tracked as a separate platform mig
 - Android-managed automatic backup is disabled and explicit platform rules exclude app-managed storage from cloud backup and device-to-device transfer; this is not Everkeep implementation or recovery acceptance
 - Android CI uses Node-24-capable Action lines and branch-scoped concurrency so newer commits cancel superseded runs
 - CI validates JVM unit tests, Android lint, debug APK assembly, minified release-variant assembly, and instrumentation-test APK compilation
+- CI then executes deterministic managed-emulator acceptance on Android 11 / API 30 and Android 14 / API 34
+- API 34 acceptance checks modern `CallEndpoint`/`InCallService` API availability and full-screen-intent capability probing without claiming successful endpoint switching on a live call
 - release-variant assembly exercises release resources, R8/minification, and packaging configuration; it does **not** prove signing, distribution readiness, device acceptance, or Stable status
-- instrumentation test source includes a canonical-package smoke test; CI compilation does **not** imply emulator or physical-device execution
-- Android platform modernization, CI evidence boundaries, testing layers, and release gates are documented separately
+- physical-device and carrier acceptance is tracked separately in `docs/physical-device-acceptance.md` and Issue #14
+- Android platform modernization, CI evidence boundaries, testing layers, release gates, and physical-device evidence requirements are documented separately
 - architecture, privacy, security, specifications, roadmap, feature, and user-manual documentation
 
 ## Runtime truth rule
 
-A feature is never considered implemented merely because a UI surface, configuration switch, planned contract, issue, mock, compiled test APK, release-variant build, or green CI run exists. Runtime capability, platform/carrier support, permission/role state, privacy authorization, security acceptance, request submission, verified operation result, device validation, signing/distribution evidence, and human release validation are separate facts.
+A feature is never considered implemented merely because a UI surface, configuration switch, planned contract, issue, mock, compiled test APK, release-variant build, managed-emulator pass, or green CI run exists. Runtime capability, platform/carrier support, permission/role state, privacy authorization, security acceptance, request submission, verified operation result, physical-device validation, carrier validation, signing/distribution evidence, and human release validation are separate facts.
 
 ## Documentation
 
@@ -103,6 +107,7 @@ A feature is never considered implemented merely because a UI surface, configura
 - [docs/ci-validation.md](docs/ci-validation.md)
 - [docs/testing.md](docs/testing.md)
 - [docs/release-gates.md](docs/release-gates.md)
+- [docs/physical-device-acceptance.md](docs/physical-device-acceptance.md)
 
 ## License
 

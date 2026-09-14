@@ -53,25 +53,29 @@ The current source contains:
 - Android-managed automatic backup disabled plus explicit cloud-backup, device-transfer, and legacy full-backup exclusions for app-managed storage; this is not Everkeep implementation or recovery acceptance.
 - JVM unit-test source plus Android instrumentation-test source.
 - CI validation for JVM unit tests, Android lint, debug APK assembly, minified release-variant assembly, and instrumentation-test APK compilation.
-- Architecture, privacy, security, feature, roadmap, platform-modernization, CI-validation, testing and release-gate documentation.
+- Managed-emulator execution on Android 11 / API 30 and Android 14 / API 34 after the build gate passes.
+- Android-14-specific runtime checks for modern `CallEndpoint`/`InCallService` API presence, full-screen-intent capability probing, and fail-closed role-consent behavior.
+- A repository physical-device/carrier acceptance template for the remaining real telephony evidence.
+- Architecture, privacy, security, feature, roadmap, platform-modernization, CI-validation, testing, release-gate, and physical-device-acceptance documentation.
 
 The direction/terminal-outcome layer is transient runtime evidence only. It is not a durable Recents implementation and does not persist call history.
 
-Release-variant assembly is build evidence only. It validates release resources, R8/minification and release packaging configuration, but it does not prove signing, production distribution readiness, device behavior or Stable acceptance. Instrumentation-test APK compilation likewise does not prove emulator or physical-device execution. Carrier behavior and human validation remain independent evidence states.
+Release-variant assembly is build evidence only. Managed-emulator success is Android runtime evidence only. Neither proves signing, production distribution readiness, carrier behavior, physical-device behavior, live endpoint changes, or Stable acceptance.
 
 ## Explicitly not production-accepted
 
 The source above must not be interpreted as proof that GoreeCloud Dialer is ready to replace the system phone application. The following remain incomplete or unverified for production acceptance:
 
-- carrier call placement and device/carrier validation
+- carrier call placement and physical-device/carrier validation
 - end-to-end default-dialer role acceptance; the role-consent surface remains blocked by current GoreeCloud acceptance state
-- production incoming and ongoing call UI acceptance
+- production incoming and ongoing call UI acceptance on real calls/OEM devices
 - ringtone ownership
 - durable Recents/call-history persistence and retention
 - production multi-SIM routing acceptance
 - precise Wi-Fi Calling/IMS state observation
 - supplementary-service integration beyond legitimately authorized Android platform signals
 - production conference operation validation across supported devices/carriers
+- real earpiece/speaker/wired/Bluetooth endpoint behavior and live API 34+ endpoint changes
 - pre-Android-14 audio-route switching
 - Contacts and Favorites integration
 - call screening and caller-safety runtime paths
@@ -87,8 +91,8 @@ The source above must not be interpreted as proof that GoreeCloud Dialer is read
 
 ## Runtime truth requirements
 
-A source file, UI control, policy object, permission declaration, role availability signal, submitted Telecom request, transient direction/outcome classification, compiled instrumentation test, release-variant build, or test double does not by itself prove that a user-visible capability succeeded. Device capability, carrier support, runtime state, permissions, role ownership, GoreeCloud acceptance, request submission, callback/result evidence, privacy authorization, security acceptance, signing/distribution evidence, device validation, and human release validation remain independent facts.
+A source file, UI control, policy object, permission declaration, role availability signal, submitted Telecom request, transient direction/outcome classification, compiled instrumentation test, release-variant build, emulator pass, or test double does not by itself prove that a user-visible production capability succeeded. Device capability, carrier support, runtime state, permissions, role ownership, GoreeCloud acceptance, request submission, callback/result evidence, privacy authorization, security acceptance, physical-device validation, carrier validation, signing/distribution evidence, and human release validation remain independent facts.
 
 ## Product scope
 
-The planned product scope is defined by the canonical GoreeCloud Dialer project specification and repository roadmap. Source documentation must continue to distinguish planned behavior, source-present Development boundaries, build/CI validation, release-variant build evidence, emulator/device validation, carrier validation, signing/distribution evidence, human validation, and production acceptance.
+The planned product scope is defined by the canonical GoreeCloud Dialer project specification and repository roadmap. Source documentation must continue to distinguish planned behavior, source-present Development boundaries, build/CI validation, release-variant build evidence, API-specific emulator validation, physical-device validation, carrier validation, signing/distribution evidence, human validation, and production acceptance.

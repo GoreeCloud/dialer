@@ -14,17 +14,20 @@ The lint step prints the text report when it fails. New lint blockers should be 
 
 The release-variant gate exercises release resources, R8/minification, and release packaging configuration. The resulting CI output is not described as a signed production release and is not release acceptance.
 
-## Managed-emulator acceptance gate
+## Managed-emulator acceptance gates
 
-After the build-level gate passes, CI provisions a Gradle Managed Device using an Android 11 / API 30 AOSP Automated Test Device and executes `:app:pixel2Api30DebugAndroidTest`.
+After the build-level gate passes, CI executes two independent Gradle Managed Device lanes:
 
-The managed-emulator gate exercises deterministic Android runtime contracts such as Activity startup, `ACTION_DIAL` resolution, the `InCallService` manifest contract, fail-closed role-request behavior, Development control gating, and the disabled Android automatic-backup flag.
+- Android 11 / API 30 on the `pixel2Api30` AOSP Automated Test Device.
+- Android 14 / API 34 on the `pixel2Api34` AOSP managed device.
 
-GitHub Actions runs the managed emulator with software rendering and explicit KVM access. Emulator success is recorded separately from build-only evidence.
+Both lanes execute the shared deterministic Android instrumentation suite. The API 34 lane additionally executes Android-14-only checks for the modern `CallEndpoint`/`InCallService` API surface, full-screen-intent capability probing, and the fail-closed default-dialer role-consent boundary.
+
+The managed-emulator gates exercise deterministic Android runtime contracts such as Activity startup, `ACTION_DIAL` resolution, the `InCallService` manifest contract, fail-closed role-request behavior, Development control gating, the disabled Android automatic-backup flag, and supported platform API presence. GitHub Actions runs the managed devices with software rendering and explicit KVM access. Emulator success is recorded separately from build-only evidence.
 
 ## What a fully green run proves
 
-A fully green run proves that the checked source revision passed the five build-level validations and the configured managed-emulator acceptance suite in GitHub Actions.
+A fully green run proves that the checked source revision passed the five build-level validations plus the configured API 30 and API 34 managed-emulator suites in GitHub Actions.
 
 ## What this does not prove
 
@@ -38,7 +41,8 @@ A green run does not prove:
 - production incoming/ongoing call UI acceptance on real calls
 - ringtone ownership
 - multi-SIM production acceptance
-- real Bluetooth/wired endpoint behavior
+- real Bluetooth/wired/earpiece/speaker endpoint behavior
+- successful `CallEndpoint` switching on a live Telecom call
 - conference behavior across real devices/carriers
 - Privacy Shield, Wardveil or Everkeep runtime acceptance
 - Glaze UI human validation

@@ -77,6 +77,7 @@ Instrumentation and managed-emulator tests
 - app/src/androidTest/java/com/goreecloud/dialer/DialerApplicationSmokeTest.kt
 - app/src/androidTest/java/com/goreecloud/dialer/DialerPlatformAcceptanceTest.kt
 - app/src/androidTest/java/com/goreecloud/dialer/DialerDevelopmentUiAcceptanceTest.kt
+- app/src/androidTest/java/com/goreecloud/dialer/DialerAndroid14AcceptanceTest.kt
 
 Product and engineering documentation
 - README.md
@@ -91,5 +92,6 @@ Product and engineering documentation
 - docs/ci-validation.md
 - docs/testing.md
 - docs/release-gates.md
+- docs/physical-device-acceptance.md
 
-This manifest is a provenance inventory, not proof that planned telephony or intelligent calling capabilities are implemented or production-accepted. Instrumentation source is compiled in the build gate and the deterministic suite is configured to execute on an Android 11 / API 30 Gradle Managed Device. Managed-emulator execution does not imply physical-device, carrier, SIM/eSIM, emergency-network, OEM, or human acceptance.
+This manifest is a provenance inventory, not proof that planned telephony or intelligent calling capabilities are implemented or production-accepted. Instrumentation source is compiled in the build gate and deterministic suites execute on Android 11 / API 30 and Android 14 / API 34 Gradle Managed Devices. Managed-emulator execution does not imply physical-device, carrier, SIM/eSIM, emergency-network, OEM, live audio-endpoint, or human acceptance.

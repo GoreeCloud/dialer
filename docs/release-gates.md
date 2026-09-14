@@ -6,21 +6,23 @@ GoreeCloud Dialer remains Active Development / pre-Stable. Passing source checks
 
 ## Build gate
 
-The build gate requires the current `main` revision to pass:
-
-- JVM unit tests
-- Android lint
-- debug APK assembly
-- release-variant assembly with R8/minification enabled
-- instrumentation-test APK compilation
+The build gate requires the current `main` revision to pass JVM unit tests, Android lint, debug APK assembly, release-variant assembly with R8/minification enabled, and instrumentation-test APK compilation.
 
 Release-variant assembly is build-integrity evidence only. It exercises release resources, minification, R8 and release packaging configuration, but does not prove signing, distribution readiness, device behavior, production acceptance, or Stable status.
 
 ## Managed-emulator gate
 
-After the build gate passes, the managed-emulator gate executes Android instrumentation tests on the configured Android 11 / API 30 AOSP Automated Test Device. This gate may accept deterministic Android runtime contracts such as Activity launch, intent resolution, manifest binding requirements, fail-closed role-request behavior, and Development control gating.
+After the build gate passes, independent managed-emulator lanes execute the deterministic instrumentation suite on Android 11 / API 30 and Android 14 / API 34.
 
-Managed-emulator success is not physical-device, carrier, SIM/eSIM, emergency-network, OEM, ringtone, Bluetooth/wired-audio, or real-call acceptance.
+The API 30 lane protects the older supported runtime contract. The API 34 lane verifies the newer Android Telecom/notification platform surface, including modern `CallEndpoint` API availability and full-screen-intent capability probing, while keeping default-dialer consent fail closed.
+
+Managed-emulator success is not physical-device, carrier, SIM/eSIM, emergency-network, OEM, ringtone, Bluetooth/wired-audio, real-call, or live endpoint-routing acceptance.
+
+## Physical-device and carrier gate
+
+Production telephony capabilities must be promoted only from recorded evidence in `docs/physical-device-acceptance.md` and Issue #14. Device, Android version, OEM behavior, carrier context, SIM/eSIM class, role/permission state, expected result, observed result, and evidence level are recorded independently.
+
+No automated acceptance test may place a real emergency call. Sensitive subscriber, device, call-content, or endpoint identity data must not be published as acceptance evidence.
 
 ## Platform gate
 
@@ -40,4 +42,4 @@ Stable release acceptance also requires the current mandated Glaze UI version pl
 
 ## Evidence rule
 
-Every release claim must state the strongest evidence actually obtained. Planned, source-present, compiled, linted, unit-tested, debug-assembled, release-variant-assembled, instrumentation-test-compiled, managed-emulator-tested, physical-device-tested, carrier-validated, human-validated, signed/distribution-ready, and Stable are separate evidence levels.
+Every release claim must state the strongest evidence actually obtained. Planned, source-present, compiled, linted, unit-tested, debug-assembled, release-variant-assembled, instrumentation-test-compiled, API-specific managed-emulator-tested, physical-device-tested, carrier-validated, human-validated, signed/distribution-ready, and Stable are separate evidence levels.
