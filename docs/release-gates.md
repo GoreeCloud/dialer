@@ -16,6 +16,12 @@ The build gate requires the current `main` revision to pass:
 
 Release-variant assembly is build-integrity evidence only. It exercises release resources, minification, R8 and release packaging configuration, but does not prove signing, distribution readiness, device behavior, production acceptance, or Stable status.
 
+## Managed-emulator gate
+
+After the build gate passes, the managed-emulator gate executes Android instrumentation tests on the configured Android 11 / API 30 AOSP Automated Test Device. This gate may accept deterministic Android runtime contracts such as Activity launch, intent resolution, manifest binding requirements, fail-closed role-request behavior, and Development control gating.
+
+Managed-emulator success is not physical-device, carrier, SIM/eSIM, emergency-network, OEM, ringtone, Bluetooth/wired-audio, or real-call acceptance.
+
 ## Platform gate
 
 The Android platform baseline and dependency set must be mutually compatible. Major build-platform migrations are accepted only as complete, tested combinations rather than piecemeal version changes.
@@ -30,8 +36,8 @@ Sensitive persistence, recording, transcription, voicemail content, AI processin
 
 ## Design and accessibility gate
 
-Stable release acceptance also requires the current mandated Glaze UI version plus human validation of accessibility and critical call workflows. Build success does not substitute for these checks.
+Stable release acceptance also requires the current mandated Glaze UI version plus human validation of accessibility and critical call workflows. Build or emulator success does not substitute for these checks.
 
 ## Evidence rule
 
-Every release claim must state the strongest evidence actually obtained. Planned, source-present, compiled, linted, unit-tested, debug-assembled, release-variant-assembled, instrumentation-test-compiled, emulator-tested, device-tested, carrier-validated, human-validated, signed/distribution-ready, and Stable are separate evidence levels.
+Every release claim must state the strongest evidence actually obtained. Planned, source-present, compiled, linted, unit-tested, debug-assembled, release-variant-assembled, instrumentation-test-compiled, managed-emulator-tested, physical-device-tested, carrier-validated, human-validated, signed/distribution-ready, and Stable are separate evidence levels.

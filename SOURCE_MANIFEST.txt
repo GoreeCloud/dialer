@@ -73,8 +73,10 @@ JVM tests
 - app/src/test/java/com/goreecloud/dialer/telephony/PostDialControlPolicyTest.kt
 - app/src/test/java/com/goreecloud/dialer/telephony/IncomingCallPresentationPolicyTest.kt
 
-Instrumentation test source
+Instrumentation and managed-emulator tests
 - app/src/androidTest/java/com/goreecloud/dialer/DialerApplicationSmokeTest.kt
+- app/src/androidTest/java/com/goreecloud/dialer/DialerPlatformAcceptanceTest.kt
+- app/src/androidTest/java/com/goreecloud/dialer/DialerDevelopmentUiAcceptanceTest.kt
 
 Product and engineering documentation
 - README.md
@@ -90,4 +92,4 @@ Product and engineering documentation
 - docs/testing.md
 - docs/release-gates.md
 
-This manifest is a provenance inventory, not proof that planned telephony or intelligent calling capabilities are implemented or production-accepted. Instrumentation test source is compiled in CI; emulator or physical-device execution is not implied.
+This manifest is a provenance inventory, not proof that planned telephony or intelligent calling capabilities are implemented or production-accepted. Instrumentation source is compiled in the build gate and the deterministic suite is configured to execute on an Android 11 / API 30 Gradle Managed Device. Managed-emulator execution does not imply physical-device, carrier, SIM/eSIM, emergency-network, OEM, or human acceptance.
