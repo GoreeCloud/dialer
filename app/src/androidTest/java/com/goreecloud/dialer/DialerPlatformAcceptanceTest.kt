@@ -6,7 +6,7 @@ import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.telecom.InCallService
+import android.telecom.TelecomManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SdkSuppress
 import androidx.test.platform.app.InstrumentationRegistry
@@ -68,8 +68,10 @@ class DialerPlatformAcceptanceTest {
 
         assertTrue(info.exported)
         assertEquals(Manifest.permission.BIND_INCALL_SERVICE, info.permission)
-        assertFalse(info.metaData?.getBoolean(InCallService.METADATA_IN_CALL_SERVICE_UI, false) == true)
-        assertFalse(info.metaData?.getBoolean(InCallService.METADATA_IN_CALL_SERVICE_RINGING, false) == true)
+        assertFalse(info.metaData?.getBoolean(TelecomManager.METADATA_IN_CALL_SERVICE_UI, false) == true)
+        assertFalse(
+            info.metaData?.getBoolean(TelecomManager.METADATA_IN_CALL_SERVICE_RINGING, false) == true,
+        )
     }
 
     @Test
