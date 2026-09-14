@@ -30,6 +30,7 @@ import com.goreecloud.dialer.core.capability.CapabilityState
 import com.goreecloud.dialer.telephony.ActiveSubscription
 import com.goreecloud.dialer.telephony.AndroidTelephonyCapabilityProbe
 import com.goreecloud.dialer.telephony.DialRequest
+import com.goreecloud.dialer.telephony.PreCallRouteReadiness
 import com.goreecloud.dialer.telephony.SubscriptionInventoryResult
 import com.goreecloud.dialer.telephony.SubscriptionRouteDecision
 import com.goreecloud.dialer.telephony.SubscriptionRoutePolicy
@@ -41,6 +42,9 @@ fun DialerApp(
     subscriptionInventory: SubscriptionInventoryResult? = null,
     onRequestSubscriptionPermission: () -> Unit = {},
     onRefreshSubscriptionInventory: () -> Unit = {},
+    onEvaluatePreCallRoute: (Int?) -> PreCallRouteReadiness = {
+        PreCallRouteReadiness.Unavailable("Telecom route evaluator is not connected")
+    },
 ) {
     val applicationContext = LocalContext.current.applicationContext
     val capabilitySnapshot = remember(applicationContext) {
@@ -55,6 +59,7 @@ fun DialerApp(
                 initialNumber = initialDialRequest?.number.orEmpty(),
                 onRequestSubscriptionPermission = onRequestSubscriptionPermission,
                 onRefreshSubscriptionInventory = onRefreshSubscriptionInventory,
+                onEvaluatePreCallRoute = onEvaluatePreCallRoute,
                 modifier = Modifier.padding(innerPadding),
             )
         }
@@ -68,6 +73,7 @@ private fun DevelopmentHome(
     initialNumber: String,
     onRequestSubscriptionPermission: () -> Unit,
     onRefreshSubscriptionInventory: () -> Unit,
+    onEvaluatePreCallRoute: (Int?) -> PreCallRouteReadiness,
     modifier: Modifier = Modifier,
 ) {
     var number by rememberSaveable(initialNumber) { mutableStateOf(initialNumber) }
@@ -132,6 +138,7 @@ private fun DevelopmentHome(
             onClearSelection = { selectedSubscriptionId = null },
             onRequestPermission = onRequestSubscriptionPermission,
             onRefresh = onRefreshSubscriptionInventory,
+            onEvaluatePreCallRoute = onEvaluatePreCallRoute,
         )
 
         Spacer(Modifier.height(4.dp))
@@ -154,6 +161,7 @@ private fun SubscriptionInventoryStatus(
     onClearSelection: () -> Unit,
     onRequestPermission: () -> Unit,
     onRefresh: () -> Unit,
+    onEvaluatePreCallRoute: (Int?) -> PreCallRouteReadiness,
 ) {
     Text("SIM inventory", style = MaterialTheme.typography.titleSmall)
     when (result) {
@@ -188,6 +196,7 @@ private fun SubscriptionInventoryStatus(
                 selectedSubscriptionId = selectedSubscriptionId,
                 onSelectSubscription = onSelectSubscription,
                 onClearSelection = onClearSelection,
+                onEvaluatePreCallRoute = onEvaluatePreCallRoute,
             )
             TextButton(onClick = onRefresh) { Text("Refresh SIM inventory") }
         }
@@ -200,6 +209,7 @@ private fun SubscriptionSelectionStatus(
     selectedSubscriptionId: Int?,
     onSelectSubscription: (Int) -> Unit,
     onClearSelection: () -> Unit,
+    onEvaluatePreCallRoute: (Int?) -> PreCallRouteReadiness,
 ) {
     val orderedSubscriptions = subscriptions
         .distinctBy { it.subscriptionId }
@@ -209,6 +219,12 @@ private fun SubscriptionSelectionStatus(
         explicitlySelectedSubscriptionId = selectedSubscriptionId,
         isEmergencyCall = false,
     )
+    var telecomReadiness by remember(
+        selectedSubscriptionId,
+        orderedSubscriptions.map { it.subscriptionId },
+    ) {
+        mutableStateOf<PreCallRouteReadiness?>(null)
+    }
 
     Text(
         when (orderedSubscriptions.size) {
@@ -250,6 +266,24 @@ private fun SubscriptionSelectionStatus(
         "This is a non-emergency policy preview only. A future call action must re-read active SIMs and re-run routing policy; emergency routing always defers to Android Telecom.",
         style = MaterialTheme.typography.bodySmall,
     )
+
+    OutlinedButton(
+        onClick = {
+            telecomReadiness = onEvaluatePreCallRoute(selectedSubscriptionId)
+        },
+    ) {
+        Text("Check Telecom route")
+    }
+    telecomReadiness?.let { readiness ->
+        Text(
+            text = preCallReadinessText(readiness, orderedSubscriptions),
+            style = MaterialTheme.typography.bodySmall,
+        )
+        Text(
+            "This check independently re-reads active SIMs and requires one exact enabled Telecom account. It does not authorize or place a call, and account-handle details are not displayed or persisted.",
+            style = MaterialTheme.typography.bodySmall,
+        )
+    }
 }
 
 private fun routePreviewText(
@@ -268,6 +302,30 @@ private fun routePreviewText(
             "Route preview: SIM ${ordinal + 1} is currently accepted by the non-emergency policy."
         } else {
             "Route preview unavailable — selected SIM is not in the current inventory."
+        }
+    }
+}
+
+private fun preCallReadinessText(
+    readiness: PreCallRouteReadiness,
+    subscriptions: List<ActiveSubscription>,
+): String = when (readiness) {
+    PreCallRouteReadiness.DeferEmergencyToPlatform ->
+        "Telecom readiness: emergency routing is delegated to Android Telecom."
+    PreCallRouteReadiness.PermissionRequired ->
+        "Telecom readiness blocked — phone-state permission is not currently accepted."
+    PreCallRouteReadiness.Unsupported ->
+        "Telecom readiness blocked — this runtime cannot provide the accepted subscription/account mapping."
+    is PreCallRouteReadiness.RequiresUserSelection ->
+        "Telecom readiness blocked — choose a SIM explicitly."
+    is PreCallRouteReadiness.Unavailable ->
+        "Telecom readiness blocked — ${readiness.reason}"
+    is PreCallRouteReadiness.Ready -> {
+        val ordinal = subscriptions.indexOfFirst { it.subscriptionId == readiness.subscriptionId }
+        if (ordinal >= 0) {
+            "Telecom readiness: SIM ${ordinal + 1} maps to exactly one enabled call-capable account."
+        } else {
+            "Telecom readiness blocked — the resolved SIM is not in the displayed inventory."
         }
     }
 }
