@@ -1,18 +1,20 @@
 package com.goreecloud.dialer
 
 import android.app.NotificationManager
-import android.content.Context
 import android.os.Build
+import android.provider.Settings
 import android.telecom.InCallService
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SdkSuppress
 import androidx.test.platform.app.InstrumentationRegistry
 import com.goreecloud.dialer.telephony.AndroidDefaultDialerRoleRequestPreparer
+import com.goreecloud.dialer.telephony.AndroidIncomingCallNotificationAccess
 import com.goreecloud.dialer.telephony.DefaultDialerRoleRequestPreparation
 import com.goreecloud.dialer.telephony.DevelopmentDefaultDialerAcceptance
 import java.util.concurrent.Executor
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -56,6 +58,23 @@ class DialerAndroid14AcceptanceTest {
         val result = method.invoke(notificationManager)
 
         assertTrue(result is Boolean)
+    }
+
+    @Test
+    fun incomingCallAccessProbeReportsModernAuthorizationSurfaces() {
+        val controller = AndroidIncomingCallNotificationAccess(targetContext)
+        val access = controller.snapshot()
+
+        assertTrue(access.postNotificationsPermissionApplicable)
+        assertNotNull(access.postNotificationsPermissionGranted)
+        assertTrue(access.fullScreenIntentAccessApplicable)
+        assertNotNull(access.fullScreenIntentAllowed)
+
+        val intent = controller.fullScreenIntentSettingsIntent()
+        assertNotNull(intent)
+        assertEquals(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT, intent?.action)
+        assertEquals("package", intent?.data?.scheme)
+        assertEquals(targetContext.packageName, intent?.data?.schemeSpecificPart)
     }
 
     @Test

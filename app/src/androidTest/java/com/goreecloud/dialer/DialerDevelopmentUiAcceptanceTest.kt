@@ -1,5 +1,6 @@
 package com.goreecloud.dialer
 
+import androidx.compose.ui.test.assertExists
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
@@ -24,5 +25,11 @@ class DialerDevelopmentUiAcceptanceTest {
     fun defaultDialerRoleRequestRemainsBlockedByCurrentAcceptance() {
         composeRule.onNodeWithText("Default dialer request blocked")
             .assertIsNotEnabled()
+    }
+
+    @Test
+    fun incomingCallPresentationAccessIsVisible() {
+        composeRule.onNodeWithText("Incoming call presentation access")
+            .assertExists()
     }
 }

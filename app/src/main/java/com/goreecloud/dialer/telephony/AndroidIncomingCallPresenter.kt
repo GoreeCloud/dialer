@@ -27,6 +27,7 @@ class AndroidIncomingCallPresenter(
     context: Context,
 ) {
     private val applicationContext = context.applicationContext
+    private val accessProbe = AndroidIncomingCallNotificationAccess(applicationContext)
 
     fun sync(
         sessionId: Long,
@@ -51,12 +52,12 @@ class AndroidIncomingCallPresenter(
     ): IncomingCallPresentationResult {
         val notificationManager = applicationContext.getSystemService(NotificationManager::class.java)
             ?: return IncomingCallPresentationResult.Failed("Android NotificationManager is unavailable")
-
+        val access = accessProbe.snapshot()
         val decision = IncomingCallPresentationPolicy.decide(
             IncomingCallPresentationFacts(
                 state = state,
-                notificationsAllowed = notificationsAllowed(),
-                fullScreenAllowed = fullScreenAllowed(notificationManager),
+                notificationsAllowed = access.canPostIncomingNotifications,
+                fullScreenAllowed = access.canUseFullScreenIntent,
             ),
         )
 
@@ -118,7 +119,7 @@ class AndroidIncomingCallPresenter(
     }
 
     private fun presentOngoing(sessionId: Long): IncomingCallPresentationResult {
-        if (!notificationsAllowed()) {
+        if (!accessProbe.snapshot().canPostIncomingNotifications) {
             return IncomingCallPresentationResult.Blocked(
                 "Ongoing-call notifications are not allowed",
             )
@@ -164,6 +165,7 @@ class AndroidIncomingCallPresenter(
         }
     }
 
+    /** Re-check immediately before posting so permission revocation cannot reuse stale UI evidence. */
     private fun post(sessionId: Long, notification: Notification) {
         if (
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
@@ -179,23 +181,6 @@ class AndroidIncomingCallPresenter(
             notification,
         )
     }
-
-    private fun notificationsAllowed(): Boolean {
-        val runtimePermissionGranted = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
-            ContextCompat.checkSelfPermission(
-                applicationContext,
-                Manifest.permission.POST_NOTIFICATIONS,
-            ) == PackageManager.PERMISSION_GRANTED
-        return runtimePermissionGranted &&
-            NotificationManagerCompat.from(applicationContext).areNotificationsEnabled()
-    }
-
-    private fun fullScreenAllowed(notificationManager: NotificationManager): Boolean =
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            notificationManager.canUseFullScreenIntent()
-        } else {
-            true
-        }
 
     private fun ensureChannel(notificationManager: NotificationManager) {
         val channel = NotificationChannel(

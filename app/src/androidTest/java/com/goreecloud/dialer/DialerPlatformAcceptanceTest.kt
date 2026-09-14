@@ -7,13 +7,16 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.filters.SdkSuppress
 import androidx.test.platform.app.InstrumentationRegistry
 import com.goreecloud.dialer.telephony.AndroidDefaultDialerRoleRequestPreparer
+import com.goreecloud.dialer.telephony.AndroidIncomingCallNotificationAccess
 import com.goreecloud.dialer.telephony.DefaultDialerRoleRequestPreparation
 import com.goreecloud.dialer.telephony.DevelopmentDefaultDialerAcceptance
 import com.goreecloud.dialer.telephony.GoreeCloudInCallService
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -81,5 +84,16 @@ class DialerPlatformAcceptanceTest {
             0,
         )
         assertEquals(0, applicationInfo.flags and ApplicationInfo.FLAG_ALLOW_BACKUP)
+    }
+
+    @Test
+    @SdkSuppress(maxSdkVersion = 32)
+    fun preAndroid13DoesNotRequireModernNotificationAccess() {
+        val access = AndroidIncomingCallNotificationAccess(targetContext).snapshot()
+
+        assertFalse(access.postNotificationsPermissionApplicable)
+        assertNull(access.postNotificationsPermissionGranted)
+        assertFalse(access.fullScreenIntentAccessApplicable)
+        assertNull(access.fullScreenIntentAllowed)
     }
 }

@@ -36,10 +36,12 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.goreecloud.dialer.core.capability.CapabilityState
 import com.goreecloud.dialer.telephony.AndroidDefaultDialerRoleRequestPreparer
+import com.goreecloud.dialer.telephony.AndroidIncomingCallNotificationAccess
 import com.goreecloud.dialer.telephony.AndroidTelephonyCapabilityProbe
 import com.goreecloud.dialer.telephony.DefaultDialerRoleRequestPreparation
 import com.goreecloud.dialer.telephony.DialRequest
 import com.goreecloud.dialer.telephony.InCallRuntimeStore
+import com.goreecloud.dialer.telephony.IncomingCallNotificationAccessSnapshot
 import com.goreecloud.dialer.telephony.PhoneAccountDiscoveryState
 import com.goreecloud.dialer.telephony.PhoneAccountRoutingRuntime
 import com.goreecloud.dialer.telephony.TelephonyCapabilitySnapshot
@@ -50,8 +52,15 @@ fun DialerApp(initialDialRequest: DialRequest? = null) {
     val lifecycleOwner = LocalLifecycleOwner.current
     var runtimeRefresh by remember { mutableIntStateOf(0) }
     var roleRequestMessage by remember { mutableStateOf<String?>(null) }
+    var incomingCallAccessMessage by remember { mutableStateOf<String?>(null) }
+    val incomingCallAccessProbe = remember(applicationContext) {
+        AndroidIncomingCallNotificationAccess(applicationContext)
+    }
     val capabilitySnapshot = remember(applicationContext, runtimeRefresh) {
         AndroidTelephonyCapabilityProbe(applicationContext).snapshot()
+    }
+    val incomingCallNotificationAccess = remember(applicationContext, runtimeRefresh) {
+        incomingCallAccessProbe.snapshot()
     }
     val inCallRuntime by InCallRuntimeStore.snapshots.collectAsState()
     var selectedPhoneAccountRouteId by rememberSaveable { mutableStateOf<Long?>(null) }
@@ -76,6 +85,22 @@ fun DialerApp(initialDialRequest: DialRequest? = null) {
     ) {
         runtimeRefresh += 1
     }
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+    ) { granted ->
+        incomingCallAccessMessage = if (granted) {
+            "Android granted incoming-call notification permission."
+        } else {
+            "Incoming-call notification permission remains unavailable."
+        }
+        runtimeRefresh += 1
+    }
+    val systemSettingsLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult(),
+    ) {
+        incomingCallAccessMessage = "Android call-presentation settings returned; access evidence refreshed."
+        runtimeRefresh += 1
+    }
     val defaultDialerRoleLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult(),
     ) {
@@ -87,13 +112,52 @@ fun DialerApp(initialDialRequest: DialRequest? = null) {
         Scaffold { innerPadding ->
             DevelopmentHome(
                 capabilitySnapshot = capabilitySnapshot,
+                incomingCallNotificationAccess = incomingCallNotificationAccess,
                 inCallRuntime = inCallRuntime,
                 phoneAccountDiscovery = phoneAccountDiscovery,
                 selectedPhoneAccountRouteId = selectedPhoneAccountRouteId,
                 roleRequestMessage = roleRequestMessage,
+                incomingCallAccessMessage = incomingCallAccessMessage,
                 onPhoneAccountSelected = { selectedPhoneAccountRouteId = it },
                 onRequestPhoneStatePermission = {
                     phoneStatePermissionLauncher.launch(Manifest.permission.READ_PHONE_STATE)
+                },
+                onRequestNotificationPermission = {
+                    if (
+                        incomingCallNotificationAccess.postNotificationsPermissionApplicable &&
+                        incomingCallNotificationAccess.postNotificationsPermissionGranted != true
+                    ) {
+                        notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    } else {
+                        incomingCallAccessMessage = "Android notification runtime permission is already satisfied."
+                        runtimeRefresh += 1
+                    }
+                },
+                onOpenNotificationSettings = {
+                    val intent = incomingCallAccessProbe.notificationSettingsIntent()
+                    if (intent.resolveActivity(applicationContext.packageManager) != null) {
+                        systemSettingsLauncher.launch(intent)
+                    } else {
+                        incomingCallAccessMessage = "Android notification settings are unavailable on this device."
+                    }
+                },
+                onOpenFullScreenSettings = {
+                    val intent = incomingCallAccessProbe.fullScreenIntentSettingsIntent()
+                    when {
+                        intent == null -> {
+                            incomingCallAccessMessage =
+                                "Separate full-screen call access is not required on this Android version."
+                        }
+
+                        intent.resolveActivity(applicationContext.packageManager) != null -> {
+                            systemSettingsLauncher.launch(intent)
+                        }
+
+                        else -> {
+                            incomingCallAccessMessage =
+                                "Android full-screen call access settings are unavailable on this device."
+                        }
+                    }
                 },
                 onRequestDefaultDialerRole = {
                     when (
@@ -126,12 +190,17 @@ fun DialerApp(initialDialRequest: DialRequest? = null) {
 @Composable
 private fun DevelopmentHome(
     capabilitySnapshot: TelephonyCapabilitySnapshot,
+    incomingCallNotificationAccess: IncomingCallNotificationAccessSnapshot,
     inCallRuntime: com.goreecloud.dialer.telephony.InCallRuntimeSnapshot,
     phoneAccountDiscovery: PhoneAccountDiscoveryState,
     selectedPhoneAccountRouteId: Long?,
     roleRequestMessage: String?,
+    incomingCallAccessMessage: String?,
     onPhoneAccountSelected: (Long?) -> Unit,
     onRequestPhoneStatePermission: () -> Unit,
+    onRequestNotificationPermission: () -> Unit,
+    onOpenNotificationSettings: () -> Unit,
+    onOpenFullScreenSettings: () -> Unit,
     onRequestDefaultDialerRole: () -> Unit,
     initialNumber: String,
     modifier: Modifier = Modifier,
@@ -205,6 +274,15 @@ private fun DevelopmentHome(
         )
 
         Spacer(Modifier.height(20.dp))
+        DevelopmentIncomingCallPresentationAccess(
+            access = incomingCallNotificationAccess,
+            message = incomingCallAccessMessage,
+            onRequestNotificationPermission = onRequestNotificationPermission,
+            onOpenNotificationSettings = onOpenNotificationSettings,
+            onOpenFullScreenSettings = onOpenFullScreenSettings,
+        )
+
+        Spacer(Modifier.height(20.dp))
         DevelopmentDefaultDialerRoleRequest(
             state = capabilitySnapshot.defaultDialerRole,
             message = roleRequestMessage,
@@ -219,6 +297,87 @@ private fun DevelopmentHome(
         CapabilityEvidenceRow("Multi-SIM routing", capabilitySnapshot.multiSimRouting)
         CapabilityEvidenceRow("Wi-Fi Calling state", capabilitySnapshot.wifiCallingState)
         CapabilityEvidenceRow("Supplementary services", capabilitySnapshot.supplementaryServices)
+    }
+}
+
+@Composable
+private fun DevelopmentIncomingCallPresentationAccess(
+    access: IncomingCallNotificationAccessSnapshot,
+    message: String?,
+    onRequestNotificationPermission: () -> Unit,
+    onOpenNotificationSettings: () -> Unit,
+    onOpenFullScreenSettings: () -> Unit,
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text("Incoming call presentation access", style = MaterialTheme.typography.titleSmall)
+        Text(
+            "App notifications: ${if (access.notificationsEnabled) "enabled" else "blocked"}",
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Text(
+            when {
+                !access.postNotificationsPermissionApplicable ->
+                    "POST_NOTIFICATIONS: not separately required on this Android version"
+
+                access.postNotificationsPermissionGranted == true ->
+                    "POST_NOTIFICATIONS: granted"
+
+                else -> "POST_NOTIFICATIONS: permission required"
+            },
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Text(
+            when {
+                !access.fullScreenIntentAccessApplicable ->
+                    "Full-screen call access: not separately managed on this Android version"
+
+                access.fullScreenIntentAllowed == true ->
+                    "Full-screen call access: allowed"
+
+                else -> "Full-screen call access: blocked"
+            },
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        if (
+            access.postNotificationsPermissionApplicable &&
+            access.postNotificationsPermissionGranted != true
+        ) {
+            Spacer(Modifier.height(8.dp))
+            Button(onClick = onRequestNotificationPermission) {
+                Text("Allow incoming call notifications")
+            }
+        }
+
+        if (!access.notificationsEnabled) {
+            Spacer(Modifier.height(8.dp))
+            Button(onClick = onOpenNotificationSettings) {
+                Text("Manage notification settings")
+            }
+        }
+
+        if (access.fullScreenIntentAccessApplicable) {
+            Spacer(Modifier.height(8.dp))
+            Button(onClick = onOpenFullScreenSettings) {
+                Text("Manage full-screen call access")
+            }
+        }
+
+        Spacer(Modifier.height(4.dp))
+        Text(
+            "When notifications are otherwise allowed, unavailable full-screen access degrades to notification presentation instead of being treated as success.",
+            style = MaterialTheme.typography.bodySmall,
+        )
+        message?.let {
+            Spacer(Modifier.height(4.dp))
+            Text(it, style = MaterialTheme.typography.bodySmall)
+        }
     }
 }
 
