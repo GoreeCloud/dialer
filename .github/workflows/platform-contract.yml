@@ -1,4 +1,5 @@
 # yamllint disable rule:line-length
+# The reusable workflow checks out and verifies the exact caller revision.
 name: Platform Contract
 
 "on":
