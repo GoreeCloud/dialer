@@ -11,8 +11,15 @@ permissions:
 jobs:
   build-test:
     runs-on: ubuntu-latest
+    env:
+      DIALER_SOURCE_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.DIALER_SOURCE_REVISION }}
+          persist-credentials: false
+      - name: Verify exact Dialer source revision
+        run: test "$(git rev-parse HEAD)" = "$DIALER_SOURCE_REVISION"
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
