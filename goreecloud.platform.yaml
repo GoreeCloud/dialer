@@ -141,7 +141,6 @@ conformance:
     - Wardveil Security runtime integration and production security acceptance are not established.
     - Everkeep backup, clean-target restore, recovery lineage, rollback, and production recovery acceptance are not established.
     - GLAZE UI V1.4.1 source adoption is in progress; shared V1.4.1 qualification and source correctness do not establish Dialer-local rendered, accessibility, adaptive/form-factor, representative-device, performance, rollback, release, or production acceptance.
-    - The central draft Platform Contract 0.3 baseline may lag current Stable Glaze UI 1.4.1; any exact validator mismatch remains a governance dependency and must not be hidden by downgrading Dialer source truth.
     - GoreeCloud Mesh registration, capability/event transport, cross-device coordination, and runtime acceptance are not established.
     - GoreeCloud Identity registration, credential/session runtime, protected credential storage, and production acceptance are not established.
     - GoreeCloud Sync remains a separate application/service capability. Change tracking, version/conflict reconciliation, authorized replication, offline-resume, and cross-device continuity acceptance are not established.
