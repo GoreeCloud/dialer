@@ -58,7 +58,7 @@ platform_systems:
       - README.md
       - app/src/main/java/com/goreecloud/dialer/ui/GlazeDialerTheme.kt
       - app/src/test/java/com/goreecloud/dialer/ui/GlazeDialerContractTest.kt
-    notes: The Android Development client targets current Stable GLAZE UI V1.4 / 1.4.0 at exact Stable revision 84cb3db4884042f0fa25ed6d475a127fb110f596 through a bounded native theme and Dialer-specific optical policy. Optical Engine, Reduced Transparency, Increased Contrast, representative-device, accessibility, and human-visual acceptance remain explicitly unaccepted; V1.4.1 human/manual/physical-device qualification remains separate.
+    notes: This Development base implements GLAZE UI V1.4 / 1.4.0 at exact source revision 84cb3db4884042f0fa25ed6d475a127fb110f596. Current Official Stable is 1.4.1, so migration remains required. Optical Engine, Reduced Transparency, Increased Contrast, representative-device, accessibility, performance, and human-visual acceptance remain unaccepted.
 
   mesh:
     result: applicable-blocked
@@ -79,6 +79,14 @@ platform_systems:
       - README.md
       - SPECIFICATIONS.md
     notes: GoreeCloud Identity remains the future authority for account-bound calling services and device/session authorization where applicable, but the current local carrier-routing Development path has no accepted Identity registration, credential exchange, protected session storage, or production Identity runtime.
+
+  sync:
+    result: applicable-blocked
+    version: null
+    evidence:
+      - README.md
+      - FEATURE-ROADMAP.md
+    notes: GoreeCloud Sync is required for evaluation under Platform Contract 0.3. No accepted Dialer dataset contract, change tracking, version/conflict reconciliation, authorized replication, offline-resume, or cross-device synchronization runtime evidence is established.
 
 health:
   health_endpoint: null
@@ -112,10 +120,10 @@ external_dependencies:
 
 compatibility:
   platform_contract: "0.3"
-  glaze_ui_required: "1.4.0"
+  glaze_ui_required: "1.4.1"
   requires:
     - goreecloud-platform-contract==0.3
-    - glaze-ui==1.4.0
+    - glaze-ui==1.4.1
     - android-api>=29
   provides:
     - goreecloud-dialer-native-development-shell
@@ -140,10 +148,10 @@ conformance:
     - Privacy Shield runtime authorization and production privacy acceptance are not established.
     - Wardveil Security runtime integration and production security acceptance are not established.
     - Everkeep backup, clean-target restore, recovery lineage, rollback, and production recovery acceptance are not established.
-    - GLAZE UI V1.4 source adoption is in progress; complete rendered, accessibility, adaptive/form-factor, representative-device, performance, rollback, release, production, and applicable V1.4.1 human/manual/device acceptance remain outstanding.
+    - The source still implements GLAZE UI 1.4.0 while current Official Stable 1.4.1 is required; migration plus Dialer-local rendered, accessibility, adaptive/form-factor, representative-device, performance, rollback, release, and production acceptance remain outstanding.
     - GoreeCloud Mesh registration, capability/event transport, cross-device coordination, and runtime acceptance are not established.
     - GoreeCloud Identity registration, credential/session runtime, protected credential storage, and production acceptance are not established.
-    - GoreeCloud Sync remains a separate application/service capability. Change tracking, version/conflict reconciliation, authorized replication, offline-resume, and cross-device continuity acceptance are not established.
+    - GoreeCloud Sync dataset definition, change tracking, version/conflict reconciliation, authorized replication, offline-resume, cross-device continuity, and runtime acceptance are not established.
     - Carrier call placement remains disabled; default-role acquisition, incoming/ongoing call UI, user-facing call controls, screening, voicemail, recording, transcription, translation, AI assistance, and emergency-call runtime acceptance remain separately blocked Development capabilities.
     - Multi-SIM policy and Telecom-account readiness are Development pre-call evidence only and do not authorize or place calls.
     - Production signing, distribution, representative physical-device acceptance, release provenance, Release Candidate approval, and Stable qualification remain outstanding.
