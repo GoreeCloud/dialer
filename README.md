@@ -48,9 +48,9 @@ The mapping is intentionally narrow for a sensitive calling surface:
 
 Shared V1.4.1 qualification does not auto-certify Dialer. This is **Development source evidence only** and does not establish complete rendered/accessibility/device acceptance, production approval, Release Candidate, or Stable qualification.
 
-## GoreeCloud Platform Contract 0.3
+## GoreeCloud Platform Contract 0.2
 
-`goreecloud.platform.yaml` evaluates all eight Integral Platform Systems independently:
+`goreecloud.platform.yaml` evaluates exactly seven Integral Platform Systems independently:
 
 - GoreeCloud Manager
 - Privacy Shield
@@ -59,11 +59,10 @@ Shared V1.4.1 qualification does not auto-certify Dialer. This is **Development 
 - GLAZE UI
 - GoreeCloud Mesh
 - GoreeCloud Identity
-- GoreeCloud Sync
 
-Manager, Privacy Shield, Wardveil Security, Everkeep, Mesh, Identity, and Sync remain `applicable-blocked`; Glaze remains `applicable-migration-required` until Dialer-local acceptance is complete; overall product conformance remains `nonconformant`.
+Manager, Privacy Shield, Wardveil Security, Everkeep, Mesh, and Identity remain `applicable-blocked`; Glaze remains `applicable-migration-required` until Dialer-local acceptance is complete; overall product conformance remains `nonconformant`.
 
-The reusable validator is pinned to accepted central Contract 0.3 main revision `908701c6795ffcd608bd3d8a1e787395a04f1d62`. GoreeCloud Sync is not inferred from Android Telecom state, SIM inventory, future call history, local portability, Mesh coordination, or Everkeep backup/recovery.
+The reusable validator is pinned to authoritative central Contract 0.2 merge revision `dd7701b116d210a82ec0cb18ccb84b553b6e87e1`. GoreeCloud Sync is separately governed application/service functionality, not an eighth Integral Platform System, and is not inferred from Android Telecom state, SIM inventory, future call history, local portability, Mesh coordination, or Everkeep backup/recovery.
 
 ## Current source foundation
 
@@ -78,7 +77,7 @@ The reusable validator is pinned to accepted central Contract 0.3 main revision 
 - exact subscription-to-enabled-`PhoneAccountHandle` resolver
 - pre-call readiness coordinator that re-reads current subscriptions, re-runs routing policy, and requires one exact enabled Telecom account before reporting readiness
 - current Stable GLAZE UI V1.4.1 source/theme contract with calling-sensitive optical inputs prohibited
-- Platform Contract 0.3 declaration with all eight systems independently represented
+- Platform Contract 0.2 declaration with exactly seven Integral Platform Systems and GoreeCloud Sync tracked separately
 - unit tests and Android CI covering unit tests plus debug assembly
 - architecture, privacy, security, specifications, roadmap, feature, and user-manual documentation
 
