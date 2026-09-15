@@ -16,9 +16,10 @@ import androidx.compose.ui.platform.LocalConfiguration
  * recording, or account truth.
  */
 object GlazeDialerContract {
-    const val VERSION = "1.4.0"
-    const val STABLE_SOURCE_REVISION = "84cb3db4884042f0fa25ed6d475a127fb110f596"
+    const val VERSION = "1.4.1"
+    const val STABLE_SOURCE_REVISION = "4fab9da0fad2e5c974e0e66ec88632c61745751c"
     const val ADOPTION_STATE = "ADOPTION_IN_PROGRESS"
+    const val ROLLBACK_BASELINE_VERSION = "1.4.0"
 
     const val ORDINARY_INTERACTION_FLOOR_DP = 48
     const val TOUCH_ASSISTANCE_FLOOR_DP = 56
@@ -27,11 +28,13 @@ object GlazeDialerContract {
     const val REDUCED_TRANSPARENCY_ACCEPTED = false
     const val INCREASED_CONTRAST_ACCEPTED = false
     const val PHYSICAL_DEVICE_ACCEPTED = false
+    const val MANUAL_ASSISTIVE_TECH_ACCEPTED = false
     const val HUMAN_VISUAL_ACCEPTED = false
+    const val REPRESENTATIVE_PERFORMANCE_ACCEPTED = false
 }
 
 /**
- * Dialer-specific V1.4 optical policy.
+ * Dialer-specific V1.4.1 optical policy.
  *
  * Call/content identity is too sensitive to become visual-environment input. This resolver accepts
  * accessibility state only; it reads no number, contact, subscription, carrier, call, recording,
