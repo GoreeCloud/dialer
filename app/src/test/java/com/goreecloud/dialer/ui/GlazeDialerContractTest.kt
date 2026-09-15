@@ -7,30 +7,32 @@ import org.junit.Test
 
 class GlazeDialerContractTest {
     @Test
-    fun sourceMappingPinsCurrentStableV14Authority() {
-        assertEquals("1.4.0", GlazeDialerContract.VERSION)
+    fun sourceMappingPinsCurrentStableV141Authority() {
+        assertEquals("1.4.1", GlazeDialerContract.VERSION)
         assertEquals(
-            "84cb3db4884042f0fa25ed6d475a127fb110f596",
+            "4fab9da0fad2e5c974e0e66ec88632c61745751c",
             GlazeDialerContract.STABLE_SOURCE_REVISION,
         )
         assertEquals("ADOPTION_IN_PROGRESS", GlazeDialerContract.ADOPTION_STATE)
+        assertEquals("1.4.0", GlazeDialerContract.ROLLBACK_BASELINE_VERSION)
         assertEquals(48, GlazeDialerContract.ORDINARY_INTERACTION_FLOOR_DP)
         assertEquals(56, GlazeDialerContract.TOUCH_ASSISTANCE_FLOOR_DP)
     }
 
     @Test
-    fun applicationAcceptanceRemainsFailClosed() {
+    fun sharedV141QualificationDoesNotFabricateDialerAcceptance() {
         assertFalse(GlazeDialerContract.OPTICAL_ENGINE_ACCEPTED)
         assertFalse(GlazeDialerContract.REDUCED_TRANSPARENCY_ACCEPTED)
         assertFalse(GlazeDialerContract.INCREASED_CONTRAST_ACCEPTED)
         assertFalse(GlazeDialerContract.PHYSICAL_DEVICE_ACCEPTED)
+        assertFalse(GlazeDialerContract.MANUAL_ASSISTIVE_TECH_ACCEPTED)
         assertFalse(GlazeDialerContract.HUMAN_VISUAL_ACCEPTED)
+        assertFalse(GlazeDialerContract.REPRESENTATIVE_PERFORMANCE_ACCEPTED)
     }
 
     @Test
     fun ordinaryOpticsRemainNeutralSemanticAndContentIndependent() {
         val state = GlazeDialerOptics.resolve()
-
         assertEquals(GlazeDialerOptics.State.Mode.NEUTRAL_OPTICAL, state.mode)
         assertEquals(1f, state.semanticProtection)
         assertEquals(0f, state.environmentalColorMemoryInfluence)
