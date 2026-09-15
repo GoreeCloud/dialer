@@ -32,7 +32,7 @@ platform_systems:
       - README.md
       - docs/privacy.md
       - app/src/main/java/com/goreecloud/dialer/ui/GlazeDialerTheme.kt
-    notes: Dialer contains privacy-minimized Development boundaries and its V1.4 optical policy forbids number, contact, SIM/carrier, call, security, privacy, telemetry, and remote context from driving presentation. Accepted Privacy Shield purpose, consent, minimization policy, runtime authorization, revocation, retention, and production validation are not established.
+    notes: Dialer contains privacy-minimized Development boundaries and its V1.4.1 optical policy forbids number, contact, SIM/carrier, call, security, privacy, telemetry, and remote context from driving presentation. Accepted Privacy Shield purpose, consent, minimization policy, runtime authorization, revocation, retention, and production validation are not established.
 
   wardveil_security:
     result: applicable-blocked
@@ -53,12 +53,12 @@ platform_systems:
 
   glaze_ui:
     result: applicable-migration-required
-    version: "1.4.0"
+    version: "1.4.1"
     evidence:
       - README.md
       - app/src/main/java/com/goreecloud/dialer/ui/GlazeDialerTheme.kt
       - app/src/test/java/com/goreecloud/dialer/ui/GlazeDialerContractTest.kt
-    notes: This Development base implements GLAZE UI V1.4 / 1.4.0 at exact source revision 84cb3db4884042f0fa25ed6d475a127fb110f596. Current Official Stable is 1.4.1, so migration remains required. Optical Engine, Reduced Transparency, Increased Contrast, representative-device, accessibility, performance, and human-visual acceptance remain unaccepted.
+    notes: The Android Development client maps to current Official Stable GLAZE UI V1.4.1 / 1.4.1 at exact signed main revision 4fab9da0fad2e5c974e0e66ec88632c61745751c, with V1.4.0 retained as the immediate shared rollback baseline. Shared V1.4.1 qualification does not auto-certify Dialer; application-level rendered, accessibility, representative-device, performance, rollback, release, and production acceptance remain unaccepted.
 
   mesh:
     result: applicable-blocked
@@ -148,7 +148,7 @@ conformance:
     - Privacy Shield runtime authorization and production privacy acceptance are not established.
     - Wardveil Security runtime integration and production security acceptance are not established.
     - Everkeep backup, clean-target restore, recovery lineage, rollback, and production recovery acceptance are not established.
-    - The source still implements GLAZE UI 1.4.0 while current Official Stable 1.4.1 is required; migration plus Dialer-local rendered, accessibility, adaptive/form-factor, representative-device, performance, rollback, release, and production acceptance remain outstanding.
+    - Shared GLAZE UI V1.4.1 source authority is mapped, but Dialer-local rendered, accessibility, adaptive/form-factor, representative-device, performance, rollback, release, and production acceptance remain outstanding.
     - GoreeCloud Mesh registration, capability/event transport, cross-device coordination, and runtime acceptance are not established.
     - GoreeCloud Identity registration, credential/session runtime, protected credential storage, and production acceptance are not established.
     - GoreeCloud Sync dataset definition, change tracking, version/conflict reconciliation, authorized replication, offline-resume, cross-device continuity, and runtime acceptance are not established.
