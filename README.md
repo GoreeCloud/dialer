@@ -32,9 +32,9 @@ Carrier call placement, incoming/ongoing call UI, user-facing in-call controls, 
 - Java/Kotlin JVM target: 17
 - development version: `0.1.0-dev`
 
-## GLAZE UI V1.4 Development mapping
+## GLAZE UI V1.4.1 Development mapping
 
-This Development base has a bounded first-party mapping to **GLAZE UI V1.4 / `1.4.0`** at exact source revision `84cb3db4884042f0fa25ed6d475a127fb110f596`. **Current Official Stable is GLAZE UI V1.4.1 / `1.4.1`**, so this base remains migration-required until its source mapping advances and Dialer-specific acceptance is completed.
+Dialer has a bounded first-party mapping to current Official Stable **GLAZE UI V1.4.1 / `1.4.1`** at exact signed main revision `4fab9da0fad2e5c974e0e66ec88632c61745751c`, with V1.4.0 retained as the immediate shared rollback baseline.
 
 The mapping is intentionally narrow for a sensitive calling surface:
 
@@ -43,10 +43,10 @@ The mapping is intentionally narrow for a sensitive calling surface:
 - Environmental Color Memory influence: 0%;
 - phone numbers, contacts, SIM/carrier identity, call state, privacy/security state, telemetry, and remote context cannot drive optical adaptation;
 - Reduced Transparency and forced-color behavior fail closed to a solid-accessible source state;
-- application-level Optical Engine, Reduced Transparency, Increased Contrast, physical-device, and human-visual acceptance flags remain false;
+- application-level Optical Engine, Reduced Transparency, Increased Contrast, physical-device, manual assistive-technology, human-visual, and representative-performance acceptance flags remain false;
 - GLAZE UI presentation cannot manufacture emergency classification, carrier route, role, permission, call authorization, privacy, security, Identity, Sync, recording, or account truth.
 
-This is **Development source evidence only**. It does not establish complete rendered/accessibility/device acceptance, current-Stable migration, production approval, Release Candidate, or Stable qualification.
+Shared V1.4.1 qualification does not auto-certify Dialer. This is **Development source evidence only** and does not establish complete rendered/accessibility/device acceptance, production approval, Release Candidate, or Stable qualification.
 
 ## GoreeCloud Platform Contract 0.2
 
@@ -60,9 +60,9 @@ This is **Development source evidence only**. It does not establish complete ren
 - GoreeCloud Mesh
 - GoreeCloud Identity
 
-All systems except the in-progress Glaze source mapping remain `applicable-blocked`; Glaze remains `applicable-migration-required`; overall product conformance remains `nonconformant`.
+Manager, Privacy Shield, Wardveil Security, Everkeep, Mesh, and Identity remain `applicable-blocked`; Glaze remains `applicable-migration-required` until Dialer-local acceptance is complete; overall product conformance remains `nonconformant`.
 
-GoreeCloud Sync is a separately governed application/service capability, not an eighth Integral Platform System. It is not inferred from Android Telecom state, SIM inventory, future call history, local portability, or Everkeep backup/recovery. Identity, Mesh, Privacy Shield, Wardveil, Everkeep, Sync, and Manager each require their own accepted runtime evidence where applicable.
+The reusable validator is pinned to authoritative central Contract 0.2 merge revision `dd7701b116d210a82ec0cb18ccb84b553b6e87e1`. GoreeCloud Sync is separately governed application/service functionality, not an eighth Integral Platform System, and is not inferred from Android Telecom state, SIM inventory, future call history, local portability, Mesh coordination, or Everkeep backup/recovery.
 
 ## Current source foundation
 
@@ -76,7 +76,7 @@ GoreeCloud Sync is a separately governed application/service capability, not an 
 - fail-closed multi-SIM routing policy
 - exact subscription-to-enabled-`PhoneAccountHandle` resolver
 - pre-call readiness coordinator that re-reads current subscriptions, re-runs routing policy, and requires one exact enabled Telecom account before reporting readiness
-- GLAZE UI V1.4 / 1.4.0 source/theme contract with current-Stable 1.4.1 migration still required
+- current Stable GLAZE UI V1.4.1 source/theme contract with calling-sensitive optical inputs prohibited
 - Platform Contract 0.2 declaration with exactly seven Integral Platform Systems and GoreeCloud Sync tracked separately
 - unit tests and Android CI covering unit tests plus debug assembly
 - architecture, privacy, security, specifications, roadmap, feature, and user-manual documentation
