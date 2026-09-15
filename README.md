@@ -48,9 +48,9 @@ The mapping is intentionally narrow for a sensitive calling surface:
 
 This is **Development source evidence only**. It does not establish complete rendered/accessibility/device acceptance, current-Stable migration, production approval, Release Candidate, or Stable qualification.
 
-## GoreeCloud Platform Contract 0.3
+## GoreeCloud Platform Contract 0.2
 
-`goreecloud.platform.yaml` declares all eight Integral Platform Systems independently:
+`goreecloud.platform.yaml` evaluates exactly seven Integral Platform Systems independently:
 
 - GoreeCloud Manager
 - Privacy Shield
@@ -59,11 +59,10 @@ This is **Development source evidence only**. It does not establish complete ren
 - GLAZE UI
 - GoreeCloud Mesh
 - GoreeCloud Identity
-- GoreeCloud Sync
 
 All systems except the in-progress Glaze source mapping remain `applicable-blocked`; Glaze remains `applicable-migration-required`; overall product conformance remains `nonconformant`.
 
-GoreeCloud Sync is not inferred from Android Telecom state, SIM inventory, future call history, local portability, or Everkeep backup/recovery. Identity, Mesh, Privacy Shield, Wardveil, Everkeep, Sync, and Manager require their own accepted runtime evidence.
+GoreeCloud Sync is a separately governed application/service capability, not an eighth Integral Platform System. It is not inferred from Android Telecom state, SIM inventory, future call history, local portability, or Everkeep backup/recovery. Identity, Mesh, Privacy Shield, Wardveil, Everkeep, Sync, and Manager each require their own accepted runtime evidence where applicable.
 
 ## Current source foundation
 
@@ -78,7 +77,7 @@ GoreeCloud Sync is not inferred from Android Telecom state, SIM inventory, futur
 - exact subscription-to-enabled-`PhoneAccountHandle` resolver
 - pre-call readiness coordinator that re-reads current subscriptions, re-runs routing policy, and requires one exact enabled Telecom account before reporting readiness
 - GLAZE UI V1.4 / 1.4.0 source/theme contract with current-Stable 1.4.1 migration still required
-- Platform Contract 0.3 declaration with all eight systems independently represented
+- Platform Contract 0.2 declaration with exactly seven Integral Platform Systems and GoreeCloud Sync tracked separately
 - unit tests and Android CI covering unit tests plus debug assembly
 - architecture, privacy, security, specifications, roadmap, feature, and user-manual documentation
 
