@@ -34,7 +34,7 @@ Carrier call placement, incoming/ongoing call UI, user-facing in-call controls, 
 
 ## GLAZE UI V1.4 Development mapping
 
-Dialer now has a bounded first-party mapping to the current Stable **GLAZE UI V1.4 / `1.4.0`** source authority at exact merged revision `84cb3db4884042f0fa25ed6d475a127fb110f596`.
+This Development base has a bounded first-party mapping to **GLAZE UI V1.4 / `1.4.0`** at exact source revision `84cb3db4884042f0fa25ed6d475a127fb110f596`. **Current Official Stable is GLAZE UI V1.4.1 / `1.4.1`**, so this base remains migration-required until its source mapping advances and Dialer-specific acceptance is completed.
 
 The mapping is intentionally narrow for a sensitive calling surface:
 
@@ -46,7 +46,7 @@ The mapping is intentionally narrow for a sensitive calling surface:
 - application-level Optical Engine, Reduced Transparency, Increased Contrast, physical-device, and human-visual acceptance flags remain false;
 - GLAZE UI presentation cannot manufacture emergency classification, carrier route, role, permission, call authorization, privacy, security, Identity, Sync, recording, or account truth.
 
-This is **Development source evidence only**. It does not establish complete rendered/accessibility/device acceptance, V1.4.1 human/manual validation, production approval, Release Candidate, or Stable qualification.
+This is **Development source evidence only**. It does not establish complete rendered/accessibility/device acceptance, current-Stable migration, production approval, Release Candidate, or Stable qualification.
 
 ## GoreeCloud Platform Contract 0.3
 
@@ -77,7 +77,7 @@ GoreeCloud Sync is not inferred from Android Telecom state, SIM inventory, futur
 - fail-closed multi-SIM routing policy
 - exact subscription-to-enabled-`PhoneAccountHandle` resolver
 - pre-call readiness coordinator that re-reads current subscriptions, re-runs routing policy, and requires one exact enabled Telecom account before reporting readiness
-- current Stable GLAZE UI V1.4 source/theme contract with calling-sensitive optical inputs prohibited
+- GLAZE UI V1.4 / 1.4.0 source/theme contract with current-Stable 1.4.1 migration still required
 - Platform Contract 0.3 declaration with all eight systems independently represented
 - unit tests and Android CI covering unit tests plus debug assembly
 - architecture, privacy, security, specifications, roadmap, feature, and user-manual documentation
