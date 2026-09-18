@@ -56,7 +56,7 @@ class AndroidDefaultDialerRoleRequestPreparer(
         val roleManager = context.getSystemService(RoleManager::class.java)
         val acceptance = DevelopmentDefaultDialerAcceptance.current
         val facts = DefaultDialerRoleRequestFacts(
-            hasTelephony = packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY),
+            hasTelephony = packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY_CALLING),
             roleManagerAvailable = roleManager != null,
             roleAvailable = roleManager?.isRoleAvailable(RoleManager.ROLE_DIALER) == true,
             roleHeld = roleManager?.isRoleHeld(RoleManager.ROLE_DIALER) == true,

@@ -11,12 +11,12 @@ class AndroidTelephonyCapabilityProbe(
 ) {
     fun snapshot(): TelephonyCapabilitySnapshot {
         val packageManager = context.packageManager
-        val hasTelephony = packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY)
+        val hasTelephonyCalling = packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY_CALLING)
         val roleManager = context.getSystemService(RoleManager::class.java)
         val applicationAcceptance = DevelopmentDefaultDialerAcceptance.current
 
         val defaultDialerRole = DialerRoleCapabilityResolver.resolve(
-            hasTelephony = hasTelephony,
+            hasTelephony = hasTelephonyCalling,
             roleManagerAvailable = roleManager != null,
             roleAvailable = roleManager?.isRoleAvailable(RoleManager.ROLE_DIALER) == true,
             roleHeld = roleManager?.isRoleHeld(RoleManager.ROLE_DIALER) == true,
@@ -26,7 +26,7 @@ class AndroidTelephonyCapabilityProbe(
         )
 
         fun unavailable(reason: String): CapabilityState =
-            if (hasTelephony) CapabilityState.Unavailable(reason) else CapabilityState.Unsupported
+            if (hasTelephonyCalling) CapabilityState.Unavailable(reason) else CapabilityState.Unsupported
 
         return TelephonyCapabilitySnapshot(
             defaultDialerRole = defaultDialerRole,
