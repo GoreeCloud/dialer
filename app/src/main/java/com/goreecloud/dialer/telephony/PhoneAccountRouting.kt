@@ -63,7 +63,7 @@ object PhoneAccountRoutingRuntime {
 
     @Synchronized
     fun discover(context: Context): PhoneAccountDiscoveryState {
-        if (!context.packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY)) {
+        if (!context.packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY_CALLING)) {
             clearAuthority()
             return PhoneAccountDiscoveryState.Unsupported
         }
