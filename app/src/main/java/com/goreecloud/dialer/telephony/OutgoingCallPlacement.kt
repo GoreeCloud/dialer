@@ -64,7 +64,7 @@ class AndroidOutgoingCallPlacer(
         val roleManager = context.getSystemService(RoleManager::class.java)
         val acceptance = DevelopmentDefaultDialerAcceptance.current
         val facts = OutgoingCallPlacementFacts(
-            hasTelephony = packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY),
+            hasTelephony = packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY_CALLING),
             telecomManagerAvailable = telecomManager != null,
             defaultDialerRoleHeld = roleManager?.isRoleHeld(RoleManager.ROLE_DIALER) == true,
             callPhonePermissionGranted = ContextCompat.checkSelfPermission(
