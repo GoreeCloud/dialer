@@ -1,0 +1,155 @@
+schema_version: "0.4"
+
+component:
+  type: application
+  id: goreecloud-dialer
+  product_name: GoreeCloud Dialer
+  repository: GoreeCloud/goreecloud-dialer
+
+lifecycle: development
+version: "0.1.0-dev"
+
+supported_platforms:
+  - android
+
+api:
+  versions: []
+  endpoints: []
+
+platform_systems:
+  manager:
+    result: applicable-blocked
+    version: null
+    evidence:
+      - README.md
+      - SPECIFICATIONS.md
+      - NOTES.md
+    notes: Production lifecycle registration, health/readiness publication, deployment authority, and operational visibility through GoreeCloud Manager are not implemented or accepted.
+  privacy_shield:
+    result: applicable-blocked
+    version: null
+    evidence:
+      - SPECIFICATIONS.md
+      - FEATURE-ROADMAP.md
+    notes: Call data, identifiers, permissions, and user-consent boundaries are documented, but accepted Privacy Shield runtime authorization, consent/policy evidence, and production privacy acceptance are not established.
+  wardveil_security:
+    result: applicable-blocked
+    version: null
+    evidence:
+      - SPECIFICATIONS.md
+      - FEATURE-ROADMAP.md
+    notes: Source contains fail-closed Telecom and permission boundaries, but accepted Wardveil runtime integration, production abuse/security controls, security-event provenance, and production security acceptance are not established.
+  everkeep:
+    result: applicable-blocked
+    version: null
+    evidence:
+      - SPECIFICATIONS.md
+      - FEATURE-ROADMAP.md
+    notes: Android automatic backup is excluded for app-managed state and recovery requirements are documented, but accepted Everkeep backup, restore, migration, rollback, and continuity behavior are not established.
+  glaze_ui:
+    result: applicable-migration-required
+    version: null
+    evidence:
+      - README.md
+      - SPECIFICATIONS.md
+      - NOTES.md
+      - app/src/main
+    notes: The current Android Development UI requires repository-local reconciliation to Official Stable Glaze UI 1.5.1 plus rendered, accessibility, representative-device, performance, localization/RTL, and Human Visual Excellence acceptance.
+  mesh:
+    result: applicable-blocked
+    version: null
+    evidence:
+      - SPECIFICATIONS.md
+      - FEATURE-ROADMAP.md
+    notes: Dialer core telephony must remain usable without cloud coordination; no accepted GoreeCloud Mesh registration, capability publication, authenticated discovery/transport, or runtime integration is established.
+    capabilities:
+      - android-telecom-capability-model
+      - default-dialer-role-boundary
+      - explicit-sim-route-selection
+      - in-call-control-boundary
+    dependencies: []
+    published_events: []
+    consumed_events: []
+  identity:
+    result: applicable-blocked
+    version: null
+    evidence:
+      - SPECIFICATIONS.md
+      - FEATURE-ROADMAP.md
+    notes: Core carrier telephony is intentionally not dependent on GoreeCloud Identity. Any future account-bound features still require accepted Identity session/device/isolation/revocation integration before authority can be claimed.
+  policy:
+    result: applicable-blocked
+    version: null
+    evidence:
+      - SPECIFICATIONS.md
+      - FEATURE-ROADMAP.md
+    notes: No accepted GoreeCloud Policy runtime decision, explanation, freshness, exception, or evidence integration exists for Dialer capabilities.
+  observability:
+    result: applicable-blocked
+    version: null
+    evidence:
+      - SPECIFICATIONS.md
+      - FEATURE-ROADMAP.md
+    notes: CI and Development diagnostics exist, but accepted privacy-minimized GoreeCloud Observability health, metrics, events, dependency-health, provenance, alerting, and target-environment acceptance are not established.
+
+health:
+  health_endpoint: null
+  readiness_endpoint: null
+
+continuity:
+  backup:
+    required: true
+    requirements:
+      - Define the exact durable Dialer state that is permitted to be backed up without exposing sensitive call or subscriber data.
+      - Integrate accepted Everkeep behavior before production recovery claims.
+  restore:
+    required: true
+    requirements:
+      - Validate clean-target recovery of any durable app-owned settings or history while preserving Android Telecom and carrier authority boundaries.
+  export:
+    required: true
+    requirements:
+      - Define privacy-safe user-owned export for any future durable call history or preferences.
+  portability:
+    required: true
+    requirements:
+      - Preserve user-owned settings and permitted history without treating device, carrier, SIM, or Telecom runtime state as portable application authority.
+
+external_dependencies:
+  - name: Android Telecom
+    purpose: Platform-owned call placement, role, call lifecycle, audio endpoint, and phone-account authority.
+    required: true
+    version_constraint: Android API 29-36 Development target
+  - name: Carrier and device telephony service
+    purpose: Real PSTN, SIM/eSIM, carrier routing, conference, and endpoint behavior requiring physical-device/carrier acceptance.
+    required: true
+    version_constraint: null
+
+compatibility:
+  platform_contract: "0.4"
+  glaze_ui_required: "1.5.1"
+  requires:
+    - goreecloud-platform-contract==0.4
+    - glaze-ui==1.5.1
+  provides:
+    - goreecloud-dialer-android-development-v1
+
+evidence:
+  acceptance_tests: []
+  release: []
+
+conformance:
+  status: nonconformant
+  validated_at: null
+  evidence:
+    - README.md
+    - SPECIFICATIONS.md
+    - FEATURE-ROADMAP.md
+    - NOTES.md
+    - .github/workflows/android.yml
+  blockers:
+    - Physical-device and carrier telephony acceptance in issue #14 remains incomplete; emulator/source evidence is not carrier/PSTN/device acceptance.
+    - Production default-dialer role, incoming/ongoing call UI, ringtone ownership, notification/full-screen behavior, multi-SIM routing, conference operations, and audio endpoint behavior remain unaccepted on supported physical devices/carriers.
+    - Official Stable Glaze UI 1.5.1 repository-local rendered, accessibility, representative-device/form-factor, performance, localization/RTL, rollback, and Human Visual Excellence acceptance remain incomplete.
+    - Privacy Shield, Wardveil Security, Everkeep, Mesh, Manager, GoreeCloud Policy, and GoreeCloud Observability runtime integration/acceptance are not established.
+    - Production signing, distribution, upgrade/rollback, release provenance, Release Candidate qualification, and Stable qualification are not established.
