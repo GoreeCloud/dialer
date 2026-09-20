@@ -101,6 +101,29 @@ Every executed scenario must record:
 - failure or limitation notes
 - reproduction notes where applicable
 
+## Machine-readable accepted-entry contract
+
+The repository machine-readable record at `acceptance/physical-device-carrier.json` uses schema version 2. Any scenario that is counted as verified must include all of these fields:
+
+- `scenario_id`
+- `result`
+- `evidence_level`
+- `source_revision`
+- `build_identity`
+- `device_model`
+- `oem`
+- `android_version`
+- `api_level`
+- `carrier_context_class`
+- `sim_configuration_class`
+- `role_state_before`
+- `capability_state_before`
+- `expected_behavior`
+- `observed_result`
+- `observed_at`
+
+The validator requires an exact 40-character Git source revision, a timezone-qualified observation timestamp, and the explicit `physical-device-carrier-validated` evidence level before a scenario can count toward the repository acceptance claim. Recursive evidence-key inspection rejects prohibited sensitive identifier/content fields even when they are nested.
+
 ## Safety and privacy rules
 
 - Never place a real emergency call as an automated test.
