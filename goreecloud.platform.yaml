@@ -147,6 +147,8 @@ conformance:
     - FEATURE-ROADMAP.md
     - NOTES.md
     - .github/workflows/android.yml
+    - acceptance/physical-device-carrier.json
+    - scripts/validate_physical_device_acceptance.py
   blockers:
     - Physical-device and carrier telephony acceptance in issue #14 remains incomplete; emulator/source evidence is not carrier/PSTN/device acceptance.
     - Production default-dialer role, incoming/ongoing call UI, ringtone ownership, notification/full-screen behavior, multi-SIM routing, conference operations, and audio endpoint behavior remain unaccepted on supported physical devices/carriers.
