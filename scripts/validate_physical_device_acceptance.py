@@ -49,6 +49,8 @@ REQUIRED_EVIDENCE_FIELDS = {
     "capability_state_before",
     "expected_behavior",
     "observed_result",
+    "limitations",
+    "reproduction_notes",
     "observed_at",
 }
 
@@ -73,6 +75,19 @@ SENSITIVE_KEYS = {
 
 SHA40 = re.compile(r"^[0-9a-f]{40}$")
 STATUS_VALUES = {"blocked", "in_progress", "accepted"}
+EVIDENCE_LEVELS = {"physical-device-tested", "carrier-validated", "human-validated"}
+CARRIER_REQUIRED_SCENARIOS = {
+    "outgoing_pstn_placement",
+    "incoming_unlocked",
+    "incoming_locked_or_screen_off",
+    "call_controls",
+    "ongoing_call_notification",
+    "ringtone_ownership",
+    "audio_endpoint_routing",
+    "sim_and_esim_route_selection",
+    "conference_operations",
+    "disconnect_outcomes",
+}
 
 errors: list[str] = []
 
@@ -184,8 +199,13 @@ for entry in verified:
 
     if entry.get("result") != "pass":
         errors.append(f"{scenario}: result must be pass before it counts as verified")
-    if entry.get("evidence_level") != "physical-device-carrier-validated":
-        errors.append(f"{scenario}: evidence_level must be physical-device-carrier-validated")
+    evidence_level = entry.get("evidence_level")
+    if evidence_level not in EVIDENCE_LEVELS:
+        errors.append(
+            f"{scenario}: evidence_level must be one of {sorted(EVIDENCE_LEVELS)}"
+        )
+    elif scenario in CARRIER_REQUIRED_SCENARIOS and evidence_level != "carrier-validated":
+        errors.append(f"{scenario}: carrier-dependent scenario requires carrier-validated evidence")
 
     revision = entry.get("source_revision")
     if not isinstance(revision, str) or not SHA40.fullmatch(revision):
@@ -202,6 +222,8 @@ for entry in verified:
         "capability_state_before",
         "expected_behavior",
         "observed_result",
+        "limitations",
+        "reproduction_notes",
     ):
         require_nonempty_string(entry, scenario, field)
 
