@@ -22,7 +22,7 @@ jobs:
           persist-credentials: false
       - name: Verify exact source revision
         run: test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
-      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+      - name: Validate physical-device and carrier acceptance record\n        run: python3 scripts/validate_physical_device_acceptance.py\n      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
         with:
           distribution: temurin
           java-version: '17'
