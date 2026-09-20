@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "product": "GoreeCloud Dialer",
+  "lifecycle": "development",
+  "status": "blocked",
+  "issue": 14,
+  "production_claim": false,
+  "required_scenarios": [
+    "role_request_and_persistence",
+    "outgoing_pstn_placement",
+    "incoming_unlocked",
+    "incoming_locked_or_screen_off",
+    "call_controls",
+    "ongoing_call_notification",
+    "ringtone_ownership",
+    "audio_endpoint_routing",
+    "sim_and_esim_route_selection",
+    "emergency_safety_boundary",
+    "conference_operations",
+    "disconnect_outcomes",
+    "process_recreation_and_resume"
+  ],
+  "verified_scenarios": [],
+  "notes": "Physical-device and carrier acceptance remains blocked. Source, build, lint, managed-emulator, and instrumentation evidence do not satisfy issue #14."
+}
