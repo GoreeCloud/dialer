@@ -4,7 +4,7 @@
   "lifecycle": "development",
   "status": "blocked",
   "issue": 14,
-  "production_claim": false,
+  "physical_device_carrier_claim": false,
   "required_scenarios": [
     "role_request_and_persistence",
     "outgoing_pstn_placement",
