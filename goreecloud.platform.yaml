@@ -4,7 +4,7 @@ component:
   type: application
   id: goreecloud-dialer
   product_name: GoreeCloud Dialer
-  repository: GoreeCloud/goreecloud-dialer
+  repository: GoreeCloud/dialer
 
 lifecycle: development
 version: "0.1.0-dev"

@@ -3,6 +3,7 @@
 ## Current stabilization context
 
 - Repository lifecycle remains Development and is not Stable or production accepted.
+- GitHub repository identity is now `GoreeCloud/dialer` after a repository rename. Repository ID, product identity, Android package namespaces, evidence schema identifiers, and telephony acceptance boundaries remain unchanged; the rename does not create physical-device/carrier evidence or release authority.
 - Latest source-bearing stabilization baseline: `9b33f4243b793d7c208d9f738dfb47a603d7e3ea`, including the Platform Contract 0.4 manifest, exact-source Android CI hardening, reconciled stabilization notes, the fail-closed physical-device/carrier acceptance gate from PR #25, the integrated PR #26 issue #14 evidence schema v2 hardening, and the integrated PR #29 schema v3 minimum-release-matrix scope. Earlier documentation-only PR #27/#28 changed documentation only and did not alter Dialer runtime behavior or carrier-acceptance state.
 - Android Telecom capability, default-dialer role behavior, multi-SIM routing, call controls, emergency-call safety, Glaze UI acceptance, and physical-device/carrier validation remain active stabilization areas.
 - GitHub issue #14 is the physical-device/carrier acceptance gate. Emulator or source evidence must not be represented as carrier/PSTN/device acceptance.

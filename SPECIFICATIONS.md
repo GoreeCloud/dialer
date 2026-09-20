@@ -2,7 +2,7 @@
 
 ## Repository
 
-Canonical repository: `GoreeCloud/goreecloud-dialer`.
+Canonical repository: `GoreeCloud/dialer`.
 
 ## Status
 
