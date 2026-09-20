@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "product": "GoreeCloud Dialer",
   "lifecycle": "development",
   "status": "blocked",
@@ -21,6 +21,7 @@
     "process_recreation_and_resume"
   ],
   "required_evidence_fields": [
+    "matrix_target_id",
     "scenario_id",
     "result",
     "evidence_level",
@@ -41,5 +42,16 @@
     "observed_at"
   ],
   "verified_scenarios": [],
-  "notes": "Physical-device and carrier acceptance remains blocked. Source, build, lint, managed-emulator, and instrumentation evidence do not satisfy issue #14."
+  "notes": "Physical-device and carrier acceptance remains blocked. The minimum supported release set has not yet been defined, and no qualifying physical-device/carrier evidence exists. Source, build, lint, managed-emulator, and instrumentation evidence do not satisfy issue #14.",
+  "required_matrix_target_fields": [
+    "matrix_target_id",
+    "device_model_class",
+    "oem_family",
+    "android_version",
+    "api_level",
+    "carrier_context_class",
+    "sim_configuration_class",
+    "required_scenarios"
+  ],
+  "minimum_supported_release_set": []
 }

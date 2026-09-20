@@ -34,6 +34,7 @@ REQUIRED_SCENARIOS = {
 }
 
 REQUIRED_EVIDENCE_FIELDS = {
+    "matrix_target_id",
     "scenario_id",
     "result",
     "evidence_level",
@@ -52,6 +53,17 @@ REQUIRED_EVIDENCE_FIELDS = {
     "limitations",
     "reproduction_notes",
     "observed_at",
+}
+
+REQUIRED_MATRIX_TARGET_FIELDS = {
+    "matrix_target_id",
+    "device_model_class",
+    "oem_family",
+    "android_version",
+    "api_level",
+    "carrier_context_class",
+    "sim_configuration_class",
+    "required_scenarios",
 }
 
 SENSITIVE_KEYS = {
@@ -74,6 +86,7 @@ SENSITIVE_KEYS = {
 }
 
 SHA40 = re.compile(r"^[0-9a-f]{40}$")
+MATRIX_TARGET_ID = re.compile(r"^[a-z0-9][a-z0-9._-]{0,63}$")
 STATUS_VALUES = {"blocked", "in_progress", "accepted"}
 EVIDENCE_LEVELS = {"physical-device-tested", "carrier-validated", "human-validated"}
 CARRIER_REQUIRED_SCENARIOS = {
@@ -137,8 +150,8 @@ except Exception as exc:
     print(f"Dialer physical-device acceptance gate FAILED: cannot read {RECORD}: {exc}", file=sys.stderr)
     raise SystemExit(1)
 
-if data.get("schema_version") != 2:
-    errors.append("schema_version must be 2")
+if data.get("schema_version") != 3:
+    errors.append("schema_version must be 3")
 if data.get("product") != "GoreeCloud Dialer":
     errors.append("product must be GoreeCloud Dialer")
 if data.get("lifecycle") != "development":
@@ -162,6 +175,78 @@ if (
 ):
     errors.append("required_evidence_fields must exactly match the governed issue #14 evidence contract")
 
+required_matrix_target_fields = data.get("required_matrix_target_fields")
+if (
+    not isinstance(required_matrix_target_fields, list)
+    or set(required_matrix_target_fields) != REQUIRED_MATRIX_TARGET_FIELDS
+    or len(required_matrix_target_fields) != len(REQUIRED_MATRIX_TARGET_FIELDS)
+):
+    errors.append("required_matrix_target_fields must exactly match the governed issue #14 matrix-target contract")
+
+minimum_release_set = data.get("minimum_supported_release_set")
+if not isinstance(minimum_release_set, list):
+    errors.append("minimum_supported_release_set must be a list")
+    minimum_release_set = []
+
+matrix_targets: dict[str, dict[str, object]] = {}
+for target in minimum_release_set:
+    if not isinstance(target, dict):
+        errors.append("every minimum_supported_release_set entry must be an object")
+        continue
+
+    leaked = sorted(sensitive_keys_in(target))
+    if leaked:
+        errors.append(
+            "minimum supported release-set target contains prohibited sensitive keys: "
+            + ", ".join(leaked)
+        )
+
+    missing_fields = sorted(REQUIRED_MATRIX_TARGET_FIELDS - set(target))
+    if missing_fields:
+        errors.append(
+            "minimum supported release-set target is missing required fields: "
+            + ", ".join(missing_fields)
+        )
+
+    target_id = target.get("matrix_target_id")
+    if not isinstance(target_id, str) or not MATRIX_TARGET_ID.fullmatch(target_id):
+        errors.append(
+            "minimum supported release-set matrix_target_id must use 1-64 lowercase "
+            "letters, digits, dots, underscores, or hyphens"
+        )
+        continue
+    if target_id in matrix_targets:
+        errors.append(f"duplicate minimum supported release-set matrix_target_id: {target_id}")
+        continue
+
+    for field in (
+        "device_model_class",
+        "oem_family",
+        "android_version",
+        "carrier_context_class",
+        "sim_configuration_class",
+    ):
+        value = target.get(field)
+        if not isinstance(value, str) or not value.strip():
+            errors.append(f"{target_id}: {field} is required for minimum supported release-set scope")
+
+    api_level = target.get("api_level")
+    if not isinstance(api_level, int) or isinstance(api_level, bool) or not (29 <= api_level <= 99):
+        errors.append(f"{target_id}: api_level must be an integer in the supported Android API range")
+
+    target_scenarios = target.get("required_scenarios")
+    if (
+        not isinstance(target_scenarios, list)
+        or not target_scenarios
+        or len(set(target_scenarios)) != len(target_scenarios)
+        or not set(target_scenarios).issubset(REQUIRED_SCENARIOS)
+    ):
+        errors.append(
+            f"{target_id}: required_scenarios must be a non-empty unique subset of the governed matrix"
+        )
+
+    matrix_targets[target_id] = target
+
 physical_device_carrier_claim = data.get("physical_device_carrier_claim")
 if not isinstance(physical_device_carrier_claim, bool):
     errors.append("physical_device_carrier_claim must be a boolean")
@@ -173,7 +258,8 @@ if not isinstance(verified, list):
     errors.append("verified_scenarios must be a list")
     verified = []
 
-seen: set[str] = set()
+seen: set[tuple[str, str]] = set()
+seen_scenarios: set[str] = set()
 for entry in verified:
     if not isinstance(entry, dict):
         errors.append("every verified_scenarios entry must be an object")
@@ -189,13 +275,36 @@ for entry in verified:
             "acceptance evidence is missing required fields: " + ", ".join(missing_fields)
         )
 
+    matrix_target_id = entry.get("matrix_target_id")
+    if (
+        not isinstance(matrix_target_id, str)
+        or not MATRIX_TARGET_ID.fullmatch(matrix_target_id)
+    ):
+        errors.append("verified evidence matrix_target_id is missing or invalid")
+        continue
+    if matrix_target_id not in matrix_targets:
+        errors.append(
+            f"verified evidence references undefined minimum supported release-set target: "
+            f"{matrix_target_id}"
+        )
+
     scenario = entry.get("scenario_id")
     if scenario not in REQUIRED_SCENARIOS:
         errors.append(f"unknown or missing scenario_id: {scenario!r}")
         continue
-    if scenario in seen:
-        errors.append(f"duplicate scenario evidence: {scenario}")
-    seen.add(scenario)
+
+    target = matrix_targets.get(matrix_target_id)
+    target_scenarios = target.get("required_scenarios") if target else None
+    if isinstance(target_scenarios, list) and scenario not in target_scenarios:
+        errors.append(
+            f"{matrix_target_id}/{scenario}: scenario is not required by that matrix target"
+        )
+
+    evidence_key = (matrix_target_id, scenario)
+    if evidence_key in seen:
+        errors.append(f"duplicate scenario evidence: {matrix_target_id}/{scenario}")
+    seen.add(evidence_key)
+    seen_scenarios.add(scenario)
 
     if entry.get("result") != "pass":
         errors.append(f"{scenario}: result must be pass before it counts as verified")
@@ -234,9 +343,33 @@ for entry in verified:
     require_offset_timestamp(entry, scenario)
 
 if status == "accepted":
-    missing = sorted(REQUIRED_SCENARIOS - seen)
-    if missing:
-        errors.append("accepted status is invalid while required scenarios remain missing: " + ", ".join(missing))
+    if not matrix_targets:
+        errors.append(
+            "accepted status requires a non-empty minimum_supported_release_set"
+        )
+
+    scoped_scenarios: set[str] = set()
+    missing_pairs: list[str] = []
+    for target_id, target in matrix_targets.items():
+        target_scenarios = target.get("required_scenarios")
+        if not isinstance(target_scenarios, list):
+            continue
+        scoped_scenarios.update(target_scenarios)
+        for scenario in target_scenarios:
+            if (target_id, scenario) not in seen:
+                missing_pairs.append(f"{target_id}/{scenario}")
+
+    missing_scope = sorted(REQUIRED_SCENARIOS - scoped_scenarios)
+    if missing_scope:
+        errors.append(
+            "accepted minimum supported release set does not scope every governed scenario: "
+            + ", ".join(missing_scope)
+        )
+    if missing_pairs:
+        errors.append(
+            "accepted status is invalid while matrix-target/scenario evidence remains missing: "
+            + ", ".join(sorted(missing_pairs))
+        )
     if physical_device_carrier_claim is not True:
         errors.append("accepted physical-device/carrier status must explicitly set physical_device_carrier_claim=true")
 else:
@@ -251,5 +384,6 @@ if errors:
 
 print(
     "Dialer physical-device/carrier acceptance record passed integrity checks "
-    f"(schema=2, status={status}, verified={len(seen)}/{len(REQUIRED_SCENARIOS)})."
+    f"(schema=3, status={status}, matrix_targets={len(matrix_targets)}, "
+    f"verified_entries={len(seen)}, covered_scenarios={len(seen_scenarios)}/{len(REQUIRED_SCENARIOS)})."
 )
