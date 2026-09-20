@@ -120,9 +120,11 @@ The repository machine-readable record at `acceptance/physical-device-carrier.js
 - `capability_state_before`
 - `expected_behavior`
 - `observed_result`
+- `limitations`
+- `reproduction_notes`
 - `observed_at`
 
-The validator requires an exact 40-character Git source revision, a timezone-qualified observation timestamp, and the explicit `physical-device-carrier-validated` evidence level before a scenario can count toward the repository acceptance claim. Recursive evidence-key inspection rejects prohibited sensitive identifier/content fields even when they are nested.
+The validator requires an exact 40-character Git source revision and a timezone-qualified observation timestamp. Counted evidence must use one of the issue #14 evidence levels `physical-device-tested`, `carrier-validated`, or `human-validated`; carrier-dependent scenarios require `carrier-validated` evidence, while non-carrier scenarios may use an applicable physical-device or stronger carrier validation level. Recursive evidence-key inspection rejects prohibited sensitive identifier/content fields even when they are nested.
 
 ## Safety and privacy rules
 
