@@ -38,6 +38,9 @@ REQUIRED_EVIDENCE_FIELDS = {
     "scenario_id",
     "result",
     "evidence_level",
+    "procedure_version",
+    "test_method",
+    "safety_boundary",
     "source_revision",
     "build_identity",
     "device_model",
@@ -89,6 +92,18 @@ SHA40 = re.compile(r"^[0-9a-f]{40}$")
 MATRIX_TARGET_ID = re.compile(r"^[a-z0-9][a-z0-9._-]{0,63}$")
 STATUS_VALUES = {"blocked", "in_progress", "accepted"}
 EVIDENCE_LEVELS = {"physical-device-tested", "carrier-validated", "human-validated"}
+PROCEDURE_VERSION = "1.0"
+TEST_METHODS = {
+    "physical-device-interaction",
+    "carrier-call-validation",
+    "human-guided-device-validation",
+    "safe-platform-emergency-validation",
+}
+SAFETY_BOUNDARIES = {
+    "ordinary-telephony",
+    "human-observation-only",
+    "no-emergency-services-contact",
+}
 CARRIER_REQUIRED_SCENARIOS = {
     "outgoing_pstn_placement",
     "incoming_unlocked",
@@ -150,8 +165,11 @@ except Exception as exc:
     print(f"Dialer physical-device acceptance gate FAILED: cannot read {RECORD}: {exc}", file=sys.stderr)
     raise SystemExit(1)
 
-if data.get("schema_version") != 3:
-    errors.append("schema_version must be 3")
+if data.get("schema_version") != 4:
+    errors.append("schema_version must be 4")
+
+if data.get("acceptance_procedure_version") != PROCEDURE_VERSION:
+    errors.append(f"acceptance_procedure_version must be {PROCEDURE_VERSION}")
 if data.get("product") != "GoreeCloud Dialer":
     errors.append("product must be GoreeCloud Dialer")
 if data.get("lifecycle") != "development":
@@ -316,6 +334,28 @@ for entry in verified:
     elif scenario in CARRIER_REQUIRED_SCENARIOS and evidence_level != "carrier-validated":
         errors.append(f"{scenario}: carrier-dependent scenario requires carrier-validated evidence")
 
+    procedure_version = entry.get("procedure_version")
+    if procedure_version != PROCEDURE_VERSION:
+        errors.append(f"{scenario}: procedure_version must be {PROCEDURE_VERSION}")
+
+    test_method = entry.get("test_method")
+    if test_method not in TEST_METHODS:
+        errors.append(f"{scenario}: test_method must be one of {sorted(TEST_METHODS)}")
+    elif scenario in CARRIER_REQUIRED_SCENARIOS and test_method != "carrier-call-validation":
+        errors.append(f"{scenario}: carrier-dependent scenario requires carrier-call-validation")
+    elif scenario == "emergency_safety_boundary" and test_method != "safe-platform-emergency-validation":
+        errors.append(
+            "emergency_safety_boundary: only safe-platform-emergency-validation may count"
+        )
+
+    safety_boundary = entry.get("safety_boundary")
+    if safety_boundary not in SAFETY_BOUNDARIES:
+        errors.append(f"{scenario}: safety_boundary must be one of {sorted(SAFETY_BOUNDARIES)}")
+    elif scenario == "emergency_safety_boundary" and safety_boundary != "no-emergency-services-contact":
+        errors.append(
+            "emergency_safety_boundary: safety_boundary must prohibit emergency-services contact"
+        )
+
     revision = entry.get("source_revision")
     if not isinstance(revision, str) or not SHA40.fullmatch(revision):
         errors.append(f"{scenario}: source_revision must be an exact 40-character Git commit SHA")
@@ -384,6 +424,6 @@ if errors:
 
 print(
     "Dialer physical-device/carrier acceptance record passed integrity checks "
-    f"(schema=3, status={status}, matrix_targets={len(matrix_targets)}, "
+    f"(schema=4, procedure={PROCEDURE_VERSION}, status={status}, matrix_targets={len(matrix_targets)}, "
     f"verified_entries={len(seen)}, covered_scenarios={len(seen_scenarios)}/{len(REQUIRED_SCENARIOS)})."
 )

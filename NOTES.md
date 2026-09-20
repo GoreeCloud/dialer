@@ -6,7 +6,7 @@
 - Latest source-bearing stabilization baseline: `9b33f4243b793d7c208d9f738dfb47a603d7e3ea`, including the Platform Contract 0.4 manifest, exact-source Android CI hardening, reconciled stabilization notes, the fail-closed physical-device/carrier acceptance gate from PR #25, the integrated PR #26 issue #14 evidence schema v2 hardening, and the integrated PR #29 schema v3 minimum-release-matrix scope. Earlier documentation-only PR #27/#28 changed documentation only and did not alter Dialer runtime behavior or carrier-acceptance state.
 - Android Telecom capability, default-dialer role behavior, multi-SIM routing, call controls, emergency-call safety, Glaze UI acceptance, and physical-device/carrier validation remain active stabilization areas.
 - GitHub issue #14 is the physical-device/carrier acceptance gate. Emulator or source evidence must not be represented as carrier/PSTN/device acceptance.
-- Draft PR #20 is historical Glaze UI 1.4.1 / Platform Contract 0.2 provenance only. The current repository target is Official Stable Glaze UI 1.5.1 and Platform Contract 0.4 through the fail-closed root platform manifest; conformance and visual acceptance remain unestablished.
+- Draft PR #20 is historical Glaze UI 1.4.1 / Platform Contract 0.2 provenance only. The current repository target is Official Stable Glaze UI 1.6.0 and Platform Contract 0.4 through the fail-closed root platform manifest; conformance and visual acceptance remain unestablished.
 
 ## Active stabilization observations
 
@@ -26,7 +26,7 @@ Do not promote Dialer based on compilation, emulator success, or an outdated Gla
 
 - The repository carries an explicit machine-readable issue #14 acceptance record whose truthful current state is `blocked`.
 - CI verifies that the complete governed physical-device/carrier scenario set remains present and that source, build, lint, managed-emulator, or instrumentation evidence cannot silently be relabeled as physical-device/carrier acceptance.
-- A future accepted scenario must identify an exact source commit, real device model, Android version, privacy-safe carrier context class, observation time, and the explicit `physical-device-carrier-validated` evidence level.
+- A future accepted scenario must identify an exact source commit, real device model, Android version, privacy-safe carrier context class, observation time, and the explicit `carrier-validated` evidence level.
 - Acceptance records reject prohibited sensitive fields such as phone numbers, ICCIDs, IMSIs, subscriber identifiers, Bluetooth identities, call audio, recordings, and transcripts.
 - This validation hardens the release boundary only. It does not perform carrier testing and does not satisfy issue #14.
 
@@ -46,3 +46,11 @@ Do not promote Dialer based on compilation, emulator success, or an outdated Gla
 - The current record intentionally leaves the minimum supported release set empty because supported real-hardware/carrier scope has not yet been established; physical-device/carrier status therefore remains blocked with zero verified entries.
 - This improves evidence integrity only. It does not invent supported devices, execute PSTN/carrier testing, create SIM/eSIM evidence, contact emergency services, or establish production, Release Candidate, or Stable qualification.
 
+
+## Physical-device/carrier evidence schema v4 — September 19, 2026
+
+- This stabilization candidate advances the issue #14 acceptance record from schema version 3 to schema version 4 without creating any physical-device or carrier result.
+- Any future counted evidence must bind to acceptance procedure version `1.0`, an approved privacy-safe `test_method`, and an explicit `safety_boundary`.
+- Carrier-dependent scenarios require both `carrier-validated` evidence and `carrier-call-validation`; the emergency-safety scenario may count only through `safe-platform-emergency-validation` with `no-emergency-services-contact`.
+- The minimum supported release set remains empty and verified scenarios remain zero, so physical-device/carrier acceptance remains blocked.
+- The root Platform Contract now identifies GLAZE UI V1.6 / 1.6.0 as the current required shared target; this does not establish Dialer-local Glaze implementation or acceptance.

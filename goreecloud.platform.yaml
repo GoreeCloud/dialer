@@ -54,7 +54,7 @@ platform_systems:
       - SPECIFICATIONS.md
       - NOTES.md
       - app/src/main
-    notes: The current Android Development UI requires repository-local reconciliation to Official Stable Glaze UI 1.5.1 plus rendered, accessibility, representative-device, performance, localization/RTL, and Human Visual Excellence acceptance.
+    notes: The current Android Development UI requires repository-local reconciliation to Official Stable Glaze UI 1.6.0 plus rendered, accessibility, representative-device, performance, localization/RTL, and Human Visual Excellence acceptance.
   mesh:
     result: applicable-blocked
     version: null
@@ -127,10 +127,10 @@ external_dependencies:
 
 compatibility:
   platform_contract: "0.4"
-  glaze_ui_required: "1.5.1"
+  glaze_ui_required: "1.6.0"
   requires:
     - goreecloud-platform-contract==0.4
-    - glaze-ui==1.5.1
+    - glaze-ui==1.6.0
   provides:
     - goreecloud-dialer-android-development-v1
 
@@ -152,6 +152,6 @@ conformance:
   blockers:
     - Physical-device and carrier telephony acceptance in issue #14 remains incomplete; emulator/source evidence is not carrier/PSTN/device acceptance.
     - Production default-dialer role, incoming/ongoing call UI, ringtone ownership, notification/full-screen behavior, multi-SIM routing, conference operations, and audio endpoint behavior remain unaccepted on supported physical devices/carriers.
-    - Official Stable Glaze UI 1.5.1 repository-local rendered, accessibility, representative-device/form-factor, performance, localization/RTL, rollback, and Human Visual Excellence acceptance remain incomplete.
+    - Official Stable Glaze UI 1.6.0 repository-local rendered, accessibility, representative-device/form-factor, performance, localization/RTL, rollback, and Human Visual Excellence acceptance remain incomplete.
     - Privacy Shield, Wardveil Security, Everkeep, Mesh, Manager, GoreeCloud Policy, and GoreeCloud Observability runtime integration/acceptance are not established.
     - Production signing, distribution, upgrade/rollback, release provenance, Release Candidate qualification, and Stable qualification are not established.
