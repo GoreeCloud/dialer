@@ -4,7 +4,7 @@
 
 - Repository lifecycle remains Development and is not Stable or production accepted.
 - GitHub repository identity is now `GoreeCloud/dialer` after a repository rename. Repository ID, product identity, Android package namespaces, evidence schema identifiers, and telephony acceptance boundaries remain unchanged; the rename does not create physical-device/carrier evidence or release authority.
-- Latest source-bearing stabilization baseline: `9b33f4243b793d7c208d9f738dfb47a603d7e3ea`, including the Platform Contract 0.4 manifest, exact-source Android CI hardening, reconciled stabilization notes, the fail-closed physical-device/carrier acceptance gate from PR #25, the integrated PR #26 issue #14 evidence schema v2 hardening, and the integrated PR #29 schema v3 minimum-release-matrix scope. Earlier documentation-only PR #27/#28 changed documentation only and did not alter Dialer runtime behavior or carrier-acceptance state.
+- Authoritative main before this candidate is `ae9cbadd97723d4d465efb99871c51e733bdd44a`, including the Platform Contract 0.4 manifest, exact-source Android CI hardening, the fail-closed physical-device/carrier acceptance gate through schema v4, and the repository rename to `GoreeCloud/dialer`. This V1.6 branch is not current integration authority until exact-head CI succeeds and governed merge/readback occurs.
 - Android Telecom capability, default-dialer role behavior, multi-SIM routing, call controls, emergency-call safety, Glaze UI acceptance, and physical-device/carrier validation remain active stabilization areas.
 - GitHub issue #14 is the physical-device/carrier acceptance gate. Emulator or source evidence must not be represented as carrier/PSTN/device acceptance.
 - Draft PR #20 is historical Glaze UI 1.4.1 / Platform Contract 0.2 provenance only. The current repository target is Official Stable Glaze UI 1.6.0 and Platform Contract 0.4 through the fail-closed root platform manifest; conformance and visual acceptance remain unestablished.
@@ -57,3 +57,14 @@ Do not promote Dialer based on compilation, emulator success, or an outdated Gla
 - The root Platform Contract now identifies GLAZE UI V1.6 / 1.6.0 as the current required shared target; this does not establish Dialer-local Glaze implementation or acceptance.
 
 - Accepted exact-head evidence for PR #31: Android CI run `35490210001` succeeded, including the schema-v4 integrity gate, build/test/lint, and API 29/30/34 managed-device acceptance, before squash merge to authoritative main commit `5fe2f94141a3ddd07e7545477fba801037f000ac`.
+
+
+## GLAZE UI V1.6 source-mapping candidate — September 20, 2026
+
+- This Development branch maps native Dialer presentation source to exact Official Stable GLAZE UI V1.6 / 1.6.0 release source `a7180679ea851389e0f3004515f9a25f420e716d`.
+- The Dialer shell remains certainty-first and requests solid presentation. A first-party V1.6 policy adds bounded Reduced Transparency, Reduced Motion, constrained-performance, large-text/reflow, visible-focus, and interaction-target semantics without creating any telephony authority.
+- The inherited V1.6 coarse interaction floor is recorded as 44dp and the pointer-compact floor as 32dp. Dialer deliberately retains a stricter 48dp ordinary target and 56dp Touch Assistance target.
+- Phone numbers, call/carrier/SIM state, permissions, default-dialer role state, Telecom capability evidence, emergency classification, and issue #14 acceptance evidence remain outside presentation authority.
+- The existing disabled Carrier Call control remains disabled; the source mapping does not activate placement, role consent, PSTN behavior, or carrier/device acceptance.
+- Platform Contract Glaze moves from `applicable-migration-required` to `applicable-blocked` while overall conformance remains `nonconformant`. Rendered/accessibility/adaptive/device/performance/rollback/Human Visual Excellence/platform/signing/release acceptance remains open.
+- Issue #14 remains independently blocked with an empty minimum supported release set and zero verified physical-device/carrier entries.

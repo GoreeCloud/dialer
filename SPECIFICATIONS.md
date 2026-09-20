@@ -4,6 +4,17 @@
 
 Canonical repository: `GoreeCloud/dialer`.
 
+## GLAZE UI V1.6 Development source mapping
+
+This candidate maps the native Dialer presentation boundary to exact Official Stable GLAZE UI V1.6 / `1.6.0` source `a7180679ea851389e0f3004515f9a25f420e716d`.
+
+The mapping is presentation-only. The telephony shell requests a certainty-first solid material role and carries bounded V1.6 Reduced Transparency, Reduced Motion, performance-cost, large-text, visible-focus, and conservative-target semantics. Dialer retains a 48dp ordinary interaction floor and 56dp Touch Assistance target over the inherited 44dp coarse floor.
+
+No Glaze context may derive, replace, or override Android Telecom authority, permission/role authority, phone-account/SIM routing, carrier acceptance, emergency classification/routing, call lifecycle truth, or issue #14 evidence. Neutral presentation defaults do not infer accessibility or performance state.
+
+Source mapping alone does not establish V1.6 application conformance. Rendered/accessibility/adaptive-form-factor, localization/RTL, representative-device, performance/power, rollback, Human Visual Excellence, platform-system runtime, signing, release, production, and Stable acceptance remain incomplete. Issue #14 remains an independent real-device/carrier acceptance gate.
+
+
 ## Status
 
 Active Development / pre-Stable.
