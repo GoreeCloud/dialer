@@ -37,3 +37,12 @@ Do not promote Dialer based on compilation, emulator success, or an outdated Gla
 - Accepted entries must now carry exact source/build identity, device model and OEM, Android/API version, privacy-safe carrier and SIM/eSIM classes, role/capability preconditions, expected behavior, observed result, limitations, reproduction notes, and a timezone-qualified observation timestamp.
 - The validator recursively rejects prohibited sensitive evidence keys, including nested phone/subscriber/account/Bluetooth/call-content fields, and distinguishes issue #14 physical-device-tested, carrier-validated, and human-validated evidence. Carrier-dependent scenarios must use carrier-validated evidence before they can count.
 - The repository record remains status `blocked` with zero verified scenarios. This work improves evidence integrity only and does not create physical-device or carrier acceptance.
+
+## Physical-device/carrier matrix-scope hardening — September 19, 2026
+
+- This Development candidate advances the issue #14 machine-readable acceptance contract to schema version 3.
+- Counted evidence must now bind to an explicitly declared privacy-safe `matrix_target_id` from the top-level minimum supported release set.
+- An accepted claim requires a non-empty minimum supported release set, complete qualifying evidence for every scenario required by every declared matrix target, and complete coverage of the governed issue #14 scenario set across that release scope.
+- The current record intentionally leaves the minimum supported release set empty because supported real-hardware/carrier scope has not yet been established; physical-device/carrier status therefore remains blocked with zero verified entries.
+- This improves evidence integrity only. It does not invent supported devices, execute PSTN/carrier testing, create SIM/eSIM evidence, contact emergency services, or establish production, Release Candidate, or Stable qualification.
+
