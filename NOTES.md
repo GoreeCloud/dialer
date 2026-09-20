@@ -3,7 +3,7 @@
 ## Current stabilization context
 
 - Repository lifecycle remains Development and is not Stable or production accepted.
-- Latest source-bearing stabilization baseline: `599f5d49c5504d7030eff4df2404e07b994c8f89`, including the Platform Contract 0.4 manifest, exact-source Android CI hardening, reconciled stabilization notes, the fail-closed physical-device/carrier acceptance gate from PR #25, and the integrated PR #26 issue #14 evidence schema v2 hardening. Documentation-only PR #27 followed that source-bearing baseline without changing Dialer runtime behavior or carrier-acceptance state.
+- Latest source-bearing stabilization baseline: `9b33f4243b793d7c208d9f738dfb47a603d7e3ea`, including the Platform Contract 0.4 manifest, exact-source Android CI hardening, reconciled stabilization notes, the fail-closed physical-device/carrier acceptance gate from PR #25, the integrated PR #26 issue #14 evidence schema v2 hardening, and the integrated PR #29 schema v3 minimum-release-matrix scope. Earlier documentation-only PR #27/#28 changed documentation only and did not alter Dialer runtime behavior or carrier-acceptance state.
 - Android Telecom capability, default-dialer role behavior, multi-SIM routing, call controls, emergency-call safety, Glaze UI acceptance, and physical-device/carrier validation remain active stabilization areas.
 - GitHub issue #14 is the physical-device/carrier acceptance gate. Emulator or source evidence must not be represented as carrier/PSTN/device acceptance.
 - Draft PR #20 is historical Glaze UI 1.4.1 / Platform Contract 0.2 provenance only. The current repository target is Official Stable Glaze UI 1.5.1 and Platform Contract 0.4 through the fail-closed root platform manifest; conformance and visual acceptance remain unestablished.
@@ -40,7 +40,7 @@ Do not promote Dialer based on compilation, emulator success, or an outdated Gla
 
 ## Physical-device/carrier matrix-scope hardening — September 19, 2026
 
-- This Development candidate advances the issue #14 machine-readable acceptance contract to schema version 3.
+- PR #29 is integrated on `main` and advances the issue #14 machine-readable acceptance contract to schema version 3.
 - Counted evidence must now bind to an explicitly declared privacy-safe `matrix_target_id` from the top-level minimum supported release set.
 - An accepted claim requires a non-empty minimum supported release set, complete qualifying evidence for every scenario required by every declared matrix target, and complete coverage of the governed issue #14 scenario set across that release scope.
 - The current record intentionally leaves the minimum supported release set empty because supported real-hardware/carrier scope has not yet been established; physical-device/carrier status therefore remains blocked with zero verified entries.
