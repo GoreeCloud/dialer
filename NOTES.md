@@ -34,6 +34,6 @@ Do not promote Dialer based on compilation, emulator success, or an outdated Gla
 ## Physical-device/carrier evidence schema v2 — September 19, 2026
 
 - The current stabilization candidate strengthens the machine-readable issue #14 evidence contract before any real-device result can be counted.
-- Accepted entries must now carry exact source/build identity, device model and OEM, Android/API version, privacy-safe carrier and SIM/eSIM classes, role/capability preconditions, expected behavior, observed result, and a timezone-qualified observation timestamp.
-- The validator recursively rejects prohibited sensitive evidence keys, including nested phone/subscriber/account/Bluetooth/call-content fields.
+- Accepted entries must now carry exact source/build identity, device model and OEM, Android/API version, privacy-safe carrier and SIM/eSIM classes, role/capability preconditions, expected behavior, observed result, limitations, reproduction notes, and a timezone-qualified observation timestamp.
+- The validator recursively rejects prohibited sensitive evidence keys, including nested phone/subscriber/account/Bluetooth/call-content fields, and distinguishes issue #14 physical-device-tested, carrier-validated, and human-validated evidence. Carrier-dependent scenarios must use carrier-validated evidence before they can count.
 - The repository record remains status `blocked` with zero verified scenarios. This work improves evidence integrity only and does not create physical-device or carrier acceptance.
