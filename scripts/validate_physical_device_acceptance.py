@@ -75,11 +75,11 @@ required = data.get("required_scenarios")
 if not isinstance(required, list) or set(required) != REQUIRED_SCENARIOS or len(required) != len(REQUIRED_SCENARIOS):
     errors.append("required_scenarios must exactly match the governed physical-device/carrier matrix")
 
-production_claim = data.get("production_claim")
-if not isinstance(production_claim, bool):
-    errors.append("production_claim must be a boolean")
-elif production_claim and status != "accepted":
-    errors.append("production_claim cannot be true while physical-device/carrier status is not accepted")
+physical_device_carrier_claim = data.get("physical_device_carrier_claim")
+if not isinstance(physical_device_carrier_claim, bool):
+    errors.append("physical_device_carrier_claim must be a boolean")
+elif physical_device_carrier_claim and status != "accepted":
+    errors.append("physical_device_carrier_claim cannot be true while physical-device/carrier status is not accepted")
 
 verified = data.get("verified_scenarios")
 if not isinstance(verified, list):
@@ -122,11 +122,11 @@ if status == "accepted":
     missing = sorted(REQUIRED_SCENARIOS - seen)
     if missing:
         errors.append("accepted status is invalid while required scenarios remain missing: " + ", ".join(missing))
-    if production_claim is not True:
-        errors.append("accepted physical-device/carrier status must explicitly set production_claim=true")
+    if physical_device_carrier_claim is not True:
+        errors.append("accepted physical-device/carrier status must explicitly set physical_device_carrier_claim=true")
 else:
-    if production_claim:
-        errors.append("non-accepted status must keep production_claim=false")
+    if physical_device_carrier_claim:
+        errors.append("non-accepted status must keep physical_device_carrier_claim=false")
 
 if errors:
     print("Dialer physical-device/carrier acceptance gate FAILED:", file=sys.stderr)
