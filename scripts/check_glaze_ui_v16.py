@@ -70,7 +70,7 @@ def main() -> None:
         "GlazeDialerPresentationPolicy.resolve(",
         "requestedMaterial = GlazeDialerMaterialRole.SOLID",
         "minimumInteractionTargetDp = presentation.minimumInteractionTargetDp",
-        'Text("Carrier call placement is not active in this Development build.")',
+        "Carrier call placement is not active in this Development build.",
     ):
         require(app, marker, "Dialer app")
 
