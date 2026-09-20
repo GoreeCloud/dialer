@@ -8,6 +8,7 @@ reinterpret emulator/source evidence as PSTN, SIM/eSIM, OEM, Bluetooth, or carri
 
 from __future__ import annotations
 
+from datetime import datetime
 import json
 import re
 import sys
@@ -32,19 +33,42 @@ REQUIRED_SCENARIOS = {
     "process_recreation_and_resume",
 }
 
+REQUIRED_EVIDENCE_FIELDS = {
+    "scenario_id",
+    "result",
+    "evidence_level",
+    "source_revision",
+    "build_identity",
+    "device_model",
+    "oem",
+    "android_version",
+    "api_level",
+    "carrier_context_class",
+    "sim_configuration_class",
+    "role_state_before",
+    "capability_state_before",
+    "expected_behavior",
+    "observed_result",
+    "observed_at",
+}
+
 SENSITIVE_KEYS = {
     "phone_number",
     "telephone_number",
+    "msisdn",
     "iccid",
     "imsi",
     "subscriber_id",
     "subscriber_identifier",
+    "subscription_id",
     "account_handle",
+    "phone_account_handle",
     "bluetooth_identity",
     "bluetooth_address",
     "call_audio",
     "call_recording",
     "transcript",
+    "voicemail_content",
 }
 
 SHA40 = re.compile(r"^[0-9a-f]{40}$")
@@ -52,14 +76,54 @@ STATUS_VALUES = {"blocked", "in_progress", "accepted"}
 
 errors: list[str] = []
 
+
+def normalize_key(value: object) -> str:
+    text = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", str(value))
+    return re.sub(r"[^a-z0-9]+", "_", text.lower()).strip("_")
+
+
+def sensitive_keys_in(value: object) -> set[str]:
+    found: set[str] = set()
+    if isinstance(value, dict):
+        for key, nested in value.items():
+            normalized = normalize_key(key)
+            if normalized in SENSITIVE_KEYS:
+                found.add(normalized)
+            found.update(sensitive_keys_in(nested))
+    elif isinstance(value, list):
+        for nested in value:
+            found.update(sensitive_keys_in(nested))
+    return found
+
+
+def require_nonempty_string(entry: dict[str, object], scenario: str, field: str) -> None:
+    value = entry.get(field)
+    if not isinstance(value, str) or not value.strip():
+        errors.append(f"{scenario}: {field} is required for physical-device evidence")
+
+
+def require_offset_timestamp(entry: dict[str, object], scenario: str) -> None:
+    value = entry.get("observed_at")
+    if not isinstance(value, str) or not value.strip():
+        errors.append(f"{scenario}: observed_at is required for physical-device evidence")
+        return
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        errors.append(f"{scenario}: observed_at must be an ISO-8601 timestamp")
+        return
+    if parsed.tzinfo is None:
+        errors.append(f"{scenario}: observed_at must include a timezone offset or Z")
+
+
 try:
     data = json.loads(RECORD.read_text(encoding="utf-8"))
 except Exception as exc:
     print(f"Dialer physical-device acceptance gate FAILED: cannot read {RECORD}: {exc}", file=sys.stderr)
     raise SystemExit(1)
 
-if data.get("schema_version") != 1:
-    errors.append("schema_version must be 1")
+if data.get("schema_version") != 2:
+    errors.append("schema_version must be 2")
 if data.get("product") != "GoreeCloud Dialer":
     errors.append("product must be GoreeCloud Dialer")
 if data.get("lifecycle") != "development":
@@ -74,6 +138,14 @@ if status not in STATUS_VALUES:
 required = data.get("required_scenarios")
 if not isinstance(required, list) or set(required) != REQUIRED_SCENARIOS or len(required) != len(REQUIRED_SCENARIOS):
     errors.append("required_scenarios must exactly match the governed physical-device/carrier matrix")
+
+required_fields = data.get("required_evidence_fields")
+if (
+    not isinstance(required_fields, list)
+    or set(required_fields) != REQUIRED_EVIDENCE_FIELDS
+    or len(required_fields) != len(REQUIRED_EVIDENCE_FIELDS)
+):
+    errors.append("required_evidence_fields must exactly match the governed issue #14 evidence contract")
 
 physical_device_carrier_claim = data.get("physical_device_carrier_claim")
 if not isinstance(physical_device_carrier_claim, bool):
@@ -92,10 +164,15 @@ for entry in verified:
         errors.append("every verified_scenarios entry must be an object")
         continue
 
-    lowered_keys = {str(key).lower() for key in entry}
-    leaked = sorted(lowered_keys & SENSITIVE_KEYS)
+    leaked = sorted(sensitive_keys_in(entry))
     if leaked:
         errors.append(f"acceptance evidence contains prohibited sensitive keys: {', '.join(leaked)}")
+
+    missing_fields = sorted(REQUIRED_EVIDENCE_FIELDS - set(entry))
+    if missing_fields:
+        errors.append(
+            "acceptance evidence is missing required fields: " + ", ".join(missing_fields)
+        )
 
     scenario = entry.get("scenario_id")
     if scenario not in REQUIRED_SCENARIOS:
@@ -109,14 +186,30 @@ for entry in verified:
         errors.append(f"{scenario}: result must be pass before it counts as verified")
     if entry.get("evidence_level") != "physical-device-carrier-validated":
         errors.append(f"{scenario}: evidence_level must be physical-device-carrier-validated")
+
     revision = entry.get("source_revision")
     if not isinstance(revision, str) or not SHA40.fullmatch(revision):
         errors.append(f"{scenario}: source_revision must be an exact 40-character Git commit SHA")
 
-    for field in ("device_model", "android_version", "carrier_context_class", "observed_at"):
-        value = entry.get(field)
-        if not isinstance(value, str) or not value.strip():
-            errors.append(f"{scenario}: {field} is required for physical-device evidence")
+    for field in (
+        "build_identity",
+        "device_model",
+        "oem",
+        "android_version",
+        "carrier_context_class",
+        "sim_configuration_class",
+        "role_state_before",
+        "capability_state_before",
+        "expected_behavior",
+        "observed_result",
+    ):
+        require_nonempty_string(entry, scenario, field)
+
+    api_level = entry.get("api_level")
+    if not isinstance(api_level, int) or isinstance(api_level, bool) or not (29 <= api_level <= 99):
+        errors.append(f"{scenario}: api_level must be an integer in the supported Android API range")
+
+    require_offset_timestamp(entry, scenario)
 
 if status == "accepted":
     missing = sorted(REQUIRED_SCENARIOS - seen)
@@ -136,5 +229,5 @@ if errors:
 
 print(
     "Dialer physical-device/carrier acceptance record passed integrity checks "
-    f"(status={status}, verified={len(seen)}/{len(REQUIRED_SCENARIOS)})."
+    f"(schema=2, status={status}, verified={len(seen)}/{len(REQUIRED_SCENARIOS)})."
 )
