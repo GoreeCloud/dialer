@@ -3,7 +3,7 @@
 ## Current stabilization context
 
 - Repository lifecycle remains Development and is not Stable or production accepted.
-- Verified current stabilization base: `main` at `a2a1144227f521224c4ef78b34527fede497c32b`, including the Platform Contract 0.4 manifest and exact-source Android CI hardening from PR #23.
+- Verified current stabilization base: `main` at `f6baaff815266d31454ea108768d5310f885f0eb`, including the Platform Contract 0.4 manifest, exact-source Android CI hardening from PR #23, and reconciled stabilization notes from PR #24.
 - Android Telecom capability, default-dialer role behavior, multi-SIM routing, call controls, emergency-call safety, Glaze UI acceptance, and physical-device/carrier validation remain active stabilization areas.
 - GitHub issue #14 is the physical-device/carrier acceptance gate. Emulator or source evidence must not be represented as carrier/PSTN/device acceptance.
 - Draft PR #20 is historical Glaze UI 1.4.1 / Platform Contract 0.2 provenance only. The current repository target is Official Stable Glaze UI 1.5.1 and Platform Contract 0.4 through the fail-closed root platform manifest; conformance and visual acceptance remain unestablished.
@@ -20,3 +20,12 @@
 Do not promote Dialer based on compilation, emulator success, or an outdated Glaze migration branch. Reconcile source to current governed contracts on a clean base, then repeat exact-head CI and the required physical-device/carrier matrix before changing release status.
 
 - Android CI is integrated with immutable third-party action revisions, Ubuntu 24.04, exact-source checkout verification, and non-persisted checkout credentials. PR #23 exact-head CI passed unit/lint/build/instrumentation plus API 29/30/34 managed-device acceptance before merge. These are Development controls and do not substitute for issue #14 physical-device/carrier acceptance.
+
+
+## Physical-device/carrier acceptance gate — September 19, 2026
+
+- The repository carries an explicit machine-readable issue #14 acceptance record whose truthful current state is `blocked`.
+- CI verifies that the complete governed physical-device/carrier scenario set remains present and that source, build, lint, managed-emulator, or instrumentation evidence cannot silently be relabeled as physical-device/carrier acceptance.
+- A future accepted scenario must identify an exact source commit, real device model, Android version, privacy-safe carrier context class, observation time, and the explicit `physical-device-carrier-validated` evidence level.
+- Acceptance records reject prohibited sensitive fields such as phone numbers, ICCIDs, IMSIs, subscriber identifiers, Bluetooth identities, call audio, recordings, and transcripts.
+- This validation hardens the release boundary only. It does not perform carrier testing and does not satisfy issue #14.
