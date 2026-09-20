@@ -36,6 +36,8 @@
     "capability_state_before",
     "expected_behavior",
     "observed_result",
+    "limitations",
+    "reproduction_notes",
     "observed_at"
   ],
   "verified_scenarios": [],
