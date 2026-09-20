@@ -49,8 +49,11 @@ Do not promote Dialer based on compilation, emulator success, or an outdated Gla
 
 ## Physical-device/carrier evidence schema v4 — September 19, 2026
 
-- This stabilization candidate advances the issue #14 acceptance record from schema version 3 to schema version 4 without creating any physical-device or carrier result.
+- PR #31 is integrated on authoritative `main` as `5fe2f94141a3ddd07e7545477fba801037f000ac`.
+- Accepted pre-merge exact-head evidence for `273427d624a30e25be0f2ccce263b47bee4c9940`: Android CI run `35490210001` completed successfully, including build/test/lint and managed-device acceptance on API 29, 30, and 34.
+- The integrated issue #14 acceptance record advances from schema version 3 to schema version 4 without creating any physical-device or carrier result.
 - Any future counted evidence must bind to acceptance procedure version `1.0`, an approved privacy-safe `test_method`, and an explicit `safety_boundary`.
 - Carrier-dependent scenarios require both `carrier-validated` evidence and `carrier-call-validation`; the emergency-safety scenario may count only through `safe-platform-emergency-validation` with `no-emergency-services-contact`.
 - The minimum supported release set remains empty and verified scenarios remain zero, so physical-device/carrier acceptance remains blocked.
-- The root Platform Contract now identifies GLAZE UI V1.6 / 1.6.0 as the current required shared target; this does not establish Dialer-local Glaze implementation or acceptance.
+- The root Platform Contract identifies GLAZE UI V1.6 / 1.6.0 as the current required shared target; this does not establish Dialer-local Glaze implementation or acceptance.
+- Issue #14 remains open for the real supported-device/carrier/PSTN/SIM/eSIM/incoming-lock-screen/emergency-safety/audio-endpoint/conference/disconnect/lifecycle matrix and later release gates.
