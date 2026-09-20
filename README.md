@@ -12,7 +12,7 @@ CI now includes executable managed-emulator acceptance on Android 11 / API 30 an
 
 ## Canonical repository
 
-`GoreeCloud/goreecloud-dialer` is the canonical source repository for GoreeCloud Dialer.
+`GoreeCloud/dialer` is the canonical source repository for GoreeCloud Dialer.
 
 ## Product principles
 
