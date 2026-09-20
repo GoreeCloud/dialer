@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -108,7 +109,11 @@ fun DialerApp(initialDialRequest: DialRequest? = null) {
         roleRequestMessage = "Android role request returned; capability evidence refreshed."
     }
 
-    MaterialTheme {
+    GlazeDialerTheme {
+        val presentation = GlazeDialerPresentationPolicy.resolve(
+            requestedMaterial = GlazeDialerMaterialRole.SOLID,
+            context = LocalGlazeDialerPresentationContext.current,
+        )
         Scaffold { innerPadding ->
             DevelopmentHome(
                 capabilitySnapshot = capabilitySnapshot,
@@ -181,6 +186,7 @@ fun DialerApp(initialDialRequest: DialRequest? = null) {
                     }
                 },
                 initialNumber = initialDialRequest?.number.orEmpty(),
+                minimumInteractionTargetDp = presentation.minimumInteractionTargetDp,
                 modifier = Modifier.padding(innerPadding),
             )
         }
@@ -203,6 +209,7 @@ private fun DevelopmentHome(
     onOpenFullScreenSettings: () -> Unit,
     onRequestDefaultDialerRole: () -> Unit,
     initialNumber: String,
+    minimumInteractionTargetDp: Int,
     modifier: Modifier = Modifier,
 ) {
     var number by rememberSaveable(initialNumber) { mutableStateOf(initialNumber) }
@@ -265,7 +272,11 @@ private fun DevelopmentHome(
         )
         Spacer(Modifier.height(12.dp))
 
-        Button(onClick = {}, enabled = false) {
+        Button(
+            onClick = {},
+            enabled = false,
+            modifier = Modifier.heightIn(min = minimumInteractionTargetDp.dp),
+        ) {
             Text("Call")
         }
         Text(
