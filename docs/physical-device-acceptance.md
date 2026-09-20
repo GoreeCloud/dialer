@@ -103,8 +103,9 @@ Every executed scenario must record:
 
 ## Machine-readable accepted-entry contract
 
-The repository machine-readable record at `acceptance/physical-device-carrier.json` uses schema version 2. Any scenario that is counted as verified must include all of these fields:
+The repository machine-readable record at `acceptance/physical-device-carrier.json` uses schema version 3. Any scenario that is counted as verified must be bound to one explicitly declared minimum-release-set matrix target and include all of these fields:
 
+- `matrix_target_id`
 - `scenario_id`
 - `result`
 - `evidence_level`
@@ -124,7 +125,26 @@ The repository machine-readable record at `acceptance/physical-device-carrier.js
 - `reproduction_notes`
 - `observed_at`
 
-The validator requires an exact 40-character Git source revision and a timezone-qualified observation timestamp. Counted evidence must use one of the issue #14 evidence levels `physical-device-tested`, `carrier-validated`, or `human-validated`; carrier-dependent scenarios require `carrier-validated` evidence, while non-carrier scenarios may use an applicable physical-device or stronger carrier validation level. Recursive evidence-key inspection rejects prohibited sensitive identifier/content fields even when they are nested.
+The validator requires an exact 40-character Git source revision, a declared matrix-target binding, and a timezone-qualified observation timestamp. Counted evidence must use one of the issue #14 evidence levels `physical-device-tested`, `carrier-validated`, or `human-validated`; carrier-dependent scenarios require `carrier-validated` evidence, while non-carrier scenarios may use an applicable physical-device or stronger carrier validation level. Recursive evidence-key inspection rejects prohibited sensitive identifier/content fields even when they are nested.
+
+## Minimum supported release-set binding
+
+Schema version 3 requires the repository to define the minimum physical-device/carrier release set explicitly before physical-device/carrier status can become `accepted`. The top-level `minimum_supported_release_set` is a privacy-safe list of matrix targets. Each target must carry:
+
+- `matrix_target_id`
+- `device_model_class`
+- `oem_family`
+- `android_version`
+- `api_level`
+- `carrier_context_class`
+- `sim_configuration_class`
+- `required_scenarios`
+
+Every counted scenario entry must reference one declared `matrix_target_id`. For `accepted` status, every scenario required by every declared target must have qualifying evidence, and the union of target scenario scopes must cover the complete governed issue #14 scenario set.
+
+The current Development record intentionally leaves `minimum_supported_release_set` empty because the authoritative supported release set has not yet been established from real hardware/carrier scope. The validator therefore cannot permit an accepted claim merely because one instance of each scenario appears somewhere in the evidence record.
+
+This schema change defines evidence integrity only. It does not choose supported devices, OEMs, carriers, SIM/eSIM configurations, or release scope on the owner's behalf and it creates no physical-device/carrier evidence.
 
 ## Safety and privacy rules
 
