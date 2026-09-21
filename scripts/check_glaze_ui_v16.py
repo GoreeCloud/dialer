@@ -5,7 +5,9 @@ ROOT = Path(__file__).resolve().parents[1]
 POLICY = ROOT / "app/src/main/java/com/goreecloud/dialer/ui/GlazeDialerPresentationPolicy.kt"
 THEME = ROOT / "app/src/main/java/com/goreecloud/dialer/ui/GlazeDialerTheme.kt"
 APP = ROOT / "app/src/main/java/com/goreecloud/dialer/ui/DialerApp.kt"
+ANDROID_CONTEXT = ROOT / "app/src/main/java/com/goreecloud/dialer/ui/DialerAndroidGlazeContext.kt"
 TEST = ROOT / "app/src/test/java/com/goreecloud/dialer/ui/GlazeDialerPresentationPolicyTest.kt"
+CONTEXT_TEST = ROOT / "app/src/test/java/com/goreecloud/dialer/ui/DialerAndroidGlazeContextTest.kt"
 PLATFORM = ROOT / "goreecloud.platform.yaml"
 README = ROOT / "README.md"
 SPECIFICATIONS = ROOT / "SPECIFICATIONS.md"
@@ -34,7 +36,9 @@ def main() -> None:
     policy = read(POLICY, "presentation policy")
     theme = read(THEME, "theme boundary")
     app = read(APP, "Dialer app")
+    android_context = read(ANDROID_CONTEXT, "Android presentation context")
     test = read(TEST, "presentation policy tests")
+    context_test = read(CONTEXT_TEST, "Android presentation context tests")
     platform = read(PLATFORM, "Platform Contract")
     readme = read(README, "README")
     specifications = read(SPECIFICATIONS, "specifications")
@@ -66,10 +70,15 @@ def main() -> None:
         require(theme, marker, "theme boundary")
 
     for marker in (
-        "GlazeDialerTheme {",
+        "DialerAndroidGlazeContext.fromSignals(",
+        "fontScale = configuration.fontScale",
+        "ValueAnimator.areAnimatorsEnabled()",
+        "AccessibilityManager::class.java",
+        "GlazeDialerTheme(presentationContext = glazeContext)",
         "GlazeDialerPresentationPolicy.resolve(",
         "requestedMaterial = GlazeDialerMaterialRole.SOLID",
         "minimumInteractionTargetDp = presentation.minimumInteractionTargetDp",
+        "contentPaddingDp = if (presentation.densityMayYieldToReflow) 16 else 24",
         "Carrier call placement is not active in this Development build.",
     ):
         require(app, marker, "Dialer app")
@@ -82,10 +91,45 @@ def main() -> None:
         require(test, marker, "presentation policy tests")
 
     for marker in (
+        "object DialerAndroidGlazeContext",
+        "fun fromSignals(",
+        "fontScale: Float",
+        "animatorsEnabled: Boolean",
+        "touchExplorationEnabled: Boolean",
+        "reducedMotion = !animatorsEnabled",
+        "largeText = normalized > DefaultFontScale",
+        "extraLargeText = normalized >= ExtraLargeTextScale",
+        "touchAssistance = touchExplorationEnabled",
+        "screenReaderOptimized = touchExplorationEnabled",
+    ):
+        require(android_context, marker, "Android presentation context")
+
+    for forbidden in (
+        "import ",
+        "android.telecom",
+        "android.telephony",
+        "DialRequest",
+        "TelephonyCapabilitySnapshot",
+        "PhoneAccount",
+        "CapabilityState",
+        "Manifest.permission",
+    ):
+        if forbidden in android_context:
+            fail(f"Android presentation context contains forbidden authority dependency {forbidden!r}")
+
+    for marker in (
+        "platformSignalsMapOnlyToPresentationContext",
+        "invalidFontScaleFailsBackToNeutralScale",
+    ):
+        require(context_test, marker, "Android presentation context tests")
+
+    for marker in (
         '  glaze_ui:\n    result: applicable-blocked\n    version: "1.6.0"',
         "GlazeDialerPresentationPolicy.kt",
         "GlazeDialerTheme.kt",
+        "DialerAndroidGlazeContext.kt",
         "GlazeDialerPresentationPolicyTest.kt",
+        "DialerAndroidGlazeContextTest.kt",
         "scripts/check_glaze_ui_v16.py",
         '  glaze_ui_required: "1.6.0"',
         "glaze-ui==1.6.0",
@@ -113,8 +157,8 @@ def main() -> None:
 
     print(
         "Dialer GLAZE UI V1.6 source boundary passed: exact Stable provenance, "
-        "certainty-first presentation policy, fail-closed telephony authority, and "
-        "application-acceptance blockers are synchronized."
+        "privacy-safe runtime presentation context, certainty-first presentation policy, "
+        "fail-closed telephony authority, and application-acceptance blockers are synchronized."
     )
 
 
