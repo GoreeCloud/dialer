@@ -4,7 +4,7 @@
 
 - Repository lifecycle remains Development and is not Stable or production accepted.
 - GitHub repository identity is now `GoreeCloud/dialer` after a repository rename. Repository ID, product identity, Android package namespaces, evidence schema identifiers, and telephony acceptance boundaries remain unchanged; the rename does not create physical-device/carrier evidence or release authority.
-- Authoritative main before this candidate is `ae9cbadd97723d4d465efb99871c51e733bdd44a`, including the Platform Contract 0.4 manifest, exact-source Android CI hardening, the fail-closed physical-device/carrier acceptance gate through schema v4, and the repository rename to `GoreeCloud/dialer`. This V1.6 branch is not current integration authority until exact-head CI succeeds and governed merge/readback occurs.
+- Authoritative main before this child candidate is `a26627bf50f3b553ef07102b9fab19c2ac3d3b12`, including Platform Contract 0.4, exact-source Android CI, the fail-closed physical-device/carrier acceptance gate through schema v4, the repository rename to `GoreeCloud/dialer`, and the merged GLAZE UI V1.6 source mapping from PR #35. This runtime-context child is not integration authority until exact-head CI succeeds and governed merge/readback occurs.
 - Android Telecom capability, default-dialer role behavior, multi-SIM routing, call controls, emergency-call safety, Glaze UI acceptance, and physical-device/carrier validation remain active stabilization areas.
 - GitHub issue #14 is the physical-device/carrier acceptance gate. Emulator or source evidence must not be represented as carrier/PSTN/device acceptance.
 - Draft PR #20 is historical Glaze UI 1.4.1 / Platform Contract 0.2 provenance only. The current repository target is Official Stable Glaze UI 1.6.0 and Platform Contract 0.4 through the fail-closed root platform manifest; conformance and visual acceptance remain unestablished.
@@ -59,9 +59,9 @@ Do not promote Dialer based on compilation, emulator success, or an outdated Gla
 - Accepted exact-head evidence for PR #31: Android CI run `35490210001` succeeded, including the schema-v4 integrity gate, build/test/lint, and API 29/30/34 managed-device acceptance, before squash merge to authoritative main commit `5fe2f94141a3ddd07e7545477fba801037f000ac`.
 
 
-## GLAZE UI V1.6 source-mapping candidate — September 20, 2026
+## GLAZE UI V1.6 source mapping — integrated September 20, 2026
 
-- This Development branch maps native Dialer presentation source to exact Official Stable GLAZE UI V1.6 / 1.6.0 release source `a7180679ea851389e0f3004515f9a25f420e716d`.
+- PR #35 is integrated and maps native Dialer presentation source to exact Official Stable GLAZE UI V1.6 / 1.6.0 release source `a7180679ea851389e0f3004515f9a25f420e716d`.
 - The Dialer shell remains certainty-first and requests solid presentation. A first-party V1.6 policy adds bounded Reduced Transparency, Reduced Motion, constrained-performance, large-text/reflow, visible-focus, and interaction-target semantics without creating any telephony authority.
 - The inherited V1.6 coarse interaction floor is recorded as 44dp and the pointer-compact floor as 32dp. Dialer deliberately retains a stricter 48dp ordinary target and 56dp Touch Assistance target.
 - Phone numbers, call/carrier/SIM state, permissions, default-dialer role state, Telecom capability evidence, emergency classification, and issue #14 acceptance evidence remain outside presentation authority.
@@ -69,3 +69,12 @@ Do not promote Dialer based on compilation, emulator success, or an outdated Gla
 - Platform Contract Glaze moves from `applicable-migration-required` to `applicable-blocked` while overall conformance remains `nonconformant`. Rendered/accessibility/adaptive/device/performance/rollback/Human Visual Excellence/platform/signing/release acceptance remains open.
 - Issue #14 remains independently blocked with an empty minimum supported release set and zero verified physical-device/carrier entries.
 - Superseded candidate head `6e734bdc5e8b00258dd6e66d130f1e9cfbb7f6a5` failed Android CI run `35493619281` after the issue #14 record passed because the new Glaze source guard required a one-line Kotlin `Text(...)` spelling for the unchanged carrier-blocked message. The guard was narrowed to the stable message literal without weakening the telephony or carrier acceptance boundary; that failed head remains audit evidence and is not accepted.
+
+## GLAZE UI V1.6 Android runtime-context child — September 21, 2026
+
+- Child branch `stabilize/glaze-v1.6-runtime-context-20260921` adds a privacy-safe Android presentation-context adapter on top of the integrated V1.6 source mapping.
+- The adapter accepts only Android font scale, animator availability, and touch-exploration state. It has no Android Telecom/Telephony imports and receives no phone number, call state, carrier/SIM identity, role/permission state, emergency classification, capability evidence, or issue #14 evidence.
+- The existing certainty-first solid Dialer shell now passes that context into `GlazeDialerTheme`; touch exploration may increase the interaction target floor, reduced animator availability may select minimal motion semantics, and large text may reduce outer content padding to permit reflow.
+- Reduced-transparency, increased-contrast, keyboard-first/focus, and performance-level runtime sources are still not established and remain neutral/default rather than inferred.
+- This child does not enable call placement, alter carrier routing, change default-dialer authority, place emergency calls, satisfy physical-device/carrier acceptance, or change release lifecycle.
+- Exact-head Android CI, including API 29/30/34 managed-device lanes, is required independently before this child can be considered for integration.

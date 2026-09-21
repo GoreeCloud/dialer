@@ -1,6 +1,8 @@
 package com.goreecloud.dialer.ui
 
 import android.Manifest
+import android.animation.ValueAnimator
+import android.view.accessibility.AccessibilityManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -30,6 +32,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -50,6 +53,7 @@ import com.goreecloud.dialer.telephony.TelephonyCapabilitySnapshot
 @Composable
 fun DialerApp(initialDialRequest: DialRequest? = null) {
     val applicationContext = LocalContext.current.applicationContext
+    val configuration = LocalConfiguration.current
     val lifecycleOwner = LocalLifecycleOwner.current
     var runtimeRefresh by remember { mutableIntStateOf(0) }
     var roleRequestMessage by remember { mutableStateOf<String?>(null) }
@@ -109,7 +113,16 @@ fun DialerApp(initialDialRequest: DialRequest? = null) {
         roleRequestMessage = "Android role request returned; capability evidence refreshed."
     }
 
-    GlazeDialerTheme {
+    val accessibilityManager = remember(applicationContext) {
+        applicationContext.getSystemService(AccessibilityManager::class.java)
+    }
+    val glazeContext = DialerAndroidGlazeContext.fromSignals(
+        fontScale = configuration.fontScale,
+        animatorsEnabled = ValueAnimator.areAnimatorsEnabled(),
+        touchExplorationEnabled = accessibilityManager?.isTouchExplorationEnabled == true,
+    )
+
+    GlazeDialerTheme(presentationContext = glazeContext) {
         val presentation = GlazeDialerPresentationPolicy.resolve(
             requestedMaterial = GlazeDialerMaterialRole.SOLID,
             context = LocalGlazeDialerPresentationContext.current,
@@ -187,6 +200,7 @@ fun DialerApp(initialDialRequest: DialRequest? = null) {
                 },
                 initialNumber = initialDialRequest?.number.orEmpty(),
                 minimumInteractionTargetDp = presentation.minimumInteractionTargetDp,
+                contentPaddingDp = if (presentation.densityMayYieldToReflow) 16 else 24,
                 modifier = Modifier.padding(innerPadding),
             )
         }
@@ -210,6 +224,7 @@ private fun DevelopmentHome(
     onRequestDefaultDialerRole: () -> Unit,
     initialNumber: String,
     minimumInteractionTargetDp: Int,
+    contentPaddingDp: Int,
     modifier: Modifier = Modifier,
 ) {
     var number by rememberSaveable(initialNumber) { mutableStateOf(initialNumber) }
@@ -218,7 +233,7 @@ private fun DevelopmentHome(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(24.dp),
+            .padding(contentPaddingDp.dp),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {

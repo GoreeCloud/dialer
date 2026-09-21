@@ -55,10 +55,12 @@ platform_systems:
       - NOTES.md
       - app/src/main/java/com/goreecloud/dialer/ui/GlazeDialerPresentationPolicy.kt
       - app/src/main/java/com/goreecloud/dialer/ui/GlazeDialerTheme.kt
+      - app/src/main/java/com/goreecloud/dialer/ui/DialerAndroidGlazeContext.kt
       - app/src/main/java/com/goreecloud/dialer/ui/DialerApp.kt
       - app/src/test/java/com/goreecloud/dialer/ui/GlazeDialerPresentationPolicyTest.kt
+      - app/src/test/java/com/goreecloud/dialer/ui/DialerAndroidGlazeContextTest.kt
       - scripts/check_glaze_ui_v16.py
-    notes: This Development candidate maps Dialer presentation source to exact Official Stable Glaze UI V1.6 / 1.6.0 release source a7180679ea851389e0f3004515f9a25f420e716d with certainty-first solid presentation semantics. Glaze remains applicable-blocked because authoritative runtime accessibility/performance context wiring, rendered/accessibility/adaptive form-factor, representative-device, performance/power, localization/RTL, rollback, Human Visual Excellence, platform-system, signing, release, and production acceptance remain incomplete.
+    notes: Dialer presentation source is mapped to exact Official Stable Glaze UI V1.6 / 1.6.0 release source a7180679ea851389e0f3004515f9a25f420e716d. A bounded Android runtime adapter now projects only font scale, animator availability, and touch exploration into presentation context. Glaze remains applicable-blocked because reduced-transparency/increased-contrast/performance context, rendered/accessibility/adaptive form-factor, representative-device, performance/power, localization/RTL, rollback, Human Visual Excellence, platform-system, signing, release, and production acceptance remain incomplete.
   mesh:
     result: applicable-blocked
     version: null
@@ -156,6 +158,6 @@ conformance:
   blockers:
     - Physical-device and carrier telephony acceptance in issue #14 remains incomplete; emulator/source evidence is not carrier/PSTN/device acceptance.
     - Production default-dialer role, incoming/ongoing call UI, ringtone ownership, notification/full-screen behavior, multi-SIM routing, conference operations, and audio endpoint behavior remain unaccepted on supported physical devices/carriers.
-    - Official Stable Glaze UI V1.6 / 1.6.0 source mapping is present, but authoritative runtime accessibility/performance context wiring plus repository-local rendered, accessibility, adaptive form-factor, representative-device, performance/power, localization/RTL, rollback, Human Visual Excellence, signing, release, and production acceptance remain incomplete.
+    - Official Stable Glaze UI V1.6 / 1.6.0 source mapping and bounded Android font-scale/animator/touch-exploration presentation context are present, but reduced-transparency/increased-contrast/performance context plus repository-local rendered, accessibility, adaptive form-factor, representative-device, performance/power, localization/RTL, rollback, Human Visual Excellence, signing, release, and production acceptance remain incomplete.
     - Privacy Shield, Wardveil Security, Everkeep, Mesh, Manager, GoreeCloud Policy, and GoreeCloud Observability runtime integration/acceptance are not established.
     - Production signing, distribution, upgrade/rollback, release provenance, Release Candidate qualification, and Stable qualification are not established.
