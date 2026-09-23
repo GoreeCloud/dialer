@@ -107,11 +107,10 @@ object PhoneAccountRoutingRuntime {
         } catch (securityException: SecurityException) {
             clearAuthority()
             PhoneAccountDiscoveryState.PermissionRequired(Manifest.permission.READ_PHONE_STATE)
-        } catch (runtimeException: RuntimeException) {
+        } catch (_: RuntimeException) {
             clearAuthority()
             PhoneAccountDiscoveryState.Failed(
-                runtimeException.message?.takeIf { it.isNotBlank() }
-                    ?: runtimeException::class.java.simpleName,
+                TelephonyFailurePresentation.PHONE_ACCOUNT_DISCOVERY,
             )
         }
     }
