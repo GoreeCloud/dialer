@@ -210,8 +210,7 @@ class GoreeCloudInCallService : InCallService() {
                             CallEndpointRequestEvidence(
                                 routeId = routeId,
                                 state = CallEndpointRequestState.FAILED,
-                                reason = error.message?.takeIf { it.isNotBlank() }
-                                    ?: "Android rejected the endpoint change",
+                                reason = TelephonyFailurePresentation.ENDPOINT_CHANGE,
                             ),
                         )
                     }
@@ -220,10 +219,9 @@ class GoreeCloudInCallService : InCallService() {
             CallEndpointRoutingResult.Submitted
         } catch (securityException: SecurityException) {
             CallEndpointRoutingResult.Failed("Android rejected call endpoint authorization")
-        } catch (runtimeException: RuntimeException) {
+        } catch (_: RuntimeException) {
             CallEndpointRoutingResult.Failed(
-                runtimeException.message?.takeIf { it.isNotBlank() }
-                    ?: runtimeException::class.java.simpleName,
+                TelephonyFailurePresentation.ENDPOINT_ROUTING,
             )
         }
     }
