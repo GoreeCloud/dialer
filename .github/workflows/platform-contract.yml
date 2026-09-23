@@ -1,0 +1,32 @@
+# yamllint disable rule:line-length
+name: Platform Contract
+
+"on":
+  pull_request:
+    paths:
+      - goreecloud.platform.yaml
+      - .github/workflows/platform-contract.yml
+  push:
+    branches:
+      - main
+    paths:
+      - goreecloud.platform.yaml
+      - .github/workflows/platform-contract.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: platform-contract-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Contract 0.4 is the accepted central nine-system implementation and current
+# shared Stable Glaze UI consumer baseline is 1.6.0. This validates Dialer's
+# declaration only; it does not establish carrier/device, runtime platform-system,
+# production, Release Candidate, or Stable acceptance.
+jobs:
+  validate:
+    uses: GoreeCloud/GoreeCloud/.github/workflows/reusable-platform-manifest.yml@e49b9afdea094c96a36a0457b1603f2fa8e8fa6b
+    with:
+      manifest-path: goreecloud.platform.yaml
