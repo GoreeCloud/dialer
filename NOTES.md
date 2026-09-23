@@ -4,7 +4,7 @@
 
 - Repository lifecycle remains Development and is not Stable or production accepted.
 - GitHub repository identity is now `GoreeCloud/dialer` after a repository rename. Repository ID, product identity, Android package namespaces, evidence schema identifiers, and telephony acceptance boundaries remain unchanged; the rename does not create physical-device/carrier evidence or release authority.
-- Authoritative main before this child candidate is `a26627bf50f3b553ef07102b9fab19c2ac3d3b12`, including Platform Contract 0.4, exact-source Android CI, the fail-closed physical-device/carrier acceptance gate through schema v4, the repository rename to `GoreeCloud/dialer`, and the merged GLAZE UI V1.6 source mapping from PR #35. This runtime-context child is not integration authority until exact-head CI succeeds and governed merge/readback occurs.
+- Authoritative `main` is `9cb3520543d63009638f75ae1bc3fe053e42c3eb` after merged PR #38. Exact-main Android CI run `35865886804` and Platform Contract run `35865888045` succeeded. Platform Contract 0.4, Glaze UI 1.6.0 target, the fail-closed physical-device/carrier acceptance gate and current repository identity are integrated, while runtime/platform/device/release acceptance remains blocked.
 - Android Telecom capability, default-dialer role behavior, multi-SIM routing, call controls, emergency-call safety, Glaze UI acceptance, and physical-device/carrier validation remain active stabilization areas.
 - GitHub issue #14 is the physical-device/carrier acceptance gate. Emulator or source evidence must not be represented as carrier/PSTN/device acceptance.
 - Draft PR #20 is historical Glaze UI 1.4.1 / Platform Contract 0.2 provenance only. The current repository target is Official Stable Glaze UI 1.6.0 and Platform Contract 0.4 through the fail-closed root platform manifest; conformance and visual acceptance remain unestablished.
@@ -78,3 +78,12 @@ Do not promote Dialer based on compilation, emulator success, or an outdated Gla
 - Reduced-transparency, increased-contrast, keyboard-first/focus, and performance-level runtime sources are still not established and remain neutral/default rather than inferred.
 - This child does not enable call placement, alter carrier routing, change default-dialer authority, place emergency calls, satisfy physical-device/carrier acceptance, or change release lifecycle.
 - Exact-head Android CI, including API 29/30/34 managed-device lanes, is required independently before this child can be considered for integration.
+
+
+## Privacy-safe Telecom failure presentation candidate — September 23, 2026
+
+- Current-main review candidate is based directly on authoritative `main` `9cb3520543d63009638f75ae1bc3fe053e42c3eb`.
+- Existing Development UI surfaces operation failure reasons for phone-account discovery, outgoing placement, call controls, mute controls and API 34+ endpoint routing. Several of those paths previously forwarded raw Android/Telecom exception message text, even though the Dialer intentionally avoids projecting phone-account, endpoint, carrier, device and subscriber identity.
+- The candidate replaces platform-supplied exception text with fixed operation-level messages, including asynchronous `CallEndpointException` failures, while preserving fail-closed failure state and existing permission/role/capability boundaries.
+- Unit regressions inject synthetic sensitive-looking exception details and require privacy-safe generic results. Android CI also runs a static privacy guard that rejects `.message` projection from the five sensitive Telecom adapter/control files and requires all six generic failure markers.
+- No permission, call-placement acceptance, carrier route, emergency behavior, account identity, endpoint identity, runtime authority, physical-device result, lifecycle, release or Stable state is broadened. Exact-head CI, independent review, guarded integration/readback and issue #14 physical-device/carrier acceptance remain required.
