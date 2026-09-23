@@ -210,8 +210,7 @@ class GoreeCloudInCallService : InCallService() {
                             CallEndpointRequestEvidence(
                                 routeId = routeId,
                                 state = CallEndpointRequestState.FAILED,
-                                reason = error.message?.takeIf { it.isNotBlank() }
-                                    ?: "Android rejected the endpoint change",
+                                reason = TelephonyFailurePresentation.ENDPOINT_CHANGE,
                             ),
                         )
                     }
