@@ -29,13 +29,13 @@ class CallAudioControlEngineTest {
         val result = CallAudioControlEngine(
             object : CallAudioControlTarget {
                 override fun setMuted(isMuted: Boolean) {
-                    throw IllegalStateException("audio unavailable")
+                    throw IllegalStateException("Bluetooth endpoint 22:33 and account secret-id unavailable")
                 }
             },
         ).execute(CallAudioControlAction.Mute)
 
         assertEquals(
-            CallAudioControlResult.Failed("audio unavailable"),
+            CallAudioControlResult.Failed(TelephonyFailurePresentation.AUDIO_CONTROL),
             result,
         )
     }
