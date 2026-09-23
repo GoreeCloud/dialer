@@ -219,10 +219,9 @@ class GoreeCloudInCallService : InCallService() {
             CallEndpointRoutingResult.Submitted
         } catch (securityException: SecurityException) {
             CallEndpointRoutingResult.Failed("Android rejected call endpoint authorization")
-        } catch (runtimeException: RuntimeException) {
+        } catch (_: RuntimeException) {
             CallEndpointRoutingResult.Failed(
-                runtimeException.message?.takeIf { it.isNotBlank() }
-                    ?: runtimeException::class.java.simpleName,
+                TelephonyFailurePresentation.ENDPOINT_ROUTING,
             )
         }
     }
