@@ -39,6 +39,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.goreecloud.dialer.core.capability.CapabilityState
+import com.goreecloud.dialer.guidance.DialerGuidanceRepository
+import com.goreecloud.dialer.guidance.DialerGuidanceState
+import com.goreecloud.dialer.guidance.SharedPreferencesDialerGuidanceStore
 import com.goreecloud.dialer.telephony.AndroidDefaultDialerRoleRequestPreparer
 import com.goreecloud.dialer.telephony.AndroidIncomingCallNotificationAccess
 import com.goreecloud.dialer.telephony.AndroidTelephonyCapabilityProbe
@@ -53,6 +56,12 @@ import com.goreecloud.dialer.telephony.TelephonyCapabilitySnapshot
 @Composable
 fun DialerApp(initialDialRequest: DialRequest? = null) {
     val applicationContext = LocalContext.current.applicationContext
+    val guidanceRepository = remember(applicationContext) {
+        DialerGuidanceRepository(SharedPreferencesDialerGuidanceStore(applicationContext))
+    }
+    var guidanceState by remember(guidanceRepository) {
+        mutableStateOf(guidanceRepository.load())
+    }
     val configuration = LocalConfiguration.current
     val lifecycleOwner = LocalLifecycleOwner.current
     var runtimeRefresh by remember { mutableIntStateOf(0) }
@@ -127,8 +136,25 @@ fun DialerApp(initialDialRequest: DialRequest? = null) {
             requestedMaterial = GlazeDialerMaterialRole.SOLID,
             context = LocalGlazeDialerPresentationContext.current,
         )
-        Scaffold { innerPadding ->
-            DevelopmentHome(
+        if (!guidanceState.setupCompleted) {
+            DialerFirstUseWizard(
+                state = guidanceState,
+                onPrevious = {
+                    guidanceState = guidanceRepository.previousSetupStep(guidanceState)
+                },
+                onNext = {
+                    guidanceState = guidanceRepository.nextSetupStep(guidanceState)
+                },
+                onHintsEnabledChanged = { enabled ->
+                    guidanceState = guidanceRepository.setHintsEnabled(guidanceState, enabled)
+                },
+                onComplete = {
+                    guidanceState = guidanceRepository.completeSetup(guidanceState)
+                },
+            )
+        } else {
+            Scaffold { innerPadding ->
+                DevelopmentHome(
                 capabilitySnapshot = capabilitySnapshot,
                 incomingCallNotificationAccess = incomingCallNotificationAccess,
                 inCallRuntime = inCallRuntime,
@@ -198,11 +224,28 @@ fun DialerApp(initialDialRequest: DialRequest? = null) {
                         }
                     }
                 },
+                guidanceState = guidanceState,
+                onDismissGuidanceHint = {
+                    guidanceState = guidanceRepository.dismissHint(
+                        guidanceState,
+                        DIALER_CAPABILITY_HINT_ID,
+                    )
+                },
+                onHintsEnabledChanged = { enabled ->
+                    guidanceState = guidanceRepository.setHintsEnabled(guidanceState, enabled)
+                },
+                onResetDismissedHints = {
+                    guidanceState = guidanceRepository.resetDismissedHints(guidanceState)
+                },
+                onReplaySetup = {
+                    guidanceState = guidanceRepository.replaySetup(guidanceState)
+                },
                 initialNumber = initialDialRequest?.number.orEmpty(),
                 minimumInteractionTargetDp = presentation.minimumInteractionTargetDp,
                 contentPaddingDp = if (presentation.densityMayYieldToReflow) 16 else 24,
                 modifier = Modifier.padding(innerPadding),
-            )
+                )
+            }
         }
     }
 }
@@ -216,6 +259,11 @@ private fun DevelopmentHome(
     selectedPhoneAccountRouteId: Long?,
     roleRequestMessage: String?,
     incomingCallAccessMessage: String?,
+    guidanceState: DialerGuidanceState,
+    onDismissGuidanceHint: () -> Unit,
+    onHintsEnabledChanged: (Boolean) -> Unit,
+    onResetDismissedHints: () -> Unit,
+    onReplaySetup: () -> Unit,
     onPhoneAccountSelected: (Long?) -> Unit,
     onRequestPhoneStatePermission: () -> Unit,
     onRequestNotificationPermission: () -> Unit,
@@ -241,6 +289,11 @@ private fun DevelopmentHome(
         Spacer(Modifier.height(4.dp))
         Text("Active Development / pre-Stable", style = MaterialTheme.typography.titleMedium)
         Spacer(Modifier.height(20.dp))
+
+        if (guidanceState.isHintVisible(DIALER_CAPABILITY_HINT_ID)) {
+            DialerCapabilityGuidanceHint(onDismiss = onDismissGuidanceHint)
+            Spacer(Modifier.height(20.dp))
+        }
 
         if (inCallRuntime.trackedCallCount > 0) {
             DevelopmentInCallPanel(inCallRuntime)
@@ -323,6 +376,14 @@ private fun DevelopmentHome(
         CapabilityEvidenceRow("Multi-SIM routing", capabilitySnapshot.multiSimRouting)
         CapabilityEvidenceRow("Wi-Fi Calling state", capabilitySnapshot.wifiCallingState)
         CapabilityEvidenceRow("Supplementary services", capabilitySnapshot.supplementaryServices)
+
+        Spacer(Modifier.height(20.dp))
+        DialerGuidanceControls(
+            state = guidanceState,
+            onHintsEnabledChanged = onHintsEnabledChanged,
+            onResetDismissedHints = onResetDismissedHints,
+            onReplaySetup = onReplaySetup,
+        )
     }
 }
 
