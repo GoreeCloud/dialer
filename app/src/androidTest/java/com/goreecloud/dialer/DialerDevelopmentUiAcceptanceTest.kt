@@ -1,13 +1,16 @@
 package com.goreecloud.dialer
 
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsNotEnabled
-import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextReplacement
+import androidx.compose.ui.text.AnnotatedString
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Rule
 import org.junit.Test
@@ -53,7 +56,13 @@ class DialerDevelopmentUiAcceptanceTest {
         composeRule.onNodeWithText("Call").assertIsNotEnabled()
 
         composeRule.onNodeWithText("Clear").performClick()
-        composeRule.onNodeWithText("Enter a number").assertExists()
+        composeRule.onNodeWithTag("dial-number-input")
+            .assert(
+                SemanticsMatcher.expectValue(
+                    SemanticsProperties.EditableText,
+                    AnnotatedString(""),
+                ),
+            )
         composeRule.onNodeWithText("Call").assertIsNotEnabled()
     }
 
@@ -64,7 +73,12 @@ class DialerDevelopmentUiAcceptanceTest {
         composeRule.onNodeWithTag("dial-number-input")
             .performTextReplacement("+1 (205) 555-0199#")
         composeRule.onNodeWithTag("dial-number-input")
-            .assertTextEquals("+12055550199#", includeEditableText = true)
+            .assert(
+                SemanticsMatcher.expectValue(
+                    SemanticsProperties.EditableText,
+                    AnnotatedString("+12055550199#"),
+                ),
+            )
 
         composeRule.onNodeWithText("Call").assertIsNotEnabled()
     }
