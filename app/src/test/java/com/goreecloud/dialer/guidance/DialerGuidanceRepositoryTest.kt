@@ -12,6 +12,7 @@ class DialerGuidanceRepositoryTest {
         val state = repository.load()
         assertFalse(state.setupCompleted)
         assertEquals(0, state.setupStep)
+        assertFalse(state.replayActive)
         assertTrue(state.hintsEnabled)
         assertTrue(state.dismissedHintIds.isEmpty())
     }
@@ -56,7 +57,7 @@ class DialerGuidanceRepositoryTest {
     }
 
     @Test
-    fun replayPreservesGlobalHintPreference() {
+    fun replayPreservesCompletionAndGlobalHintPreferenceAndCanBeCanceled() {
         val repository = DialerGuidanceRepository(FakeStore())
         var state = repository.load()
         state = repository.setHintsEnabled(state, false)
@@ -64,9 +65,21 @@ class DialerGuidanceRepositoryTest {
 
         val replay = repository.replaySetup(state)
 
-        assertFalse(replay.setupCompleted)
+        assertTrue(replay.setupCompleted)
+        assertTrue(replay.replayActive)
         assertEquals(0, replay.setupStep)
         assertFalse(replay.hintsEnabled)
+
+        val advanced = repository.nextSetupStep(replay)
+        assertEquals(1, advanced.setupStep)
+        assertTrue(advanced.setupCompleted)
+        assertTrue(advanced.replayActive)
+
+        val canceled = repository.cancelReplay(advanced)
+        assertTrue(canceled.setupCompleted)
+        assertFalse(canceled.replayActive)
+        assertEquals(DialerGuidanceState.LAST_SETUP_STEP, canceled.setupStep)
+        assertFalse(canceled.hintsEnabled)
     }
 
     @Test
