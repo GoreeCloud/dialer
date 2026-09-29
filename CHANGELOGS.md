@@ -1,5 +1,13 @@
 # GoreeCloud Dialer — Changelogs
 
+## 2026-09-29 — direct dial-input editing candidate
+- The Development dial surface now exposes the local dial string as an editable phone field in addition to the on-screen keypad.
+- Keyboard and paste input keeps digits, `*`, `#`, and a leading international `+`; common formatting characters are ignored and the existing 128-character bound remains enforced.
+- Managed-Android acceptance now exercises direct text replacement and confirms that the carrier **Call** action remains disabled.
+- No Telecom placement, carrier routing, permission, account, Recents, Contacts, or network authority was added.
+
+**Acceptance boundary:** this remains unmerged candidate work on PR #40. Fresh exact-head CI plus representative-device accessibility/form-factor and carrier/device acceptance remain required.
+
 ## 2026-09-29 — bounded local dial editing candidate
 
 - Added a local dial-string editor for digits, `*`, `#`, a start-only international `+`, one-character Delete, and explicit Clear.
