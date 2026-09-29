@@ -63,7 +63,8 @@ class DialerDevelopmentUiAcceptanceTest {
 
         composeRule.onNodeWithTag("dial-number-input")
             .performTextReplacement("+1 (205) 555-0199#")
-            .assertTextEquals("+12055550199#")
+        composeRule.onNodeWithTag("dial-number-input")
+            .assertTextEquals("+12055550199#", includeEditableText = true)
 
         composeRule.onNodeWithText("Call").assertIsNotEnabled()
     }
