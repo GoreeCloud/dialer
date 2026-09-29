@@ -1,10 +1,13 @@
 package com.goreecloud.dialer
 
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextReplacement
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Rule
 import org.junit.Test
@@ -51,6 +54,17 @@ class DialerDevelopmentUiAcceptanceTest {
 
         composeRule.onNodeWithText("Clear").performClick()
         composeRule.onNodeWithText("Enter a number").assertExists()
+        composeRule.onNodeWithText("Call").assertIsNotEnabled()
+    }
+
+    @Test
+    fun directDialInputFiltersFormattingNoiseAndKeepsCallBlocked() {
+        completeFirstUseSetupIfPresent()
+
+        composeRule.onNodeWithTag("dial-number-input")
+            .performTextReplacement("+1 (205) 555-0199#")
+            .assertTextEquals("+12055550199#")
+
         composeRule.onNodeWithText("Call").assertIsNotEnabled()
     }
 
