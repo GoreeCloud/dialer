@@ -1,5 +1,13 @@
 # GoreeCloud Dialer — Changelogs
 
+## 2026-09-29 — first-use replay-state correction candidate
+
+- The active onboarding candidate now keeps first-use completion durable when the user voluntarily replays setup.
+- Replay uses a separate persisted state, can be explicitly closed, resumes its own step after interruption, and preserves the global contextual-tip preference.
+- Guidance schema v2 reads prior schema-v1 state without forcing an unnecessary setup reset.
+- This remains unmerged Development candidate work pending exact-head CI and representative-device/accessibility acceptance.
+
+
 **Record type:** Repository change history  
 **Repository:** `GoreeCloud/dialer`  
 **Lifecycle:** Development / non-Stable  
