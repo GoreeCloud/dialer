@@ -1,11 +1,18 @@
 # GoreeCloud Dialer — Changelogs
 
+## 2026-09-29 — bounded local dial editing candidate
+
+- Added a local dial-string editor for digits, `*`, `#`, a start-only international `+`, one-character Delete, and explicit Clear.
+- Bounded the local entry state to 128 characters and kept the carrier Call action disabled; no Telecom placement, account routing, permission, network, or carrier authority is added.
+- Added JVM policy coverage and managed-Android interaction coverage for international-prefix entry, clearing, and continued fail-closed call placement.
+- Kept the capability explicitly candidate-only in the repository feature authority until integration. Every changed candidate head requires fresh exact-head CI, while representative-device/carrier/accessibility acceptance remains separate.
+
 ## 2026-09-29 — first-use replay-state correction candidate
 
 - The active onboarding candidate now keeps first-use completion durable when the user voluntarily replays setup.
 - Replay uses a separate persisted state, can be explicitly closed, resumes its own step after interruption, and preserves the global contextual-tip preference.
 - Guidance schema v2 reads prior schema-v1 state without forcing an unnecessary setup reset.
-- This remains unmerged Development candidate work pending exact-head CI and representative-device/accessibility acceptance.
+- This remains unmerged Development candidate work. Every changed candidate head requires fresh exact-head CI; representative-device/accessibility acceptance remains separate.
 
 
 **Record type:** Repository change history  
