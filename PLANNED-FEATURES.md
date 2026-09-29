@@ -10,6 +10,10 @@
 
 Items here are planned, incomplete, blocked, or acceptance-gated. Their presence does not imply implementation or release readiness. Partial foundations that already exist are also described in `IMPLEMENTED-FEATURES.md` for the verified portion only.
 
+## 2026-09-29 onboarding continuation
+
+The active first-use guidance candidate now separates voluntary setup replay from mandatory first-use completion. A completed setup remains completed during replay; replay can be closed without re-blocking Dialer, retains the user’s contextual-tip preference, and uses backward-compatible persisted guidance state. Exact-head CI and representative-device accessibility/form-factor acceptance remain open.
+
 ## Current stabilization obligations
 
 - Execute the privacy-safe physical-device/carrier matrix for supported Android versions, OEMs, carriers/SIM classes, role state, incoming/outgoing PSTN behavior, call controls, lock-screen presentation, notifications/full-screen behavior, endpoint routing, multi-SIM, conferencing, disconnect evidence, and emergency-safe boundaries.
