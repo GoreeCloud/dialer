@@ -49,7 +49,7 @@ This is **source mapping**, not Dialer-local Glaze acceptance. Authoritative run
 
 ## Current source foundation
 
-- Compose application shell and local keypad
+- Compose application shell and local keypad with bounded international-prefix, Delete, and Clear editing
 - `ACTION_DIAL` and `tel:` intent intake without call placement side effects
 - Android telephony and `ROLE_DIALER` capability probe with the role-request acceptance gate still closed
 - explicit default-dialer acceptance model for dial intent, service, placement, incoming UI, and ongoing UI
