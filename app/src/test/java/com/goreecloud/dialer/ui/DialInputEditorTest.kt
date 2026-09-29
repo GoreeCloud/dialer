@@ -12,6 +12,24 @@ class DialInputEditorTest {
     }
 
     @Test
+    fun directEditingAcceptsPhoneCharactersAndDropsFormattingNoise() {
+        assertEquals(
+            "+12055550199#",
+            DialInputEditor.replace("+1 (205) 555-0199#"),
+        )
+        assertEquals("1205", DialInputEditor.replace("1A2B0C5"))
+        assertEquals("+1205", DialInputEditor.replace("++1+205"))
+    }
+
+    @Test
+    fun directEditingIsBounded() {
+        assertEquals(
+            DialInputEditor.MAX_LENGTH,
+            DialInputEditor.replace("1".repeat(DialInputEditor.MAX_LENGTH + 30)).length,
+        )
+    }
+
+    @Test
     fun deleteAndClearRemainLocalAndDeterministic() {
         assertEquals("12", DialInputEditor.deleteLast("123"))
         assertEquals("", DialInputEditor.deleteLast(""))
