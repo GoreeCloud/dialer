@@ -35,6 +35,7 @@ internal fun DialerFirstUseWizard(
     onNext: () -> Unit,
     onHintsEnabledChanged: (Boolean) -> Unit,
     onComplete: () -> Unit,
+    onCancelReplay: () -> Unit,
 ) {
     val step = state.setupStep
 
@@ -51,11 +52,22 @@ internal fun DialerFirstUseWizard(
                 .padding(horizontal = 24.dp, vertical = 28.dp),
             verticalArrangement = Arrangement.spacedBy(18.dp),
         ) {
-            Text(
-                "GoreeCloud Dialer",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.primary,
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    "GoreeCloud Dialer",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                if (state.replayActive) {
+                    TextButton(onClick = onCancelReplay) {
+                        Text("Close replay")
+                    }
+                }
+            }
             Text(
                 "Step " + (step + 1) + " of " + (DialerGuidanceState.LAST_SETUP_STEP + 1),
                 style = MaterialTheme.typography.bodySmall,
