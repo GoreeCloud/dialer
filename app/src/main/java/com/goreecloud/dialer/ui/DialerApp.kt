@@ -320,7 +320,7 @@ private fun DevelopmentHome(
                 horizontalArrangement = Arrangement.SpaceEvenly,
             ) {
                 row.forEach { digit ->
-                    Button(onClick = { number += digit }) {
+                    Button(onClick = { number = DialInputEditor.append(number, digit) }) {
                         Text(digit)
                     }
                 }
@@ -328,11 +328,31 @@ private fun DevelopmentHome(
             Spacer(Modifier.height(8.dp))
         }
 
-        TextButton(
-            onClick = { if (number.isNotEmpty()) number = number.dropLast(1) },
-            enabled = number.isNotEmpty(),
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly,
         ) {
-            Text("Delete")
+            TextButton(
+                onClick = { number = DialInputEditor.append(number, "+") },
+                enabled = number.isEmpty(),
+                modifier = Modifier.heightIn(min = minimumInteractionTargetDp.dp),
+            ) {
+                Text("+")
+            }
+            TextButton(
+                onClick = { number = DialInputEditor.deleteLast(number) },
+                enabled = number.isNotEmpty(),
+                modifier = Modifier.heightIn(min = minimumInteractionTargetDp.dp),
+            ) {
+                Text("Delete")
+            }
+            TextButton(
+                onClick = { number = DialInputEditor.clear(number) },
+                enabled = number.isNotEmpty(),
+                modifier = Modifier.heightIn(min = minimumInteractionTargetDp.dp),
+            ) {
+                Text("Clear")
+            }
         }
 
         DevelopmentPhoneAccountRouting(
