@@ -5,6 +5,7 @@ import android.content.Context
 data class DialerGuidanceState(
     val setupCompleted: Boolean = false,
     val setupStep: Int = 0,
+    val replayActive: Boolean = false,
     val hintsEnabled: Boolean = true,
     val dismissedHintIds: Set<String> = emptySet(),
 ) {
@@ -40,7 +41,7 @@ class DialerGuidanceRepository(
         store.read() ?: DialerGuidanceState()
 
     fun nextSetupStep(current: DialerGuidanceState): DialerGuidanceState {
-        if (current.setupCompleted) return current
+        if (current.setupCompleted && !current.replayActive) return current
         return persist(
             current,
             current.copy(
@@ -50,7 +51,7 @@ class DialerGuidanceRepository(
     }
 
     fun previousSetupStep(current: DialerGuidanceState): DialerGuidanceState {
-        if (current.setupCompleted) return current
+        if (current.setupCompleted && !current.replayActive) return current
         return persist(
             current,
             current.copy(setupStep = (current.setupStep - 1).coerceAtLeast(0)),
@@ -63,17 +64,31 @@ class DialerGuidanceRepository(
             current.copy(
                 setupCompleted = true,
                 setupStep = DialerGuidanceState.LAST_SETUP_STEP,
+                replayActive = false,
             ),
         )
 
-    fun replaySetup(current: DialerGuidanceState): DialerGuidanceState =
-        persist(
+    fun replaySetup(current: DialerGuidanceState): DialerGuidanceState {
+        if (!current.setupCompleted || current.replayActive) return current
+        return persist(
             current,
             current.copy(
-                setupCompleted = false,
                 setupStep = 0,
+                replayActive = true,
             ),
         )
+    }
+
+    fun cancelReplay(current: DialerGuidanceState): DialerGuidanceState {
+        if (!current.setupCompleted || !current.replayActive) return current
+        return persist(
+            current,
+            current.copy(
+                setupStep = DialerGuidanceState.LAST_SETUP_STEP,
+                replayActive = false,
+            ),
+        )
+    }
 
     fun setHintsEnabled(
         current: DialerGuidanceState,
@@ -113,11 +128,13 @@ class SharedPreferencesDialerGuidanceStore(
     override fun read(): DialerGuidanceState? {
         if (!preferences.contains(KEY_SCHEMA_VERSION)) return null
 
-        if (preferences.getInt(KEY_SCHEMA_VERSION, -1) != SCHEMA_VERSION) {
+        val schemaVersion = preferences.getInt(KEY_SCHEMA_VERSION, -1)
+        if (schemaVersion !in 1..SCHEMA_VERSION) {
             // Unknown persisted state must not silently mark setup complete or turn hints back on.
             return DialerGuidanceState(
                 setupCompleted = false,
                 setupStep = 0,
+                replayActive = false,
                 hintsEnabled = false,
             )
         }
@@ -126,6 +143,8 @@ class SharedPreferencesDialerGuidanceStore(
             setupCompleted = preferences.getBoolean(KEY_SETUP_COMPLETED, false),
             setupStep = preferences.getInt(KEY_SETUP_STEP, 0)
                 .coerceIn(0, DialerGuidanceState.LAST_SETUP_STEP),
+            replayActive =
+                schemaVersion >= 2 && preferences.getBoolean(KEY_REPLAY_ACTIVE, false),
             hintsEnabled = preferences.getBoolean(KEY_HINTS_ENABLED, true),
             dismissedHintIds = preferences.getStringSet(KEY_DISMISSED_HINT_IDS, emptySet())
                 ?.toSet()
@@ -138,16 +157,18 @@ class SharedPreferencesDialerGuidanceStore(
             .putInt(KEY_SCHEMA_VERSION, SCHEMA_VERSION)
             .putBoolean(KEY_SETUP_COMPLETED, state.setupCompleted)
             .putInt(KEY_SETUP_STEP, state.setupStep)
+            .putBoolean(KEY_REPLAY_ACTIVE, state.replayActive)
             .putBoolean(KEY_HINTS_ENABLED, state.hintsEnabled)
             .putStringSet(KEY_DISMISSED_HINT_IDS, state.dismissedHintIds.toSet())
             .commit()
 
     private companion object {
         const val PREFERENCES_NAME = "goreecloud_dialer_guidance"
-        const val SCHEMA_VERSION = 1
+        const val SCHEMA_VERSION = 2
         const val KEY_SCHEMA_VERSION = "schema_version"
         const val KEY_SETUP_COMPLETED = "setup_completed"
         const val KEY_SETUP_STEP = "setup_step"
+        const val KEY_REPLAY_ACTIVE = "replay_active"
         const val KEY_HINTS_ENABLED = "hints_enabled"
         const val KEY_DISMISSED_HINT_IDS = "dismissed_hint_ids"
     }
