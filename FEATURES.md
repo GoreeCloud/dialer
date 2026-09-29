@@ -9,6 +9,7 @@ The following capabilities exist in source as Development foundations. Their pre
 - Capability-state model that avoids a misleading global supported/ready state.
 - Runtime Android telephony and `ROLE_DIALER` availability/ownership detection.
 - `ACTION_DIAL` and `tel:` intake into a local keypad without automatic call-placement side effects.
+- Bounded local dial-string editing with digits, `*`, `#`, a leading international `+`, one-character Delete, and explicit Clear; the editor is capped at 128 characters and does not enable call placement.
 - Content-minimized `InCallService` lifecycle tracking with generated process-local session IDs.
 - State-aware Answer, Decline, End, Hold, Resume, and DTMF execution boundaries.
 - Live Telecom capability evidence for Hold, Mute, and conference manage/merge/swap/separate behavior.
