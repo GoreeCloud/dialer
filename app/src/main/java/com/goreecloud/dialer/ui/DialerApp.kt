@@ -15,9 +15,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -34,6 +36,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -303,9 +307,19 @@ private fun DevelopmentHome(
             Spacer(Modifier.height(20.dp))
         }
 
-        Text(
-            text = number.ifEmpty { "Enter a number" },
-            style = MaterialTheme.typography.headlineSmall,
+        OutlinedTextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("dial-number-input"),
+            value = number,
+            onValueChange = { number = DialInputEditor.replace(it) },
+            label = { Text("Number") },
+            placeholder = { Text("Enter a number") },
+            supportingText = {
+                Text("Digits, +, * and # stay local until an accepted call-placement path is enabled.")
+            },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+            singleLine = true,
         )
         Spacer(Modifier.height(12.dp))
 
