@@ -12,7 +12,7 @@ Items here are planned, incomplete, blocked, or acceptance-gated. Their presence
 
 ## 2026-09-29 onboarding continuation
 
-The active first-use guidance candidate now separates voluntary setup replay from mandatory first-use completion. A completed setup remains completed during replay; replay can be closed without re-blocking Dialer, retains the user’s contextual-tip preference, and uses backward-compatible persisted guidance state. The same Draft line also carries bounded local dial-string editing with a start-only international `+`, Delete, Clear, a 128-character cap, and managed-Android interaction coverage while carrier call placement stays disabled. Every changed candidate head requires fresh exact-head CI; representative-device accessibility/form-factor and carrier/device acceptance remain open.
+The active first-use guidance candidate now separates voluntary setup replay from mandatory first-use completion. A completed setup remains completed during replay; replay can be closed without re-blocking Dialer, retains the user’s contextual-tip preference, and uses backward-compatible persisted guidance state. The same Draft line also carries bounded local dial-string editing through the keypad and a directly editable phone field, with start-only international `+`, Delete, Clear, keyboard/paste filtering, a 128-character cap, and managed-Android interaction coverage while carrier call placement stays disabled. Every changed candidate head requires fresh exact-head CI; representative-device accessibility/form-factor and carrier/device acceptance remain open.
 
 ## Current stabilization obligations
 
