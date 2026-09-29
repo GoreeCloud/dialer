@@ -37,6 +37,23 @@ class DialerDevelopmentUiAcceptanceTest {
             .assertExists()
     }
 
+    @Test
+    fun localDialEditorSupportsInternationalPrefixAndClearWithoutEnablingCalls() {
+        completeFirstUseSetupIfPresent()
+
+        composeRule.onNodeWithText("+").performClick()
+        composeRule.onNodeWithText("1").performClick()
+        composeRule.onNodeWithText("2").performClick()
+        composeRule.onNodeWithText("3").performClick()
+
+        composeRule.onNodeWithText("+123").assertExists()
+        composeRule.onNodeWithText("Call").assertIsNotEnabled()
+
+        composeRule.onNodeWithText("Clear").performClick()
+        composeRule.onNodeWithText("Enter a number").assertExists()
+        composeRule.onNodeWithText("Call").assertIsNotEnabled()
+    }
+
     private fun completeFirstUseSetupIfPresent() {
         repeat(3) {
             val finishNodes = composeRule
