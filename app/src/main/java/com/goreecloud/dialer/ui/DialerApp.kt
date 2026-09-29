@@ -136,7 +136,7 @@ fun DialerApp(initialDialRequest: DialRequest? = null) {
             requestedMaterial = GlazeDialerMaterialRole.SOLID,
             context = LocalGlazeDialerPresentationContext.current,
         )
-        if (!guidanceState.setupCompleted) {
+        if (!guidanceState.setupCompleted || guidanceState.replayActive) {
             DialerFirstUseWizard(
                 state = guidanceState,
                 onPrevious = {
@@ -150,6 +150,9 @@ fun DialerApp(initialDialRequest: DialRequest? = null) {
                 },
                 onComplete = {
                     guidanceState = guidanceRepository.completeSetup(guidanceState)
+                },
+                onCancelReplay = {
+                    guidanceState = guidanceRepository.cancelReplay(guidanceState)
                 },
             )
         } else {
