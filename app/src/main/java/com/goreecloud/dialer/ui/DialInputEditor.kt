@@ -12,6 +12,30 @@ object DialInputEditor {
         return (current + token).take(MAX_LENGTH)
     }
 
+    fun replace(raw: String): String {
+        val output = StringBuilder()
+        raw.forEach { character ->
+            when {
+                character.isDigit() || character == '*' || character == '#' -> {
+                    if (output.length < MAX_LENGTH) output.append(character)
+                }
+
+                character == '+' && output.isEmpty() -> {
+                    if (output.length < MAX_LENGTH) output.append(character)
+                }
+
+                character.isWhitespace() ||
+                    character == '-' ||
+                    character == '(' ||
+                    character == ')' ||
+                    character == '.' -> Unit
+
+                else -> Unit
+            }
+        }
+        return output.toString()
+    }
+
     fun deleteLast(current: String): String =
         if (current.isEmpty()) current else current.dropLast(1)
 
