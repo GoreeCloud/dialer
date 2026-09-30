@@ -22,6 +22,8 @@ jobs:
           persist-credentials: false
       - name: Verify exact source revision
         run: test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+      - name: Validate repository structure
+        run: python3 scripts/validate_repository_structure.py
       - name: Validate physical-device and carrier acceptance record
         run: python3 scripts/validate_physical_device_acceptance.py
       - name: Validate GLAZE UI V1.6 source boundary
