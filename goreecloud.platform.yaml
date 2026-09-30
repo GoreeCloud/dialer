@@ -22,37 +22,39 @@ platform_systems:
     version: null
     evidence:
       - README.md
-      - SPECIFICATIONS.md
-      - NOTES.md
+      - docs/SPECIFICATIONS.md
+      - docs/NOTES.md
     notes: Production lifecycle registration, health/readiness publication, deployment authority, and operational visibility through GoreeCloud Manager are not implemented or accepted.
   privacy_shield:
     result: applicable-blocked
     version: null
     evidence:
-      - SPECIFICATIONS.md
-      - FEATURE-ROADMAP.md
+      - docs/SPECIFICATIONS.md
+      - docs/PLANNED-FEATURES.md
+      - docs/PRIVACY.md
     notes: Call data, identifiers, permissions, and user-consent boundaries are documented, but accepted Privacy Shield runtime authorization, consent/policy evidence, and production privacy acceptance are not established.
   wardveil_security:
     result: applicable-blocked
     version: null
     evidence:
-      - SPECIFICATIONS.md
-      - FEATURE-ROADMAP.md
+      - docs/SPECIFICATIONS.md
+      - docs/PLANNED-FEATURES.md
+      - .github/SECURITY.md
     notes: Source contains fail-closed Telecom and permission boundaries, but accepted Wardveil runtime integration, production abuse/security controls, security-event provenance, and production security acceptance are not established.
   everkeep:
     result: applicable-blocked
     version: null
     evidence:
-      - SPECIFICATIONS.md
-      - FEATURE-ROADMAP.md
+      - docs/SPECIFICATIONS.md
+      - docs/PLANNED-FEATURES.md
     notes: Android automatic backup is excluded for app-managed state and recovery requirements are documented, but accepted Everkeep backup, restore, migration, rollback, and continuity behavior are not established.
   glaze_ui:
     result: applicable-blocked
     version: "1.6.0"
     evidence:
       - README.md
-      - SPECIFICATIONS.md
-      - NOTES.md
+      - docs/SPECIFICATIONS.md
+      - docs/NOTES.md
       - app/src/main/java/com/goreecloud/dialer/ui/GlazeDialerPresentationPolicy.kt
       - app/src/main/java/com/goreecloud/dialer/ui/GlazeDialerTheme.kt
       - app/src/main/java/com/goreecloud/dialer/ui/DialerAndroidGlazeContext.kt
@@ -65,8 +67,8 @@ platform_systems:
     result: applicable-blocked
     version: null
     evidence:
-      - SPECIFICATIONS.md
-      - FEATURE-ROADMAP.md
+      - docs/SPECIFICATIONS.md
+      - docs/PLANNED-FEATURES.md
     notes: Dialer core telephony must remain usable without cloud coordination; no accepted GoreeCloud Mesh registration, capability publication, authenticated discovery/transport, or runtime integration is established.
     capabilities:
       - android-telecom-capability-model
@@ -80,22 +82,22 @@ platform_systems:
     result: applicable-blocked
     version: null
     evidence:
-      - SPECIFICATIONS.md
-      - FEATURE-ROADMAP.md
+      - docs/SPECIFICATIONS.md
+      - docs/PLANNED-FEATURES.md
     notes: Core carrier telephony is intentionally not dependent on GoreeCloud Identity. Any future account-bound features still require accepted Identity session/device/isolation/revocation integration before authority can be claimed.
   policy:
     result: applicable-blocked
     version: null
     evidence:
-      - SPECIFICATIONS.md
-      - FEATURE-ROADMAP.md
+      - docs/SPECIFICATIONS.md
+      - docs/PLANNED-FEATURES.md
     notes: No accepted GoreeCloud Policy runtime decision, explanation, freshness, exception, or evidence integration exists for Dialer capabilities.
   observability:
     result: applicable-blocked
     version: null
     evidence:
-      - SPECIFICATIONS.md
-      - FEATURE-ROADMAP.md
+      - docs/SPECIFICATIONS.md
+      - docs/PLANNED-FEATURES.md
     notes: CI and Development diagnostics exist, but accepted privacy-minimized GoreeCloud Observability health, metrics, events, dependency-health, provenance, alerting, and target-environment acceptance are not established.
 
 health:
@@ -149,9 +151,9 @@ conformance:
   validated_at: null
   evidence:
     - README.md
-    - SPECIFICATIONS.md
-    - FEATURE-ROADMAP.md
-    - NOTES.md
+    - docs/SPECIFICATIONS.md
+    - docs/PLANNED-FEATURES.md
+    - docs/NOTES.md
     - .github/workflows/android.yml
     - acceptance/physical-device-carrier.json
     - scripts/validate_physical_device_acceptance.py

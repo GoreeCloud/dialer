@@ -15,9 +15,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -34,11 +36,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.goreecloud.dialer.core.capability.CapabilityState
+import com.goreecloud.dialer.guidance.DialerGuidanceRepository
+import com.goreecloud.dialer.guidance.DialerGuidanceState
+import com.goreecloud.dialer.guidance.SharedPreferencesDialerGuidanceStore
 import com.goreecloud.dialer.telephony.AndroidDefaultDialerRoleRequestPreparer
 import com.goreecloud.dialer.telephony.AndroidIncomingCallNotificationAccess
 import com.goreecloud.dialer.telephony.AndroidTelephonyCapabilityProbe
@@ -53,6 +60,12 @@ import com.goreecloud.dialer.telephony.TelephonyCapabilitySnapshot
 @Composable
 fun DialerApp(initialDialRequest: DialRequest? = null) {
     val applicationContext = LocalContext.current.applicationContext
+    val guidanceRepository = remember(applicationContext) {
+        DialerGuidanceRepository(SharedPreferencesDialerGuidanceStore(applicationContext))
+    }
+    var guidanceState by remember(guidanceRepository) {
+        mutableStateOf(guidanceRepository.load())
+    }
     val configuration = LocalConfiguration.current
     val lifecycleOwner = LocalLifecycleOwner.current
     var runtimeRefresh by remember { mutableIntStateOf(0) }
@@ -127,8 +140,28 @@ fun DialerApp(initialDialRequest: DialRequest? = null) {
             requestedMaterial = GlazeDialerMaterialRole.SOLID,
             context = LocalGlazeDialerPresentationContext.current,
         )
-        Scaffold { innerPadding ->
-            DevelopmentHome(
+        if (!guidanceState.setupCompleted || guidanceState.replayActive) {
+            DialerFirstUseWizard(
+                state = guidanceState,
+                onPrevious = {
+                    guidanceState = guidanceRepository.previousSetupStep(guidanceState)
+                },
+                onNext = {
+                    guidanceState = guidanceRepository.nextSetupStep(guidanceState)
+                },
+                onHintsEnabledChanged = { enabled ->
+                    guidanceState = guidanceRepository.setHintsEnabled(guidanceState, enabled)
+                },
+                onComplete = {
+                    guidanceState = guidanceRepository.completeSetup(guidanceState)
+                },
+                onCancelReplay = {
+                    guidanceState = guidanceRepository.cancelReplay(guidanceState)
+                },
+            )
+        } else {
+            Scaffold { innerPadding ->
+                DevelopmentHome(
                 capabilitySnapshot = capabilitySnapshot,
                 incomingCallNotificationAccess = incomingCallNotificationAccess,
                 inCallRuntime = inCallRuntime,
@@ -198,11 +231,28 @@ fun DialerApp(initialDialRequest: DialRequest? = null) {
                         }
                     }
                 },
+                guidanceState = guidanceState,
+                onDismissGuidanceHint = {
+                    guidanceState = guidanceRepository.dismissHint(
+                        guidanceState,
+                        DIALER_CAPABILITY_HINT_ID,
+                    )
+                },
+                onHintsEnabledChanged = { enabled ->
+                    guidanceState = guidanceRepository.setHintsEnabled(guidanceState, enabled)
+                },
+                onResetDismissedHints = {
+                    guidanceState = guidanceRepository.resetDismissedHints(guidanceState)
+                },
+                onReplaySetup = {
+                    guidanceState = guidanceRepository.replaySetup(guidanceState)
+                },
                 initialNumber = initialDialRequest?.number.orEmpty(),
                 minimumInteractionTargetDp = presentation.minimumInteractionTargetDp,
                 contentPaddingDp = if (presentation.densityMayYieldToReflow) 16 else 24,
                 modifier = Modifier.padding(innerPadding),
-            )
+                )
+            }
         }
     }
 }
@@ -216,6 +266,11 @@ private fun DevelopmentHome(
     selectedPhoneAccountRouteId: Long?,
     roleRequestMessage: String?,
     incomingCallAccessMessage: String?,
+    guidanceState: DialerGuidanceState,
+    onDismissGuidanceHint: () -> Unit,
+    onHintsEnabledChanged: (Boolean) -> Unit,
+    onResetDismissedHints: () -> Unit,
+    onReplaySetup: () -> Unit,
     onPhoneAccountSelected: (Long?) -> Unit,
     onRequestPhoneStatePermission: () -> Unit,
     onRequestNotificationPermission: () -> Unit,
@@ -242,14 +297,29 @@ private fun DevelopmentHome(
         Text("Active Development / pre-Stable", style = MaterialTheme.typography.titleMedium)
         Spacer(Modifier.height(20.dp))
 
+        if (guidanceState.isHintVisible(DIALER_CAPABILITY_HINT_ID)) {
+            DialerCapabilityGuidanceHint(onDismiss = onDismissGuidanceHint)
+            Spacer(Modifier.height(20.dp))
+        }
+
         if (inCallRuntime.trackedCallCount > 0) {
             DevelopmentInCallPanel(inCallRuntime)
             Spacer(Modifier.height(20.dp))
         }
 
-        Text(
-            text = number.ifEmpty { "Enter a number" },
-            style = MaterialTheme.typography.headlineSmall,
+        OutlinedTextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("dial-number-input"),
+            value = number,
+            onValueChange = { number = DialInputEditor.replace(it) },
+            label = { Text("Number") },
+            placeholder = { Text("Enter a number") },
+            supportingText = {
+                Text("Digits, +, * and # stay local until an accepted call-placement path is enabled.")
+            },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+            singleLine = true,
         )
         Spacer(Modifier.height(12.dp))
 
@@ -264,7 +334,7 @@ private fun DevelopmentHome(
                 horizontalArrangement = Arrangement.SpaceEvenly,
             ) {
                 row.forEach { digit ->
-                    Button(onClick = { number += digit }) {
+                    Button(onClick = { number = DialInputEditor.append(number, digit) }) {
                         Text(digit)
                     }
                 }
@@ -272,11 +342,31 @@ private fun DevelopmentHome(
             Spacer(Modifier.height(8.dp))
         }
 
-        TextButton(
-            onClick = { if (number.isNotEmpty()) number = number.dropLast(1) },
-            enabled = number.isNotEmpty(),
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly,
         ) {
-            Text("Delete")
+            TextButton(
+                onClick = { number = DialInputEditor.append(number, "+") },
+                enabled = number.isEmpty(),
+                modifier = Modifier.heightIn(min = minimumInteractionTargetDp.dp),
+            ) {
+                Text("+")
+            }
+            TextButton(
+                onClick = { number = DialInputEditor.deleteLast(number) },
+                enabled = number.isNotEmpty(),
+                modifier = Modifier.heightIn(min = minimumInteractionTargetDp.dp),
+            ) {
+                Text("Delete")
+            }
+            TextButton(
+                onClick = { number = DialInputEditor.clear(number) },
+                enabled = number.isNotEmpty(),
+                modifier = Modifier.heightIn(min = minimumInteractionTargetDp.dp),
+            ) {
+                Text("Clear")
+            }
         }
 
         DevelopmentPhoneAccountRouting(
@@ -323,6 +413,14 @@ private fun DevelopmentHome(
         CapabilityEvidenceRow("Multi-SIM routing", capabilitySnapshot.multiSimRouting)
         CapabilityEvidenceRow("Wi-Fi Calling state", capabilitySnapshot.wifiCallingState)
         CapabilityEvidenceRow("Supplementary services", capabilitySnapshot.supplementaryServices)
+
+        Spacer(Modifier.height(20.dp))
+        DialerGuidanceControls(
+            state = guidanceState,
+            onHintsEnabledChanged = onHintsEnabledChanged,
+            onResetDismissedHints = onResetDismissedHints,
+            onReplaySetup = onReplaySetup,
+        )
     }
 }
 

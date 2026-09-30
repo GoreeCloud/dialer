@@ -116,10 +116,9 @@ class AndroidOutgoingCallPlacer(
                     OutgoingCallPlacementResult.Failed(
                         "Android rejected call placement authorization",
                     )
-                } catch (runtimeException: RuntimeException) {
+                } catch (_: RuntimeException) {
                     OutgoingCallPlacementResult.Failed(
-                        runtimeException.message?.takeIf { it.isNotBlank() }
-                            ?: runtimeException::class.java.simpleName,
+                        TelephonyFailurePresentation.OUTGOING_CALL,
                     )
                 }
             }

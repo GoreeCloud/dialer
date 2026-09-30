@@ -49,7 +49,7 @@ This is **source mapping**, not Dialer-local Glaze acceptance. Authoritative run
 
 ## Current source foundation
 
-- Compose application shell and local keypad
+- Compose application shell and local keypad with a directly editable phone field, bounded keyboard/paste filtering, start-only international prefix, Delete, and Clear editing; local dial text remains non-authorizing while carrier placement is disabled
 - `ACTION_DIAL` and `tel:` intent intake without call placement side effects
 - Android telephony and `ROLE_DIALER` capability probe with the role-request acceptance gate still closed
 - explicit default-dialer acceptance model for dial intent, service, placement, incoming UI, and ongoing UI
@@ -103,7 +103,7 @@ This is **source mapping**, not Dialer-local Glaze acceptance. Authoritative run
 - release-variant assembly exercises release resources, R8/minification, and packaging configuration; it does **not** prove signing, distribution readiness, device acceptance, or Stable status
 - physical-device and carrier acceptance is tracked separately in `docs/physical-device-acceptance.md` and Issue #14
 - Android platform modernization, CI evidence boundaries, testing layers, release gates, and physical-device evidence requirements are documented separately
-- architecture, privacy, security, specifications, roadmap, feature, and user-manual documentation
+- architecture, privacy, security, specifications, feature-lifecycle, changelog, notes, and user-manual documentation
 
 ## Runtime truth rule
 
@@ -111,13 +111,19 @@ A feature is never considered implemented merely because a UI surface, configura
 
 ## Documentation
 
-- [SPECIFICATIONS.md](SPECIFICATIONS.md)
-- [FEATURES.md](FEATURES.md)
-- [FEATURE-ROADMAP.md](FEATURE-ROADMAP.md)
-- [USER-MANUAL.md](USER-MANUAL.md)
+- [docs/SPECIFICATIONS.md](docs/SPECIFICATIONS.md)
+- [docs/FEATURES.md](docs/FEATURES.md)
+- [docs/IMPLEMENTED-FEATURES.md](docs/IMPLEMENTED-FEATURES.md)
+- [docs/PLANNED-FEATURES.md](docs/PLANNED-FEATURES.md)
+- [docs/CHANGELOGS.md](docs/CHANGELOGS.md)
+- [docs/USER-MANUAL.md](docs/USER-MANUAL.md)
+- [docs/NOTES.md](docs/NOTES.md)
 - [docs/architecture.md](docs/architecture.md)
-- [docs/privacy.md](docs/privacy.md)
-- [docs/security.md](docs/security.md)
+- [docs/PRIVACY.md](docs/PRIVACY.md)
+- [.github/SECURITY.md](.github/SECURITY.md)
+- [docs/BENEFITS.md](docs/BENEFITS.md)
+- [docs/COMPETITIVE-OBJECTIVES.md](docs/COMPETITIVE-OBJECTIVES.md)
+- [docs/BRANDING.md](docs/BRANDING.md)
 - [docs/platform-modernization.md](docs/platform-modernization.md)
 - [docs/ci-validation.md](docs/ci-validation.md)
 - [docs/testing.md](docs/testing.md)

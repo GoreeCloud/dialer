@@ -87,10 +87,13 @@ class CallControlEngineTest {
     }
 
     @Test
-    fun runtimeFailureIsReportedInsteadOfClaimingSubmission() {
+    fun runtimeFailureIsReportedWithoutPlatformExceptionDetails() {
         val target = FakeTarget(CallLifecycleState.ACTIVE, fail = true)
         val result = CallControlEngine(target).execute(CallControlAction.End)
-        assertTrue(result is CallControlResult.Failed)
+        assertEquals(
+            CallControlResult.Failed(TelephonyFailurePresentation.CALL_CONTROL),
+            result,
+        )
     }
 
     private class FakeTarget(
@@ -101,7 +104,7 @@ class CallControlEngineTest {
         val events = mutableListOf<String>()
 
         private fun record(event: String) {
-            if (fail) throw IllegalStateException("platform failure")
+            if (fail) throw IllegalStateException("phoneAccount=private-account-id endpoint=private-device")
             events += event
         }
 

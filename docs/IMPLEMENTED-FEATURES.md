@@ -12,6 +12,10 @@ This record describes source-present GoreeCloud Dialer Development foundations. 
 
 `FEATURES.md` remains the product-facing feature description. This file is the lifecycle authority for what is implemented.
 
+## Active Draft candidate — not authoritative implementation
+
+Draft PR #40 currently carries bounded local dial-string editing with a start-only international `+`, Delete, Clear, and a 128-character cap. The candidate keeps carrier call placement disabled and adds managed-Android interaction coverage. This section records branch provenance only; the capability does not become authoritative implementation until accepted on the integration line and then reconciled into the implemented inventory below.
+
 ## Implemented Development capabilities
 
 ### Native Android and telephony boundary

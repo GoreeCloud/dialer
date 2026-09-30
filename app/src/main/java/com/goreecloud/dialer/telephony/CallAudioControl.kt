@@ -23,11 +23,8 @@ class CallAudioControlEngine(
     fun execute(action: CallAudioControlAction): CallAudioControlResult = try {
         target.setMuted(action == CallAudioControlAction.Mute)
         CallAudioControlResult.Submitted
-    } catch (runtimeException: RuntimeException) {
-        CallAudioControlResult.Failed(
-            runtimeException.message?.takeIf { it.isNotBlank() }
-                ?: runtimeException::class.java.simpleName,
-        )
+    } catch (_: RuntimeException) {
+        CallAudioControlResult.Failed(TelephonyFailurePresentation.AUDIO_CONTROL)
     }
 }
 

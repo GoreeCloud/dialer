@@ -10,8 +10,8 @@ TEST = ROOT / "app/src/test/java/com/goreecloud/dialer/ui/GlazeDialerPresentatio
 CONTEXT_TEST = ROOT / "app/src/test/java/com/goreecloud/dialer/ui/DialerAndroidGlazeContextTest.kt"
 PLATFORM = ROOT / "goreecloud.platform.yaml"
 README = ROOT / "README.md"
-SPECIFICATIONS = ROOT / "SPECIFICATIONS.md"
-NOTES = ROOT / "NOTES.md"
+SPECIFICATIONS = ROOT / "docs/SPECIFICATIONS.md"
+NOTES = ROOT / "docs/NOTES.md"
 
 VERSION = "1.6.0"
 SOURCE_REVISION = "a7180679ea851389e0f3004515f9a25f420e716d"
