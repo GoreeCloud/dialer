@@ -60,11 +60,8 @@ class CallControlEngine(
                 CallControlAction.StopDtmf -> target.stopDtmf()
             }
             CallControlResult.Submitted
-        } catch (runtimeException: RuntimeException) {
-            CallControlResult.Failed(
-                runtimeException.message?.takeIf { it.isNotBlank() }
-                    ?: runtimeException::class.java.simpleName,
-            )
+        } catch (_: RuntimeException) {
+            CallControlResult.Failed(TelephonyFailurePresentation.CALL_CONTROL)
         }
     }
 

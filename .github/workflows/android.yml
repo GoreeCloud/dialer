@@ -26,6 +26,8 @@ jobs:
         run: python3 scripts/validate_physical_device_acceptance.py
       - name: Validate GLAZE UI V1.6 source boundary
         run: python3 scripts/check_glaze_ui_v16.py
+      - name: Validate privacy-safe telephony failure presentation
+        run: python3 scripts/check_telephony_failure_privacy.py
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
         with:
           distribution: temurin
