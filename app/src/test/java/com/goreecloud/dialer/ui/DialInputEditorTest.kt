@@ -22,6 +22,14 @@ class DialInputEditorTest {
     }
 
     @Test
+    fun directEditingRejectsNonAsciiUnicodeDigits() {
+        assertEquals(
+            "12",
+            DialInputEditor.replace("1\u0662\uFF132"),
+        )
+    }
+
+    @Test
     fun directEditingIsBounded() {
         assertEquals(
             DialInputEditor.MAX_LENGTH,
