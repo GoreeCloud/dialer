@@ -16,7 +16,7 @@ object DialInputEditor {
         val output = StringBuilder()
         raw.forEach { character ->
             when {
-                character.isDigit() || character == '*' || character == '#' -> {
+                character in '0'..'9' || character == '*' || character == '#' -> {
                     if (output.length < MAX_LENGTH) output.append(character)
                 }
 
