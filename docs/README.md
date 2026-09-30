@@ -12,6 +12,9 @@ This directory is the canonical home for Dialer human-readable repository docume
 - `USER-MANUAL.md` — current user and operator behavior.
 - `PRIVACY.md` — repository privacy guidance.
 - `NOTES.md` — current development and maintenance notes.
+- `BENEFITS.md` — supportable user and platform benefits.
+- `COMPETITIVE-OBJECTIVES.md` — product-quality and differentiation objectives.
+- `BRANDING.md` — current product-identity boundary and branding requirements.
 
 ## Supporting records
 

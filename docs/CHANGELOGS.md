@@ -1,5 +1,11 @@
 # GoreeCloud Dialer — Changelogs
 
+## 2026-09-30 — Repository baseline documentation completion
+
+- Added `docs/BENEFITS.md`, `docs/COMPETITIVE-OBJECTIVES.md`, `docs/BRANDING.md`, and `.editorconfig` to complete the current repository baseline.
+- Branding documentation records that the current Android manifest has the GoreeCloud Dialer label but no accepted repository-specific launcher-icon provenance yet.
+- Updated README and documentation navigation to the canonical records while preserving all existing telephony, carrier, privacy, emergency, release, and Stable boundaries.
+
 ## 2026-09-30 — Repository root-cleanliness migration
 
 - Moved canonical human-readable repository records from root into `docs/` and promoted repository security guidance to `.github/SECURITY.md`.
