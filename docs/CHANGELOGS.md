@@ -1,5 +1,12 @@
 # GoreeCloud Dialer — Changelogs
 
+## 2026-09-30 — Repository root-cleanliness migration
+
+- Moved canonical human-readable repository records from root into `docs/` and promoted repository security guidance to `.github/SECURITY.md`.
+- Renamed the existing privacy record to canonical `docs/PRIVACY.md` and updated README, Platform Contract, and Glaze validation paths.
+- Removed stale `FEATURE-ROADMAP.md` references in favor of `docs/IMPLEMENTED-FEATURES.md`, `docs/PLANNED-FEATURES.md`, and `docs/CHANGELOGS.md`.
+- Preserved the telephony, carrier, emergency, privacy, and lifecycle boundaries; this is documentation/control-plane organization only.
+
 ## 2026-09-29 — direct dial-input editing candidate
 - The Development dial surface now exposes the local dial string as an editable phone field in addition to the on-screen keypad.
 - Keyboard and paste input keeps digits, `*`, `#`, and a leading international `+`; common formatting characters are ignored and the existing 128-character bound remains enforced.
