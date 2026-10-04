@@ -11,12 +11,32 @@ object InCallPresentationPolicy {
         val count = snapshot.trackedCallCount.coerceAtLeast(0)
         val base = if (count == 1) "1 live call" else "$count live calls"
         val stateSummary = stateBreakdown(snapshot)
+        val conferenceSummary = conferenceBreakdown(snapshot)
         val capacity = when (snapshot.canAddCall) {
             true -> "add-call capacity available"
             false -> "add-call capacity unavailable"
             null -> "add-call capacity awaiting Telecom"
         }
-        return (listOf(base) + stateSummary + capacity).joinToString(" • ")
+        return (listOf(base) + stateSummary + conferenceSummary + capacity).joinToString(" • ")
+    }
+
+    fun conferenceBreakdown(snapshot: InCallRuntimeSnapshot): List<String> {
+        val conferenceParents = snapshot.calls.count { it.childSessionIds.isNotEmpty() }
+        val conferenceChildren = snapshot.calls.count { it.parentSessionId != null }
+        return buildList {
+            if (conferenceParents > 0) {
+                add(
+                    if (conferenceParents == 1) {
+                        "1 conference"
+                    } else {
+                        "$conferenceParents conferences"
+                    },
+                )
+            }
+            if (conferenceChildren > 0) {
+                add("$conferenceChildren conference legs")
+            }
+        }
     }
 
     fun stateBreakdown(snapshot: InCallRuntimeSnapshot): List<String> {
