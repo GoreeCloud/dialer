@@ -61,4 +61,27 @@ class InCallPresentationPolicyTest {
         postDialWaitPending = false,
         postDialRemainingCharacterCount = 0,
     )
+
+    @Test
+    fun callSetLabelSummarizesOnlyAggregateLifecycleCounts() {
+        val snapshot = InCallRuntimeSnapshot(
+            trackedCallCount = 4,
+            stateCounts = mapOf(
+                CallLifecycleState.RINGING to 1,
+                CallLifecycleState.ACTIVE to 2,
+                CallLifecycleState.HOLDING to 1,
+            ),
+            canAddCall = false,
+        )
+
+        assertEquals(
+            listOf("1 ringing", "2 active", "1 held"),
+            InCallPresentationPolicy.stateBreakdown(snapshot),
+        )
+        assertEquals(
+            "4 live calls • 1 ringing • 2 active • 1 held • add-call capacity unavailable",
+            InCallPresentationPolicy.callSetLabel(snapshot),
+        )
+    }
+
 }
