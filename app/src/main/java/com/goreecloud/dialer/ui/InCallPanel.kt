@@ -31,6 +31,7 @@ import com.goreecloud.dialer.telephony.CallLifecycleState
 import com.goreecloud.dialer.telephony.CallRuntimeSummary
 import com.goreecloud.dialer.telephony.InCallAudioControlRuntime
 import com.goreecloud.dialer.telephony.InCallEndpointRoutingRuntime
+import com.goreecloud.dialer.telephony.InCallPresentationPolicy
 import com.goreecloud.dialer.telephony.InCallRuntimeSnapshot
 import com.goreecloud.dialer.telephony.InCallRuntimeStore
 import com.goreecloud.dialer.telephony.presentationLabel
@@ -46,12 +47,16 @@ internal fun DevelopmentInCallPanel(snapshot: InCallRuntimeSnapshot) {
     ) {
         Text("Live Telecom sessions", style = MaterialTheme.typography.titleMedium)
         Text(
+            InCallPresentationPolicy.callSetLabel(snapshot),
+            style = MaterialTheme.typography.bodySmall,
+        )
+        Text(
             "Development control surface — no caller identity, endpoint device name, phone-account identity, or call content is projected.",
             style = MaterialTheme.typography.bodySmall,
         )
         Spacer(Modifier.height(8.dp))
 
-        snapshot.calls.forEach { call ->
+        InCallPresentationPolicy.orderedCalls(snapshot.calls).forEach { call ->
             DevelopmentCallControls(
                 call = call,
                 onResult = { operationStatus = it },
