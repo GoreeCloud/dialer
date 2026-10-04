@@ -47,7 +47,7 @@ class InCallPresentationPolicyTest {
         state = state,
         direction = CallDirection.UNKNOWN,
         terminalOutcome = null,
-        connectTimeMillis = null,
+        connectedAtElapsedRealtimeMillis = null,
         holdSupported = false,
         holdCurrentlyAvailable = false,
         muteSupported = false,
