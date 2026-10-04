@@ -12,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -21,6 +22,7 @@ import com.goreecloud.dialer.telephony.CallAudioControlAction
 import com.goreecloud.dialer.telephony.CallAudioControlResult
 import com.goreecloud.dialer.telephony.CallControlPresentationPolicy
 import com.goreecloud.dialer.telephony.CallControlResult
+import com.goreecloud.dialer.telephony.CallDurationPresentationPolicy
 import com.goreecloud.dialer.telephony.CallEndpointRequestState
 import com.goreecloud.dialer.telephony.CallEndpointRoutingResult
 import com.goreecloud.dialer.telephony.CallEndpointRuntimeSummary
@@ -31,6 +33,7 @@ import com.goreecloud.dialer.telephony.InCallEndpointRoutingRuntime
 import com.goreecloud.dialer.telephony.InCallRuntimeSnapshot
 import com.goreecloud.dialer.telephony.InCallRuntimeStore
 import com.goreecloud.dialer.telephony.presentationLabel
+import kotlinx.coroutines.delay
 
 @Composable
 internal fun DevelopmentInCallPanel(snapshot: InCallRuntimeSnapshot) {
@@ -188,6 +191,7 @@ private fun DevelopmentCallControls(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text("Session ${call.sessionId}: ${call.state} • ${call.direction}")
+        DevelopmentCallDuration(call)
         call.terminalOutcome?.let { outcome ->
             Text(
                 "Terminal outcome: $outcome",
@@ -263,6 +267,34 @@ private fun DevelopmentCallControls(
                 onResult = onResult,
             )
         }
+    }
+}
+
+@Composable
+private fun DevelopmentCallDuration(call: CallRuntimeSummary) {
+    if (!CallDurationPresentationPolicy.shouldPresent(call.state)) return
+    val connectedAt = call.connectTimeMillis ?: return
+    val elapsedSeconds by produceState<Long?>(
+        initialValue = CallDurationPresentationPolicy.elapsedSeconds(
+            connectTimeMillis = connectedAt,
+            nowMillis = System.currentTimeMillis(),
+        ),
+        key1 = connectedAt,
+        key2 = call.state,
+    ) {
+        while (true) {
+            value = CallDurationPresentationPolicy.elapsedSeconds(
+                connectTimeMillis = connectedAt,
+                nowMillis = System.currentTimeMillis(),
+            )
+            delay(1_000L)
+        }
+    }
+    elapsedSeconds?.let { seconds ->
+        Text(
+            CallDurationPresentationPolicy.label(seconds),
+            style = MaterialTheme.typography.bodySmall,
+        )
     }
 }
 
