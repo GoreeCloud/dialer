@@ -4,10 +4,25 @@ object CallDurationPresentationPolicy {
     fun shouldPresent(state: CallLifecycleState): Boolean =
         state == CallLifecycleState.ACTIVE || state == CallLifecycleState.HOLDING
 
-    fun elapsedSeconds(connectTimeMillis: Long?, nowMillis: Long): Long? {
-        val connectedAt = connectTimeMillis?.takeIf { it > 0L } ?: return null
-        if (nowMillis < connectedAt) return null
-        return (nowMillis - connectedAt) / 1_000L
+    fun monotonicAnchorMillis(
+        connectTimeMillis: Long?,
+        wallClockNowMillis: Long,
+        elapsedRealtimeNowMillis: Long,
+    ): Long? {
+        val connectedAtWallClock = connectTimeMillis?.takeIf { it > 0L } ?: return null
+        if (wallClockNowMillis < connectedAtWallClock || elapsedRealtimeNowMillis < 0L) return null
+        val elapsedSinceConnect = wallClockNowMillis - connectedAtWallClock
+        if (elapsedSinceConnect > elapsedRealtimeNowMillis) return 0L
+        return elapsedRealtimeNowMillis - elapsedSinceConnect
+    }
+
+    fun elapsedSeconds(
+        connectedAtElapsedRealtimeMillis: Long?,
+        elapsedRealtimeNowMillis: Long,
+    ): Long? {
+        val connectedAt = connectedAtElapsedRealtimeMillis?.takeIf { it >= 0L } ?: return null
+        if (elapsedRealtimeNowMillis < connectedAt) return null
+        return (elapsedRealtimeNowMillis - connectedAt) / 1_000L
     }
 
     fun label(elapsedSeconds: Long): String {
