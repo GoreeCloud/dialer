@@ -16,9 +16,42 @@ class CallDurationPresentationPolicyTest {
     }
 
     @Test
-    fun elapsedTimeRequiresAValidNonFutureConnectTime() {
+    fun convertsWallClockConnectTimeIntoPrivacyMinimizedMonotonicAnchor() {
+        assertNull(
+            CallDurationPresentationPolicy.monotonicAnchorMillis(
+                connectTimeMillis = null,
+                wallClockNowMillis = 70_000L,
+                elapsedRealtimeNowMillis = 30_000L,
+            ),
+        )
+        assertNull(
+            CallDurationPresentationPolicy.monotonicAnchorMillis(
+                connectTimeMillis = 71_000L,
+                wallClockNowMillis = 70_000L,
+                elapsedRealtimeNowMillis = 30_000L,
+            ),
+        )
+        assertEquals(
+            25_000L,
+            CallDurationPresentationPolicy.monotonicAnchorMillis(
+                connectTimeMillis = 65_000L,
+                wallClockNowMillis = 70_000L,
+                elapsedRealtimeNowMillis = 30_000L,
+            ),
+        )
+        assertEquals(
+            0L,
+            CallDurationPresentationPolicy.monotonicAnchorMillis(
+                connectTimeMillis = 1_000L,
+                wallClockNowMillis = 70_000L,
+                elapsedRealtimeNowMillis = 30_000L,
+            ),
+        )
+    }
+
+    @Test
+    fun elapsedTimeRequiresAValidNonFutureMonotonicAnchor() {
         assertNull(CallDurationPresentationPolicy.elapsedSeconds(null, 10_000L))
-        assertNull(CallDurationPresentationPolicy.elapsedSeconds(0L, 10_000L))
         assertNull(CallDurationPresentationPolicy.elapsedSeconds(11_000L, 10_000L))
         assertEquals(
             65L,
