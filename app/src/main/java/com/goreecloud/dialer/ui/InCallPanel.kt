@@ -1,5 +1,6 @@
 package com.goreecloud.dialer.ui
 
+import android.os.SystemClock
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -273,19 +274,19 @@ private fun DevelopmentCallControls(
 @Composable
 private fun DevelopmentCallDuration(call: CallRuntimeSummary) {
     if (!CallDurationPresentationPolicy.shouldPresent(call.state)) return
-    val connectedAt = call.connectTimeMillis ?: return
+    val connectedAt = call.connectedAtElapsedRealtimeMillis ?: return
     val elapsedSeconds by produceState<Long?>(
         initialValue = CallDurationPresentationPolicy.elapsedSeconds(
-            connectTimeMillis = connectedAt,
-            nowMillis = System.currentTimeMillis(),
+            connectedAtElapsedRealtimeMillis = connectedAt,
+            elapsedRealtimeNowMillis = SystemClock.elapsedRealtime(),
         ),
         key1 = connectedAt,
         key2 = call.state,
     ) {
         while (true) {
             value = CallDurationPresentationPolicy.elapsedSeconds(
-                connectTimeMillis = connectedAt,
-                nowMillis = System.currentTimeMillis(),
+                connectedAtElapsedRealtimeMillis = connectedAt,
+                elapsedRealtimeNowMillis = SystemClock.elapsedRealtime(),
             )
             delay(1_000L)
         }
