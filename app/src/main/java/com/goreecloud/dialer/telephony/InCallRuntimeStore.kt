@@ -1,5 +1,6 @@
 package com.goreecloud.dialer.telephony
 
+import android.os.SystemClock
 import android.telecom.Call
 import java.util.IdentityHashMap
 import java.util.concurrent.atomic.AtomicLong
@@ -23,6 +24,7 @@ data class CallRuntimeSummary(
     val state: CallLifecycleState,
     val direction: CallDirection,
     val terminalOutcome: CallTerminalOutcome?,
+    val connectedAtElapsedRealtimeMillis: Long?,
     val holdSupported: Boolean,
     val holdCurrentlyAvailable: Boolean,
     val muteSupported: Boolean,
@@ -56,6 +58,7 @@ object InCallRuntimeStore {
         var state: CallLifecycleState,
         var direction: CallDirection,
         var terminalOutcome: CallTerminalOutcome?,
+        var connectedAtElapsedRealtimeMillis: Long?,
         var capabilities: CallControlCapabilities,
         var conferenceableCalls: List<Call>,
         var parent: Call?,
@@ -92,6 +95,11 @@ object InCallRuntimeStore {
             state = state,
             direction = disposition.direction,
             terminalOutcome = disposition.terminalOutcome,
+            connectedAtElapsedRealtimeMillis = CallDurationPresentationPolicy.monotonicAnchorMillis(
+                connectTimeMillis = details?.connectTimeMillis,
+                wallClockNowMillis = System.currentTimeMillis(),
+                elapsedRealtimeNowMillis = SystemClock.elapsedRealtime(),
+            ),
             capabilities = AndroidCallControlCapabilities.from(details),
             conferenceableCalls = call.conferenceableCalls.toList(),
             parent = call.parent,
@@ -121,6 +129,12 @@ object InCallRuntimeStore {
     fun onCallDetailsChanged(call: Call, details: Call.Details) {
         val tracked = trackedByCall[call] ?: return
         tracked.capabilities = AndroidCallControlCapabilities.from(details)
+        tracked.connectedAtElapsedRealtimeMillis =
+            CallDurationPresentationPolicy.monotonicAnchorMillis(
+                connectTimeMillis = details.connectTimeMillis,
+                wallClockNowMillis = System.currentTimeMillis(),
+                elapsedRealtimeNowMillis = SystemClock.elapsedRealtime(),
+            ) ?: tracked.connectedAtElapsedRealtimeMillis
         refreshDisposition(tracked, details)
         publish()
     }
@@ -318,6 +332,7 @@ object InCallRuntimeStore {
                 state = tracked.state,
                 direction = tracked.direction,
                 terminalOutcome = tracked.terminalOutcome,
+                connectedAtElapsedRealtimeMillis = tracked.connectedAtElapsedRealtimeMillis,
                 holdSupported = tracked.capabilities.holdSupported,
                 holdCurrentlyAvailable = tracked.capabilities.holdCurrentlyAvailable,
                 muteSupported = tracked.capabilities.muteSupported,

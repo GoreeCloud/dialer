@@ -1,5 +1,6 @@
 package com.goreecloud.dialer.ui
 
+import android.os.SystemClock
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -21,6 +23,7 @@ import com.goreecloud.dialer.telephony.CallAudioControlAction
 import com.goreecloud.dialer.telephony.CallAudioControlResult
 import com.goreecloud.dialer.telephony.CallControlPresentationPolicy
 import com.goreecloud.dialer.telephony.CallControlResult
+import com.goreecloud.dialer.telephony.CallDurationPresentationPolicy
 import com.goreecloud.dialer.telephony.CallEndpointRequestState
 import com.goreecloud.dialer.telephony.CallEndpointRoutingResult
 import com.goreecloud.dialer.telephony.CallEndpointRuntimeSummary
@@ -28,9 +31,11 @@ import com.goreecloud.dialer.telephony.CallLifecycleState
 import com.goreecloud.dialer.telephony.CallRuntimeSummary
 import com.goreecloud.dialer.telephony.InCallAudioControlRuntime
 import com.goreecloud.dialer.telephony.InCallEndpointRoutingRuntime
+import com.goreecloud.dialer.telephony.InCallPresentationPolicy
 import com.goreecloud.dialer.telephony.InCallRuntimeSnapshot
 import com.goreecloud.dialer.telephony.InCallRuntimeStore
 import com.goreecloud.dialer.telephony.presentationLabel
+import kotlinx.coroutines.delay
 
 @Composable
 internal fun DevelopmentInCallPanel(snapshot: InCallRuntimeSnapshot) {
@@ -42,12 +47,16 @@ internal fun DevelopmentInCallPanel(snapshot: InCallRuntimeSnapshot) {
     ) {
         Text("Live Telecom sessions", style = MaterialTheme.typography.titleMedium)
         Text(
+            InCallPresentationPolicy.callSetLabel(snapshot),
+            style = MaterialTheme.typography.bodySmall,
+        )
+        Text(
             "Development control surface — no caller identity, endpoint device name, phone-account identity, or call content is projected.",
             style = MaterialTheme.typography.bodySmall,
         )
         Spacer(Modifier.height(8.dp))
 
-        snapshot.calls.forEach { call ->
+        InCallPresentationPolicy.orderedCalls(snapshot.calls).forEach { call ->
             DevelopmentCallControls(
                 call = call,
                 onResult = { operationStatus = it },
@@ -188,6 +197,7 @@ private fun DevelopmentCallControls(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text("Session ${call.sessionId}: ${call.state} • ${call.direction}")
+        DevelopmentCallDuration(call)
         call.terminalOutcome?.let { outcome ->
             Text(
                 "Terminal outcome: $outcome",
@@ -263,6 +273,34 @@ private fun DevelopmentCallControls(
                 onResult = onResult,
             )
         }
+    }
+}
+
+@Composable
+private fun DevelopmentCallDuration(call: CallRuntimeSummary) {
+    if (!CallDurationPresentationPolicy.shouldPresent(call.state)) return
+    val connectedAt = call.connectedAtElapsedRealtimeMillis ?: return
+    val elapsedSeconds by produceState<Long?>(
+        initialValue = CallDurationPresentationPolicy.elapsedSeconds(
+            connectedAtElapsedRealtimeMillis = connectedAt,
+            elapsedRealtimeNowMillis = SystemClock.elapsedRealtime(),
+        ),
+        key1 = connectedAt,
+        key2 = call.state,
+    ) {
+        while (true) {
+            value = CallDurationPresentationPolicy.elapsedSeconds(
+                connectedAtElapsedRealtimeMillis = connectedAt,
+                elapsedRealtimeNowMillis = SystemClock.elapsedRealtime(),
+            )
+            delay(1_000L)
+        }
+    }
+    elapsedSeconds?.let { seconds ->
+        Text(
+            CallDurationPresentationPolicy.label(seconds),
+            style = MaterialTheme.typography.bodySmall,
+        )
     }
 }
 
