@@ -84,4 +84,32 @@ class InCallPresentationPolicyTest {
         )
     }
 
+
+    @Test
+    fun conferenceBreakdownUsesOnlySessionTopologyCounts() {
+        val parent = call(1, CallLifecycleState.ACTIVE).copy(
+            childSessionIds = listOf(2L, 3L),
+        )
+        val childA = call(2, CallLifecycleState.ACTIVE).copy(parentSessionId = 1L)
+        val childB = call(3, CallLifecycleState.HOLDING).copy(parentSessionId = 1L)
+        val snapshot = InCallRuntimeSnapshot(
+            trackedCallCount = 3,
+            calls = listOf(parent, childA, childB),
+            stateCounts = mapOf(
+                CallLifecycleState.ACTIVE to 2,
+                CallLifecycleState.HOLDING to 1,
+            ),
+            canAddCall = false,
+        )
+
+        assertEquals(
+            listOf("1 conference", "2 conference legs"),
+            InCallPresentationPolicy.conferenceBreakdown(snapshot),
+        )
+        assertEquals(
+            "3 live calls • 2 active • 1 held • 1 conference • 2 conference legs • add-call capacity unavailable",
+            InCallPresentationPolicy.callSetLabel(snapshot),
+        )
+    }
+
 }
