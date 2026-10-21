@@ -138,12 +138,18 @@ def main() -> None:
     ):
         require(platform, marker, "Platform Contract")
 
+    # The README declares the successor authority while retaining the precise
+    # historical predecessor mapping. The unmodified implementation records
+    # still retain their original legacy contract until a verified cutover.
+    require(readme, "The exclusive current design authority is [GoreeCloud UI]", "README")
+    require(readme, "historically mapped its presentation source to predecessor Glaze UI V1.6", "README")
     for content, label in (
         (readme, "README"),
         (specifications, "specifications"),
         (notes, "notes"),
     ):
-        require(content, "GLAZE UI V1.6", label)
+        if label != "README":
+            require(content, "GLAZE UI V1.6", label)
         require(content, SOURCE_REVISION, label)
         require(content, "issue #14", label)
 
