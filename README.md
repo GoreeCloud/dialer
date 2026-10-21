@@ -36,15 +36,15 @@ CI now includes executable managed-emulator acceptance on Android 11 / API 30 an
 
 A future move to compile SDK 37 / AGP 9.1+ is tracked as a separate platform migration because current stable AndroidX/Compose releases require that newer build baseline. The project intentionally retains its last verified SDK-36-compatible dependency set until that migration is accepted as a complete toolchain change.
 
-## GLAZE UI V1.6 source boundary
+## GoreeCloud UI authority and legacy source boundary
 
-This Development candidate maps Dialer presentation source to **Official Stable GLAZE UI V1.6 / `1.6.0`** at exact release source `a7180679ea851389e0f3004515f9a25f420e716d`.
+The exclusive current design authority is [GoreeCloud UI](https://github.com/GoreeCloud/gc-ui). This Development candidate historically mapped its presentation source to predecessor Glaze UI V1.6 / `1.6.0` at exact release source `a7180679ea851389e0f3004515f9a25f420e716d`. That mapping remains legacy evidence only, not an approved design target or completed GoreeCloud UI migration.
 
 The current telephony shell is intentionally certainty-first: its root presentation requests **solid** material rather than introducing glass into role, permission, carrier, emergency, or call-control surfaces. The repository-local V1.6 policy also models Reduced Transparency, Reduced Motion, constrained-performance degradation, large-text density yielding, strong visible focus, and conservative interaction targets. It preserves the inherited 44dp coarse / 32dp pointer floors while Dialer keeps a stricter 48dp general interaction floor and 56dp Touch Assistance target.
 
-Presentation context defaults are neutral. Phone numbers, call state, carrier/SIM identity, Telecom capabilities, permissions, default-dialer role state, emergency classification, and issue #14 evidence cannot become Glaze appearance inputs or presentation-derived authority.
+Presentation context defaults are neutral. Phone numbers, call state, carrier/SIM identity, Telecom capabilities, permissions, default-dialer role state, emergency classification, and issue #14 evidence must not become appearance inputs or presentation-derived authority.
 
-This is **source mapping**, not Dialer-local Glaze acceptance. Authoritative runtime accessibility/performance wiring, complete component/state review, rendered accessibility, adaptive form factors, localization/RTL, representative physical devices, measured performance/power, rollback, Human Visual Excellence, platform-system acceptance, protected signing/distribution, Release Candidate, production, and Stable qualification remain separate gates. Issue #14 also remains independently blocked on real privacy-safe physical-device/carrier/PSTN evidence.
+This is **source mapping**, not Dialer-local GoreeCloud UI acceptance. Authoritative runtime accessibility/performance wiring, complete component/state review, rendered accessibility, adaptive form factors, localization/RTL, representative physical devices, measured performance/power, rollback, Human Visual Excellence, platform-system acceptance, protected signing/distribution, Release Candidate, production, and Stable qualification remain separate gates. Issue #14 also remains independently blocked on real privacy-safe physical-device/carrier/PSTN evidence.
 
 
 ## Current source foundation
